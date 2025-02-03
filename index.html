@@ -62,6 +62,9 @@
     }
     .button-column {
       flex: 1 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .memo-column {
       flex: 2 !important;
@@ -71,6 +74,9 @@
     }
     .range-column {
       flex: 2 !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     /* メモ用テキストエリア */
     textarea#purpose {
@@ -86,12 +92,6 @@
       outline: none; /* デフォルトのフォーカス枠を無効化 */
       box-shadow: none; /* ブラウザのデフォルトの光る効果を無効化 */
       border: 1px solid #ccc; /* 通常時のボーダーを維持 */
-    }
-    /* スタート・ストップボタンを横並びにする */
-    .button-column {
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
     button {
       background-color: #3a3a3a;
@@ -113,16 +113,23 @@
       margin: 1rem 0;
       font-weight: bold;
     }
-    /* 開始・終了時刻表示を横並びにする */
-    .range-column {
+    /* 開始・終了時刻と現在時刻の表示エリア */
+    .range-top {
       display: flex;
       flex-direction: row;
       justify-content: center;
       font-size: 1.5rem;
       font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     }
-    .range-column div {
+    .range-top div {
       margin: 0 0.5rem;
+    }
+    .range-bottom {
+      font-size: 1.5rem;
+      font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+      margin-top: 0.5rem;
+      text-align: center;
+      width: 100%;
     }
   </style>
 </head>
@@ -179,10 +186,15 @@
     <div class="column count-column">
       <div class="time-display" id="timeDisplay">0</div>
     </div>
-    <!-- 開始時刻・終了時刻表示（横並びに） -->
+    <!-- 開始・終了時刻および現在時刻表示 -->
     <div class="column range-column">
-      <div id="startTimeDisplay">__:__</div>
-      <div id="stopTimeDisplay">__:__</div>
+      <div class="range-top">
+        <div id="startTimeDisplay">__:__</div>
+        <div id="stopTimeDisplay">__:__</div>
+      </div>
+      <div class="range-bottom">
+        <div id="currentTimeDisplay">__:__</div>
+      </div>
     </div>
   </div>
   
@@ -192,6 +204,7 @@
     const timeDisplay = document.getElementById('timeDisplay');
     const startTimeDisplay = document.getElementById('startTimeDisplay');
     const stopTimeDisplay = document.getElementById('stopTimeDisplay');
+    const currentTimeDisplay = document.getElementById('currentTimeDisplay');
     const purpose = document.getElementById('purpose');
 
     let countInterval;
@@ -256,8 +269,19 @@
       stopBtn.disabled = true;
     }
 
+    function updateCurrentTime() {
+      const now = new Date();
+      const hh = now.getHours().toString().padStart(2, '0');
+      const mm = now.getMinutes().toString().padStart(2, '0');
+      currentTimeDisplay.textContent = hh + ':' + mm;
+    }
+
     startBtn.addEventListener('click', startCount);
     stopBtn.addEventListener('click', stopCount);
+
+    // 現在時刻を毎秒更新
+    setInterval(updateCurrentTime, 1000);
+    updateCurrentTime();
   </script>
 </body>
 </html>
