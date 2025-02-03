@@ -25,9 +25,9 @@
     /* 背景：縦方向に流れる虹色の波線 */
     .wave-bg {
       position: fixed;
-      left: 0;
+      left: 45%;
       top: 0;
-      width: 30vw;
+      width: 15vw;
       height: 100vh;
       z-index: -1;
     }
@@ -41,10 +41,10 @@
     }
     /* コンテンツ領域：タイマー部を横並びの各パーツに配置 */
     .container {
-      background-color: rgba(100, 100, 100, 0.7);
+      background-color: rgba(100, 100, 100, 0.4);
       border-radius: 15px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      width: 90%;
+      width: 920px;
       position: absolute;
       top: 50%;
       left: 50%;
@@ -147,19 +147,19 @@
           <stop offset="100%" stop-color="violet" />
         </linearGradient>
         <filter id="blur1">
-          <feGaussianBlur stdDeviation="0.5" />
+          <feGaussianBlur stdDeviation="0.2" />
         </filter>
         <filter id="blur2">
-          <feGaussianBlur stdDeviation="1" />
+          <feGaussianBlur stdDeviation="0.4" />
         </filter>
         <filter id="blur3">
-          <feGaussianBlur stdDeviation="1.5" />
+          <feGaussianBlur stdDeviation="0.6" />
         </filter>
         <filter id="blur4">
-          <feGaussianBlur stdDeviation="2" />
+          <feGaussianBlur stdDeviation="0.8" />
         </filter>
         <filter id="blur5">
-          <feGaussianBlur stdDeviation="2.5" />
+          <feGaussianBlur stdDeviation="1" />
         </filter>
       </defs>
       <!-- 順番に並べた5本の縦の波線（幅は2） -->
