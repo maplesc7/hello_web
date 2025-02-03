@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Count Up Tool</title>
+  <title>Count Up Tools</title>
   <style>
     :root {
       --wave-opacity: 0.8;
@@ -17,11 +17,10 @@
       position: relative;
       overflow: hidden;
       height: 100vh;
-      transition: background-color 3s ease; /* 背景色の滑らかな遷移 */
+      transition: background-color 3s ease;
     }
-    /* 背景をゆっくり暗めの赤に変えるためのクラス */
     .bg-flash {
-      background-color: #910c0c;
+      background-color: #330000;
     }
     /* 背景：縦方向に流れる虹色の波線 */
     .wave-bg {
@@ -42,16 +41,14 @@
     }
     /* コンテンツ領域：タイマー部を横並びの各パーツに配置 */
     .container {
-      background-color: #333333;
-      padding: 2rem;
-      border-radius: 50px;
+      background-color: rgba(100, 100, 100, 0.7);
+      border-radius: 15px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
       width: 90%;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      opacity: 0.8;
       display: flex;
       flex-direction: row;
       justify-content: space-around;
@@ -59,31 +56,42 @@
     }
     .column {
       flex: 1;
-      margin: 0 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
+    .button-column {
+      flex: 1 !important;
+    }
     .memo-column {
-      flex: 3 !important;
+      flex: 2 !important;
+    }
+    .count-column {
+      flex: 2 !important;
+    }
+    .range-column {
+      flex: 2 !important;
     }
     /* メモ用テキストエリア */
     textarea#purpose {
       width: 100%;
-      padding: 0.5rem;
       border: 2px solid #555;
       border-radius: 5px;
       background-color: #2c2c2c;
       color: #fff;
       font-size: 1.2rem;
       resize: none;
-      margin-bottom: 1rem;
     }
-    /* ボタン群（縦に配置） */
+    textarea:focus {
+      outline: none; /* デフォルトのフォーカス枠を無効化 */
+      box-shadow: none; /* ブラウザのデフォルトの光る効果を無効化 */
+      border: 1px solid #ccc; /* 通常時のボーダーを維持 */
+    }
+    /* スタート・ストップボタンを横並びにする */
     .button-column {
       display: flex;
-      flex-direction: column;
       align-items: center;
+      justify-content: center;
     }
     button {
       background-color: #3a3a3a;
@@ -105,15 +113,16 @@
       margin: 1rem 0;
       font-weight: bold;
     }
-    /* 開始・終了時刻表示（縦並び） */
+    /* 開始・終了時刻表示を横並びにする */
     .range-column {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      flex-direction: row;
+      justify-content: center;
       font-size: 1.5rem;
+      font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     }
     .range-column div {
-      margin: 0.25rem 0;
+      margin: 0 0.5rem;
     }
   </style>
 </head>
@@ -157,23 +166,23 @@
   
   <!-- コンテンツ領域：各パーツを横並びに配置 -->
   <div class="container">
-    <!-- Column 4: 開始時刻・終了時刻表示 -->
-    <div class="column range-column">
-      <div id="startTimeDisplay">  :  </div>
-      <div id="stopTimeDisplay">  :  </div>
-    </div>
-    <!-- Column 3: カウントアップ秒数表示 -->
-    <div class="column count-column">
-      <div class="time-display" id="timeDisplay">0</div>
-    </div>
-    <!-- Column 2: ボタン（スタート・ストップ） -->
+    <!-- スタート・ストップボタン -->
     <div class="column button-column">
       <button id="startBtn">スタート</button>
       <button id="stopBtn" disabled>ストップ</button>
     </div>
-    <!-- Column 1: メモ用テキストエリア -->
+    <!-- メモ用テキストエリア -->
     <div class="column memo-column">
       <textarea id="purpose" rows="5" placeholder="メモを入力"></textarea>
+    </div>
+    <!-- カウントアップ秒数表示 -->
+    <div class="column count-column">
+      <div class="time-display" id="timeDisplay">0</div>
+    </div>
+    <!-- 開始時刻・終了時刻表示（横並びに） -->
+    <div class="column range-column">
+      <div id="startTimeDisplay">__:__</div>
+      <div id="stopTimeDisplay">__:__</div>
     </div>
   </div>
   
@@ -209,12 +218,11 @@
       timeDisplay.textContent = formatTime(seconds);
     }
 
-    // 背景をゆっくり暗めの赤に変え、3秒後に元に戻す関数
     function flashBackground() {
       document.body.classList.add('bg-flash');
       setTimeout(() => {
         document.body.classList.remove('bg-flash');
-      }, 10000); // 10秒後にクラスを除去して背景色を元に戻す（戻りも10秒かかる）
+      }, 3000);
     }
 
     function startCount() {
@@ -223,7 +231,7 @@
       startTimeStr = now.getHours().toString().padStart(2, '0') + ':' +
                      now.getMinutes().toString().padStart(2, '0');
       startTimeDisplay.textContent = startTimeStr;
-      stopTimeDisplay.textContent = "  :  ";
+      stopTimeDisplay.textContent = "__:__";
       seconds = 0;
       updateDisplay();
       startBtn.disabled = true;
@@ -231,7 +239,6 @@
       countInterval = setInterval(() => {
         seconds++;
         updateDisplay();
-        // 5分（300秒）ごとに背景をゆっくり赤くフラッシュ
         if (seconds > 0 && seconds % 300 === 0) {
           flashBackground();
         }
