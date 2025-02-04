@@ -111,7 +111,7 @@
     .time-display {
       font-size: 3rem;
       font-weight: bold;
-      margin-left: 65%;
+      margin-left: -65%;
     }
     /* 開始・終了時刻と現在時刻の表示エリア */
     .range-top {
@@ -171,6 +171,18 @@
   
   <!-- コンテンツ領域：各パーツを横並びに配置 -->
   <div class="container">
+    <!-- 開始・終了時刻および現在時刻表示 -->
+    <div class="column range-column">
+      <div class="range-top">
+        <div id="currentTimeDisplay">__:__</div>
+      </div>
+      <div class="range-middle">
+        <div id="startTimeDisplay">__:__</div>
+      </div>
+      <div class="range-bottom">
+        <div id="stopTimeDisplay">__:__</div>
+      </div>
+    </div>
     <!-- スタート・ストップボタン -->
     <div class="column button-column">
       <button id="startBtn">スタート</button>
@@ -183,18 +195,6 @@
     <!-- カウントアップ秒数表示 -->
     <div class="column count-column">
       <div class="time-display" id="timeDisplay">0</div>
-    </div>
-    <!-- 開始・終了時刻および現在時刻表示 -->
-    <div class="column range-column">
-      <div class="range-top">
-        <div id="currentTimeDisplay">__:__</div>
-      </div>
-      <div class="range-middle">
-        <div id="startTimeDisplay">__:__</div>
-      </div>
-      <div class="range-bottom">
-        <div id="stopTimeDisplay">__:__</div>
-      </div>
     </div>
   </div>
   
