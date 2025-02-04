@@ -43,7 +43,7 @@
     .wave-bg path {
       stroke-opacity: var(--wave-opacity);
     }
-    /* コンテンツ領域：タイマー部を横並びの各パーツに配置 */
+    /* コンテンツ領域：各パーツを横並びの各パーツに配置 */
     .container {
       background-color: rgba(100, 100, 100, 0.4);
       border-radius: 15px;
@@ -172,7 +172,7 @@
     </svg>
   </div>
   
-  <!-- コンテンツ領域：各パーツを横並びに配置 -->
+  <!-- コンテンツ領域：各パーツを横並びの各パーツに配置 -->
   <div class="container">
     <!-- 開始・終了時刻および現在時刻表示 -->
     <div class="column range-column">
@@ -214,19 +214,23 @@
     let stopFlashInterval;
     let startTime;  // 開始時刻を Date オブジェクトとして保持する
 
+    // 修正後の formatTime 関数
+    // 0〜59秒の場合は "0:SS"
+    // 60〜3599秒の場合は "M:SS"
+    // 3600秒以上の場合は "H:MM:SS"
     function formatTime(totalSeconds) {
       if (totalSeconds < 60) {
-        return totalSeconds.toString();
+        return "0:" + (totalSeconds < 10 ? "0" + totalSeconds : totalSeconds);
       } else if (totalSeconds < 3600) {
         const m = Math.floor(totalSeconds / 60);
         const s = totalSeconds % 60;
-        return m + (s < 10 ? '0' + s : s);
+        return m + ":" + (s < 10 ? "0" + s : s);
       } else {
         const h = Math.floor(totalSeconds / 3600);
         const remainder = totalSeconds % 3600;
         const m = Math.floor(remainder / 60);
         const s = remainder % 60;
-        return h + (m < 10 ? '0' + m : m) + (s < 10 ? '0' + s : s);
+        return h + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
       }
     }
 
