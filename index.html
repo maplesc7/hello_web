@@ -19,11 +19,18 @@
       height: 100vh;
       transition: background-color 3s ease;
     }
-    .bg-flash {
+    /* 動作中：赤色のフラッシュ */
+    body.flash {
       background-color: #990000;
     }
-    /* 新規追加：停止状態用の黄色フラッシュ */
-    .bg-flash-stop {
+    body.flash textarea#purpose {
+      background-color: #990000;
+    }
+    /* 停止中：黄色のフラッシュ（赤色と形は同じで、色相のみ変更） */
+    body.flash-stop {
+      background-color: #999900;
+    }
+    body.flash-stop textarea#purpose {
       background-color: #999900;
     }
     /* 背景：縦方向に流れる虹色の波線 */
@@ -92,6 +99,7 @@
       font-size: 1.2rem;
       resize: none;
       margin-left: -20px;
+      transition: background-color 3s ease;
     }
     textarea:focus {
       outline: none;
@@ -205,6 +213,10 @@
   </div>
   
   <script>
+    // 秒数単位での設定変数（検証時に変更可能）
+    const FLASH_DURATION_SECONDS = 10;  // フラッシュの持続時間
+    const FLASH_INTERVAL_SECONDS = 300;   // フラッシュの間隔
+    
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
     const timeDisplay = document.getElementById('timeDisplay');
@@ -214,8 +226,8 @@
     const purpose = document.getElementById('purpose');
 
     let countInterval;
-    let stopFlashInterval;
-    let startTime;  // 開始時刻を Date オブジェクトとして保持する
+    let flashInterval;
+    let startTime;  // タイマー開始時刻（Dateオブジェクト）
 
     // 修正後の formatTime 関数
     // 0〜59秒の場合は "0:SS"
@@ -241,28 +253,32 @@
       timeDisplay.textContent = formatTime(elapsedSeconds);
     }
 
-    function flashBackground() {
-      document.body.classList.add('bg-flash');
-      setTimeout(() => {
-        document.body.classList.remove('bg-flash');
-      }, 10000);
-    }
-
-    // 新規追加：停止状態の黄色フラッシュ関数
-    function flashStopBackground() {
-      document.body.classList.add('bg-flash-stop');
-      setTimeout(() => {
-        document.body.classList.remove('bg-flash-stop');
-      }, 10000);
+    // 統一フラッシュ関数：動作中は赤色、停止中は黄色のフラッシュを行う
+    function flash() {
+      if (countInterval) {
+        // タイマー動作中は赤色のフラッシュ
+        document.body.classList.add('flash');
+        setTimeout(() => {
+          document.body.classList.remove('flash');
+        }, FLASH_DURATION_SECONDS * 1000);
+      } else {
+        // タイマー停止中は黄色のフラッシュ
+        document.body.classList.add('flash-stop');
+        setTimeout(() => {
+          document.body.classList.remove('flash-stop');
+        }, FLASH_DURATION_SECONDS * 1000);
+      }
     }
 
     function startCount() {
       if (countInterval) return;
-      // タイマー開始時には停止状態のフラッシュを解除
-      if (stopFlashInterval) {
-        clearInterval(stopFlashInterval);
-        stopFlashInterval = null;
+      
+      // タイマー開始時、既存のフラッシュ間隔をクリアして再設定
+      if (flashInterval) {
+        clearInterval(flashInterval);
       }
+      flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
+      
       const now = new Date();
       startTime = now;
       const startTimeStr = now.getHours().toString().padStart(2, '0') +
@@ -275,9 +291,6 @@
       countInterval = setInterval(() => {
         const elapsedSeconds = Math.floor((Date.now() - startTime.getTime()) / 1000);
         updateDisplay(elapsedSeconds);
-        if (elapsedSeconds > 0 && elapsedSeconds % 300 === 0) {
-          flashBackground();
-        }
       }, 1000);
     }
 
@@ -290,10 +303,12 @@
       stopTimeDisplay.textContent = stopTimeStr;
       startBtn.disabled = false;
       stopBtn.disabled = true;
-      // タイマー停止中は5分ごとに黄色フラッシュを開始
-      if (!stopFlashInterval) {
-        stopFlashInterval = setInterval(flashStopBackground, 300000);
+      
+      // タイマー停止時、既存のフラッシュ間隔をクリアして再設定
+      if (flashInterval) {
+        clearInterval(flashInterval);
       }
+      flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
     }
 
     function updateCurrentTime() {
@@ -318,9 +333,9 @@
     setInterval(updateCurrentTime, 1000);
     updateCurrentTime();
 
-    // ページ読み込み時はタイマー停止状態なので、5分ごとの黄色フラッシュを設定
-    if (!countInterval && !stopFlashInterval) {
-      stopFlashInterval = setInterval(flashStopBackground, 300000);
+    // ページ読み込み時はタイマー停止状態なので、フラッシュ間隔を設定
+    if (!countInterval && !flashInterval) {
+      flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
     }
   </script>
 </body>
