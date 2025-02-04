@@ -124,7 +124,7 @@
     .range-top div {
       margin: 0 0.5rem;
     }
-    .range-bottom {
+    :is(.range-middle, .range-bottom) {
       font-size: 1.5rem;
       font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
       margin-top: 0.5rem;
@@ -190,6 +190,8 @@
     <div class="column range-column">
       <div class="range-top">
         <div id="startTimeDisplay">__:__</div>
+      </div>
+      <div class="range-middle">
         <div id="stopTimeDisplay">__:__</div>
       </div>
       <div class="range-bottom">
