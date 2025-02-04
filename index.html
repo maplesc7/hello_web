@@ -281,6 +281,10 @@
       
       const now = new Date();
       startTime = now;
+      // タイマー開始時刻と状態をsessionStorageに保存
+      sessionStorage.setItem("startTime", now.getTime());
+      sessionStorage.setItem("timerRunning", "true");
+      
       const startTimeStr = now.getHours().toString().padStart(2, '0') +
                            now.getMinutes().toString().padStart(2, '0');
       startTimeDisplay.textContent = startTimeStr;
@@ -309,6 +313,10 @@
         clearInterval(flashInterval);
       }
       flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
+      
+      // セッションストレージからタイマーの状態をクリア
+      sessionStorage.removeItem("startTime");
+      sessionStorage.setItem("timerRunning", "false");
     }
 
     function updateCurrentTime() {
@@ -329,9 +337,45 @@
       }
     });
 
+    // 入力内容をsessionStorageに保存する
+    purpose.addEventListener('input', function() {
+      sessionStorage.setItem("purpose", purpose.value);
+    });
+
     // 現在時刻を毎秒更新
     setInterval(updateCurrentTime, 1000);
     updateCurrentTime();
+
+    // ページ読み込み時にセッションストレージから状態を復元
+    window.addEventListener('load', function() {
+      // メモ欄の内容を復元
+      const savedPurpose = sessionStorage.getItem("purpose");
+      if (savedPurpose !== null) {
+        purpose.value = savedPurpose;
+      }
+      
+      // タイマーが動作中の場合は開始時刻を復元してカウントを再開
+      const savedStartTime = sessionStorage.getItem("startTime");
+      const timerRunning = sessionStorage.getItem("timerRunning");
+      if (timerRunning === "true" && savedStartTime) {
+        startTime = new Date(parseInt(savedStartTime, 10));
+        const startTimeStr = startTime.getHours().toString().padStart(2, '0') +
+                             startTime.getMinutes().toString().padStart(2, '0');
+        startTimeDisplay.textContent = startTimeStr;
+        stopTimeDisplay.textContent = "____";
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        countInterval = setInterval(() => {
+          const elapsedSeconds = Math.floor((Date.now() - startTime.getTime()) / 1000);
+          updateDisplay(elapsedSeconds);
+        }, 1000);
+      }
+      
+      // フラッシュ間隔の設定（タイマー状態にかかわらず設定）
+      if (!flashInterval) {
+        flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
+      }
+    });
 
     // ページ読み込み時はタイマー停止状態なので、フラッシュ間隔を設定
     if (!countInterval && !flashInterval) {
