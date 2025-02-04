@@ -25,7 +25,7 @@
     /* 背景：縦方向に流れる虹色の波線 */
     .wave-bg {
       position: fixed;
-      left: 45%;
+      left: 55%;
       top: 0;
       width: 15vw;
       height: 100vh;
@@ -61,19 +61,19 @@
       align-items: center;
     }
     .button-column {
-      flex: 1 !important;
+      flex: 1.1 !important;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .memo-column {
-      flex: 2 !important;
+      flex: 3 !important;
     }
     .count-column {
-      flex: 2 !important;
+      flex: 4 !important;
     }
     .range-column {
-      flex: 2 !important;
+      flex: 0.5 !important;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -110,8 +110,8 @@
     /* カウントアップ秒数表示 */
     .time-display {
       font-size: 3rem;
-      margin: 1rem 0;
       font-weight: bold;
+      margin-left: 65%;
     }
     /* 開始・終了時刻と現在時刻の表示エリア */
     .range-top {
@@ -120,9 +120,7 @@
       justify-content: center;
       font-size: 1.5rem;
       font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    }
-    .range-top div {
-      margin: 0 0.5rem;
+      
     }
     :is(.range-middle, .range-bottom) {
       font-size: 1.5rem;
@@ -189,13 +187,13 @@
     <!-- 開始・終了時刻および現在時刻表示 -->
     <div class="column range-column">
       <div class="range-top">
-        <div id="startTimeDisplay">__:__</div>
+        <div id="currentTimeDisplay">__:__</div>
       </div>
       <div class="range-middle">
-        <div id="stopTimeDisplay">__:__</div>
+        <div id="startTimeDisplay">__:__</div>
       </div>
       <div class="range-bottom">
-        <div id="currentTimeDisplay">__:__</div>
+        <div id="stopTimeDisplay">__:__</div>
       </div>
     </div>
   </div>
