@@ -77,8 +77,19 @@
       flex-direction: column;
       align-items: center;
     }
+    /* count-column：中央のカウントアップ表示部分 */
     .count-column {
       flex: 0.6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    /* time-display：カウントアップの秒数表示（固定幅指定） */
+    .time-display {
+      font-size: 3rem;
+      font-weight: bold;
+      min-width: 8ch;
+      text-align: center;
     }
     .button-column {
       flex: 0.7;
@@ -119,11 +130,6 @@
     }
     button:hover {
       background-color: #555;
-    }
-    /* カウントアップ秒数表示 */
-    .time-display {
-      font-size: 3rem;
-      font-weight: bold;
     }
     /* 開始・終了時刻と現在時刻の表示エリア */
     .range-top {
