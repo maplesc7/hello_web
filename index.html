@@ -7,33 +7,85 @@
   <style>
     :root {
       --wave-opacity: 0.8;
+      /* ライトモード用カラー */
+      --light-background-color: #ffffff;
+      --light-text-color: #333333;
+      --light-container-bg: rgba(200, 200, 200, 0.6);
+      --light-textarea-bg: #fafafa;
+      --light-textarea-text: #333333;
+      --light-textarea-border: #ccc;
+      --light-button-bg: #e0e0e0;
+      --light-button-text: #333333;
+      --light-button-hover: #d0d0d0;
+      --flash-color-light: #ffcccc;
+      --flash-stop-color-light: #ffffcc;
+      
+      /* ダークモード用カラー */
+      --dark-background-color: #121212;
+      --dark-text-color: #e0e0e0;
+      --dark-container-bg: rgba(100, 100, 100, 0.4);
+      --dark-textarea-bg: #3c3400;
+      --dark-textarea-text: #ffffff;
+      --dark-textarea-border: #555;
+      --dark-button-bg: #3a3a3a;
+      --dark-button-text: #ffffff;
+      --dark-button-hover: #555;
+      --flash-color-dark: #990000;
+      --flash-stop-color-dark: #999900;
     }
+    /* モード別のCSS変数を切り替え */
+    body.light-mode {
+      --background-color: var(--light-background-color);
+      --text-color: var(--light-text-color);
+      --container-bg: var(--light-container-bg);
+      --textarea-bg: var(--light-textarea-bg);
+      --textarea-text: var(--light-textarea-text);
+      --textarea-border: var(--light-textarea-border);
+      --button-bg: var(--light-button-bg);
+      --button-text: var(--light-button-text);
+      --button-hover: var(--light-button-hover);
+      --flash-color: var(--flash-color-light);
+      --flash-stop-color: var(--flash-stop-color-light);
+    }
+    body.dark-mode {
+      --background-color: var(--dark-background-color);
+      --text-color: var(--dark-text-color);
+      --container-bg: var(--dark-container-bg);
+      --textarea-bg: var(--dark-textarea-bg);
+      --textarea-text: var(--dark-textarea-text);
+      --textarea-border: var(--dark-textarea-border);
+      --button-bg: var(--dark-button-bg);
+      --button-text: var(--dark-button-text);
+      --button-hover: var(--dark-button-hover);
+      --flash-color: var(--flash-color-dark);
+      --flash-stop-color: var(--flash-stop-color-dark);
+    }
+    
     body {
       margin: 0;
       padding: 0;
-      background-color: #121212;
-      color: #e0e0e0;
+      background-color: var(--background-color);
+      color: var(--text-color);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       position: relative;
       overflow: hidden;
       height: 100vh;
-      transition: background-color 3s ease;
+      transition: background-color 3s ease, color 3s ease;
     }
-    /* 動作中：赤色のフラッシュ */
+    /* 動作中：フラッシュ（タイマー動作中は --flash-color、停止中は --flash-stop-color） */
     body.flash {
-      background-color: #990000;
+      background-color: var(--flash-color);
     }
     body.flash textarea#purpose {
-      background-color: #990000;
+      background-color: var(--flash-color);
     }
-    /* 停止中：黄色のフラッシュ（赤色と形は同じで、色相のみ変更） */
     body.flash-stop {
-      background-color: #999900;
+      background-color: var(--flash-stop-color);
     }
     body.flash-stop textarea#purpose {
-      background-color: #999900;
+      background-color: var(--flash-stop-color);
     }
-    /* 背景：縦方向に流れる虹色の波線 */
+    /* 背景：縦に流れる虹色の波線 */
     .wave-bg {
       position: fixed;
       left: 7%;
@@ -50,11 +102,10 @@
     .wave-bg path {
       stroke-opacity: var(--wave-opacity);
     }
-    /* コンテンツ領域：各パーツを横並びの各パーツに配置 */
+    /* コンテンツ領域 */
     .container {
-      background-color: rgba(100, 100, 100, 0.4);
+      background-color: var(--container-bg);
       border-radius: 15px;
-      /* box-shadow: 0 0 5px 1px #dddddd inset; */
       width: 920px;
       position: absolute;
       top: 50%;
@@ -77,20 +128,18 @@
       flex-direction: column;
       align-items: center;
     }
-    /* count-column：中央のカウントアップ表示部分 */
     .count-column {
       flex: 0.6;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    /* time-display：カウントアップの秒数表示（固定幅指定） */
     .time-display {
       font-size: 3rem;
       font-weight: bold;
-      width: 5ch; /* 固定幅に変更 */
+      width: 5ch;
       text-align: center;
-      display: flex;         /* 内部のテキストも中央揃え */
+      display: flex;
       justify-content: center;
       align-items: center;
     }
@@ -102,18 +151,18 @@
     }
     .memo-column {
       flex: 3;
+      position: relative;
     }
-    /* メモ用テキストエリア */
     textarea#purpose {
       width: 100%;
-      border: 2px solid #555;
+      border: 2px solid var(--textarea-border);
       border-radius: 5px;
-      background-color: #3c3400;
-      color: #fff;
+      background-color: var(--textarea-bg);
+      color: var(--textarea-text);
       font-size: 1.2rem;
       resize: none;
       margin-left: -20px;
-      transition: background-color 3s ease;
+      transition: background-color 3s ease, color 3s ease, border-color 3s ease;
     }
     textarea:focus {
       outline: none;
@@ -121,20 +170,19 @@
       border: 1px solid #ccc;
     }
     button {
-      background-color: #3a3a3a;
+      background-color: var(--button-bg);
       border: none;
       border-radius: 5px;
       padding: 0.5rem 1rem;
       margin: 0.5rem;
-      color: #fff;
+      color: var(--button-text);
       font-size: 1rem;
       cursor: pointer;
       transition: background-color 0.3s;
     }
     button:hover {
-      background-color: #555;
+      background-color: var(--button-hover);
     }
-    /* 開始・終了時刻と現在時刻の表示エリア */
     .range-top {
       display: flex;
       flex-direction: row;
@@ -150,11 +198,19 @@
       width: 100%;
     }
     #currentTimeDisplay {
-      color: lightskyblue;
+      color: royalblue;
+    }
+    /* テキストエリア上に重なるモード切替ボタン */
+    #modeToggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 0.3rem 0.5rem;
+      z-index: 2;
     }
   </style>
 </head>
-<body>
+<body class="light-mode">
   <!-- 背景 -->
   <div class="wave-bg" style="display:none;">
     <svg viewBox="0 0 200 1200" preserveAspectRatio="none">
@@ -183,7 +239,6 @@
           <feGaussianBlur stdDeviation="1.5" />
         </filter>
       </defs>
-      <!-- 順番に並べた5本の縦の波線（幅は2） -->
       <path d="M80,0 Q60,300 80,600 T80,1200" fill="none" stroke="url(#rainbowGradient)" stroke-width="2" filter="url(#blur1)"/>
       <path d="M90,0 Q70,300 90,600 T90,1200" fill="none" stroke="url(#rainbowGradient)" stroke-width="2" filter="url(#blur2)"/>
       <path d="M100,0 Q80,300 100,600 T100,1200" fill="none" stroke="url(#rainbowGradient)" stroke-width="2" filter="url(#blur3)"/>
@@ -192,7 +247,7 @@
     </svg>
   </div>
   
-  <!-- コンテンツ領域：各パーツを横並びの各パーツに配置 -->
+  <!-- コンテンツ領域 -->
   <div class="container">
     <!-- 開始・終了時刻および現在時刻表示 -->
     <div class="column range-column">
@@ -215,14 +270,15 @@
       <button id="startBtn">スタート</button>
       <button id="stopBtn" disabled>ストップ</button>
     </div>
-    <!-- メモ用テキストエリア -->
+    <!-- メモ用テキストエリア＋モード切替ボタン -->
     <div class="column memo-column">
       <textarea id="purpose" rows="5" placeholder="メモを入力"></textarea>
+      <button id="modeToggle" title="ライト/ダークモード切替">☀</button>
     </div>
   </div>
   
   <script>
-    // 秒数単位での設定変数（検証時に変更可能）
+    // 秒数単位での設定変数
     const FLASH_DURATION_SECONDS = 10;  // フラッシュの持続時間
     const FLASH_INTERVAL_SECONDS = 300;   // フラッシュの間隔
     
@@ -233,14 +289,13 @@
     const stopTimeDisplay = document.getElementById('stopTimeDisplay');
     const currentTimeDisplay = document.getElementById('currentTimeDisplay');
     const purpose = document.getElementById('purpose');
-
+    const modeToggle = document.getElementById('modeToggle');
+    
     let countInterval;
     let flashInterval;
     let startTime;  // タイマー開始時刻（Dateオブジェクト）
-
-    // 0〜59秒の場合は "0:SS"
-    // 60〜3599秒の場合は "M:SS"
-    // 3600秒以上の場合は "H:MM:SS"
+    
+    // 秒数を "0:SS" / "M:SS" / "H:MM:SS" 形式に変換
     function formatTime(totalSeconds) {
       if (totalSeconds < 60) {
         return "0:" + (totalSeconds < 10 ? "0" + totalSeconds : totalSeconds);
@@ -256,36 +311,31 @@
         return h + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
       }
     }
-
+    
     function updateDisplay(elapsedSeconds) {
       timeDisplay.textContent = formatTime(elapsedSeconds);
     }
-
-    // 統一フラッシュ関数：動作中は赤色、停止中は黄色のフラッシュを行う
+    
+    // フラッシュ：動作中は --flash-color、停止中は --flash-stop-color
     function flash() {
       if (countInterval) {
-        // タイマー動作中は赤色のフラッシュ
         document.body.classList.add('flash');
         setTimeout(() => {
           document.body.classList.remove('flash');
         }, FLASH_DURATION_SECONDS * 1000);
       } else {
-        // タイマー停止中は黄色のフラッシュ
         document.body.classList.add('flash-stop');
         setTimeout(() => {
           document.body.classList.remove('flash-stop');
         }, FLASH_DURATION_SECONDS * 1000);
       }
     }
-
+    
     function startCount() {
-      // カウントアップ動作中でも再スタートできるように、既存のタイマーをクリアする
       if (countInterval) {
         clearInterval(countInterval);
         countInterval = null;
       }
-      
-      // タイマー開始時、既存のフラッシュ間隔をクリアして再設定
       if (flashInterval) {
         clearInterval(flashInterval);
       }
@@ -293,14 +343,12 @@
       
       const now = new Date();
       startTime = now;
-      
       const startTimeStr = now.getHours().toString().padStart(2, '0') +
                            now.getMinutes().toString().padStart(2, '0');
       startTimeDisplay.textContent = startTimeStr;
       stopTimeDisplay.textContent = "____";
       updateDisplay(0);
       
-      // スタートボタンは常に有効（動作中でも再スタートできるように）
       startBtn.disabled = false;
       stopBtn.disabled = false;
       
@@ -309,7 +357,7 @@
         updateDisplay(elapsedSeconds);
       }, 1000);
     }
-
+    
     function stopCount() {
       clearInterval(countInterval);
       countInterval = null;
@@ -319,40 +367,49 @@
       stopTimeDisplay.textContent = stopTimeStr;
       startBtn.disabled = false;
       stopBtn.disabled = true;
-      
-      // タイマー停止時、既存のフラッシュ間隔をクリアして再設定
       if (flashInterval) {
         clearInterval(flashInterval);
       }
       flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
     }
-
+    
     function updateCurrentTime() {
       const now = new Date();
       const hh = now.getHours().toString().padStart(2, '0');
       const mm = now.getMinutes().toString().padStart(2, '0');
       currentTimeDisplay.textContent = hh + mm;
     }
-
+    
     startBtn.addEventListener('click', startCount);
     stopBtn.addEventListener('click', stopCount);
-
-    // テキストエリアで Shift+Enter キーが押されたらタイマースタートを実行（通常の Enter は改行）
+    
+    // Shift+Enter でタイマースタート（Enter 単体は改行）
     purpose.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && e.shiftKey && !e.isComposing) {
         e.preventDefault();
         startCount();
       }
     });
-
-    // 現在時刻を毎秒更新
+    
     setInterval(updateCurrentTime, 1000);
     updateCurrentTime();
-
-    // ページ読み込み時はタイマー停止状態なので、フラッシュ間隔を設定
+    
     if (!countInterval && !flashInterval) {
       flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
     }
+    
+    // モード切替ボタンの処理（デフォルトは light-mode）
+    modeToggle.addEventListener('click', function() {
+      if (document.body.classList.contains('light-mode')) {
+        document.body.classList.remove('light-mode');
+        document.body.classList.add('dark-mode');
+        modeToggle.textContent = '☀';
+      } else {
+        document.body.classList.remove('dark-mode');
+        document.body.classList.add('light-mode');
+        modeToggle.textContent = '☀';
+      }
+    });
   </script>
 </body>
 </html>
