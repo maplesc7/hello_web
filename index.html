@@ -147,7 +147,7 @@
 </head>
 <body>
   <!-- 背景 -->
-  <div class="wave-bg" style="display:none;>
+  <div class="wave-bg" style="display:none;">
     <svg viewBox="0 0 200 1200" preserveAspectRatio="none">
       <defs>
         <linearGradient id="rainbowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -229,7 +229,6 @@
     let flashInterval;
     let startTime;  // タイマー開始時刻（Dateオブジェクト）
 
-    // 修正後の formatTime 関数
     // 0〜59秒の場合は "0:SS"
     // 60〜3599秒の場合は "M:SS"
     // 3600秒以上の場合は "H:MM:SS"
@@ -271,7 +270,11 @@
     }
 
     function startCount() {
-      if (countInterval) return;
+      // カウントアップ動作中でも再スタートできるように、既存のタイマーをクリアする
+      if (countInterval) {
+        clearInterval(countInterval);
+        countInterval = null;
+      }
       
       // タイマー開始時、既存のフラッシュ間隔をクリアして再設定
       if (flashInterval) {
@@ -287,8 +290,11 @@
       startTimeDisplay.textContent = startTimeStr;
       stopTimeDisplay.textContent = "____";
       updateDisplay(0);
-      startBtn.disabled = true;
+      
+      // スタートボタンは常に有効（動作中でも再スタートできるように）
+      startBtn.disabled = false;
       stopBtn.disabled = false;
+      
       countInterval = setInterval(() => {
         const elapsedSeconds = Math.floor((Date.now() - startTime.getTime()) / 1000);
         updateDisplay(elapsedSeconds);
