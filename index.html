@@ -88,8 +88,11 @@
     .time-display {
       font-size: 3rem;
       font-weight: bold;
-      min-width: 8ch;
+      width: 5ch; /* 固定幅に変更 */
       text-align: center;
+      display: flex;         /* 内部のテキストも中央揃え */
+      justify-content: center;
+      align-items: center;
     }
     .button-column {
       flex: 0.7;
