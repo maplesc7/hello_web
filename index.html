@@ -143,6 +143,10 @@
       justify-content: center;
       align-items: center;
     }
+    /* 小数点以下部分は親の約60%のサイズに */
+    .time-display .fraction {
+      font-size: 60%;
+    }
     .button-column {
       flex: 0.7;
       display: flex;
@@ -263,7 +267,9 @@
     </div>
     <!-- カウントアップ秒数表示 -->
     <div class="column count-column">
-      <div class="time-display" id="timeDisplay">0:00</div>
+      <div class="time-display" id="timeDisplay">
+        0:00<span class="fraction">.00</span>
+      </div>
     </div>
     <!-- スタート・ストップボタン -->
     <div class="column button-column">
@@ -273,7 +279,8 @@
     <!-- メモ用テキストエリア＋モード切替ボタン -->
     <div class="column memo-column">
       <textarea id="purpose" rows="5" placeholder="メモを入力"></textarea>
-      <button id="modeToggle" title="ライト/ダークモード切替">☀</button>
+      <!-- ダーク/ライトモード切替ボタン（コメントアウト済み） -->
+      <!-- <button id="modeToggle" title="ライト/ダークモード切替">☀</button> -->
     </div>
   </div>
   
@@ -289,31 +296,47 @@
     const stopTimeDisplay = document.getElementById('stopTimeDisplay');
     const currentTimeDisplay = document.getElementById('currentTimeDisplay');
     const purpose = document.getElementById('purpose');
-    const modeToggle = document.getElementById('modeToggle');
+    // const modeToggle = document.getElementById('modeToggle'); // モード切替ボタン（コメントアウト）
     
     let countInterval;
     let flashInterval;
     let startTime;  // タイマー開始時刻（Dateオブジェクト）
     
-    // 秒数を "0:SS" / "M:SS" / "H:MM:SS" 形式に変換
+    // 小数点以下2桁も含めた "0:SS.ss" / "M:SS.ss" / "H:MM:SS.ss" 形式に変換
     function formatTime(totalSeconds) {
+      totalSeconds = Math.max(0, totalSeconds);
       if (totalSeconds < 60) {
-        return "0:" + (totalSeconds < 10 ? "0" + totalSeconds : totalSeconds);
+        const secInt = Math.floor(totalSeconds);
+        const hundredths = Math.floor((totalSeconds - secInt) * 100);
+        return "0:" + secInt.toString().padStart(2, '0') + "." + hundredths.toString().padStart(2, '0');
       } else if (totalSeconds < 3600) {
         const m = Math.floor(totalSeconds / 60);
         const s = totalSeconds % 60;
-        return m + ":" + (s < 10 ? "0" + s : s);
+        const sInt = Math.floor(s);
+        const hundredths = Math.floor((s - sInt) * 100);
+        return m + ":" + sInt.toString().padStart(2, '0') + "." + hundredths.toString().padStart(2, '0');
       } else {
         const h = Math.floor(totalSeconds / 3600);
         const remainder = totalSeconds % 3600;
         const m = Math.floor(remainder / 60);
         const s = remainder % 60;
-        return h + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+        const sInt = Math.floor(s);
+        const hundredths = Math.floor((s - sInt) * 100);
+        return h + ":" + m.toString().padStart(2, '0') + ":" + sInt.toString().padStart(2, '0') + "." + hundredths.toString().padStart(2, '0');
       }
     }
     
+    // 表示更新（整数部分と小数部分を分けて、小数部分は span で60%サイズに）
     function updateDisplay(elapsedSeconds) {
-      timeDisplay.textContent = formatTime(elapsedSeconds);
+      const formatted = formatTime(elapsedSeconds);
+      const dotIndex = formatted.indexOf(".");
+      if (dotIndex >= 0) {
+        const intPart = formatted.slice(0, dotIndex);
+        const fracPart = formatted.slice(dotIndex);
+        timeDisplay.innerHTML = intPart + "<span class='fraction'>" + fracPart + "</span>";
+      } else {
+        timeDisplay.textContent = formatted;
+      }
     }
     
     // フラッシュ：動作中は --flash-color、停止中は --flash-stop-color
@@ -352,10 +375,11 @@
       startBtn.disabled = false;
       stopBtn.disabled = false;
       
+      // 10ms毎に更新して小数点以下も反映
       countInterval = setInterval(() => {
-        const elapsedSeconds = Math.floor((Date.now() - startTime.getTime()) / 1000);
+        const elapsedSeconds = (Date.now() - startTime.getTime()) / 1000;
         updateDisplay(elapsedSeconds);
-      }, 1000);
+      }, 10);
     }
     
     function stopCount() {
@@ -398,7 +422,7 @@
       flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
     }
     
-    // モード切替ボタンの処理（デフォルトは light-mode）
+    /* モード切替ボタンの処理（コメントアウト済み）
     modeToggle.addEventListener('click', function() {
       if (document.body.classList.contains('light-mode')) {
         document.body.classList.remove('light-mode');
@@ -410,6 +434,7 @@
         modeToggle.textContent = '☀';
       }
     });
+    */
   </script>
 </body>
 </html>
