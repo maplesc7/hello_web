@@ -128,24 +128,32 @@
       flex-direction: column;
       align-items: center;
     }
+    /* count-column：幅を固定（例：10ch） */
     .count-column {
-      flex: 0.6;
+      flex: 0 0 10ch;
+      width: 10ch;
+      min-width: 19ch;
+      max-width: 19ch;
       display: flex;
       justify-content: center;
       align-items: center;
     }
+    /* 時間表示部分：固定幅・等幅フォント、ホワイトスペース・オーバーフロー対策 */
     .time-display {
       font-size: 3rem;
       font-weight: bold;
-      width: 5ch;
-      text-align: center;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
     }
-    /* 小数点以下部分は親の約60%のサイズに */
+    .time-display .integer-part {
+      text-align: center;
+    }
     .time-display .fraction {
-      font-size: 60%;
+      font-size: 50%;
+      text-align: right;
     }
     .button-column {
       flex: 0.7;
@@ -268,7 +276,8 @@
     <!-- カウントアップ秒数表示 -->
     <div class="column count-column">
       <div class="time-display" id="timeDisplay">
-        0:00<span class="fraction">.00</span>
+        <div class="integer-part">0:00</div>
+        <div class="fraction">.00</div>
       </div>
     </div>
     <!-- スタート・ストップボタン -->
@@ -326,14 +335,15 @@
       }
     }
     
-    // 表示更新（整数部分と小数部分を分けて、小数部分は span で60%サイズに）
+    // 表示更新（整数部分と小数部分を分けて、整数部は中央、小数部は右寄せ）
     function updateDisplay(elapsedSeconds) {
       const formatted = formatTime(elapsedSeconds);
       const dotIndex = formatted.indexOf(".");
       if (dotIndex >= 0) {
         const intPart = formatted.slice(0, dotIndex);
         const fracPart = formatted.slice(dotIndex);
-        timeDisplay.innerHTML = intPart + "<span class='fraction'>" + fracPart + "</span>";
+        timeDisplay.innerHTML = "<div class='integer-part'>" + intPart + "</div>" +
+                                "<div class='fraction'>" + fracPart + "</div>";
       } else {
         timeDisplay.textContent = formatted;
       }
