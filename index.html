@@ -14,7 +14,7 @@
       --light-textarea-bg: #fafafa;
       --light-textarea-text: #333333;
       --light-textarea-border: #ccc;
-      --light-button-bg: #e0e0e0;
+      --light-button-bg: #d0d0d0;
       --light-button-text: #333333;
       --light-button-hover: #d0d0d0;
       --flash-color-light: #ffcccc;
@@ -102,7 +102,7 @@
     .wave-bg path {
       stroke-opacity: var(--wave-opacity);
     }
-    /* コンテンツ領域 */
+    /* コンテンツ領域（元の高さに戻す） */
     .container {
       background-color: var(--container-bg);
       border-radius: 15px;
@@ -116,19 +116,21 @@
       justify-content: space-around;
       align-items: center;
     }
-    .column {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    /* 左側：開始・終了・現在時刻（横並び、小さい文字） */
     .range-column {
       flex: 0.5;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
+      gap: 0.5rem;
     }
-    /* count-column：幅を固定（例：10ch） */
+    .range-column div {
+      font-size: 1rem;
+      font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+      margin: 0;
+      text-align: center;
+    }
+    /* カウントアップ秒数表示（フォントサイズを2remに変更） */
     .count-column {
       flex: 0 0 10ch;
       width: 10ch;
@@ -138,42 +140,49 @@
       justify-content: center;
       align-items: center;
     }
-    /* 時間表示部分：固定幅・等幅フォント、ホワイトスペース・オーバーフロー対策 */
     .time-display {
-      font-size: 3rem;
+      font-size: 1.5rem;
       font-weight: bold;
-      display: flex;
-      flex-direction: column;
       width: 100%;
       white-space: nowrap;
       overflow: hidden;
-    }
-    .time-display .integer-part {
       text-align: center;
     }
-    .time-display .fraction {
-      font-size: 50%;
-      text-align: right;
-    }
+    /* スタート・ストップボタン（文字・ボタン共に小さく） */
     .button-column {
-      flex: 0.7;
+      flex: 0.9;
       display: flex;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
+      gap: 0.5rem;
     }
+    button {
+      background-color: var(--button-bg);
+      border: none;
+      border-radius: 5px;
+      color: var(--button-text);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      height: 76vh;
+    }
+    button:hover {
+      background-color: var(--button-hover);
+    }
+    /* メモ用テキストエリア（サイズ小さめ） */
     .memo-column {
       flex: 3;
       position: relative;
     }
     textarea#purpose {
-      width: 100%;
+      width: 98%;
       border: 2px solid var(--textarea-border);
       border-radius: 5px;
       background-color: var(--textarea-bg);
       color: var(--textarea-text);
-      font-size: 1.2rem;
+      font-size: 0.8rem;
       resize: none;
-      margin-left: -20px;
       transition: background-color 3s ease, color 3s ease, border-color 3s ease;
     }
     textarea:focus {
@@ -181,44 +190,16 @@
       box-shadow: none;
       border: 1px solid #ccc;
     }
-    button {
-      background-color: var(--button-bg);
-      border: none;
-      border-radius: 5px;
-      padding: 0.5rem 1rem;
-      margin: 0.5rem;
-      color: var(--button-text);
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: var(--button-hover);
-    }
-    .range-top {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      font-size: 1.5rem;
-      font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    }
-    :is(.range-middle, .range-bottom) {
-      font-size: 1.5rem;
-      font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-      margin-top: 0.5rem;
-      text-align: center;
-      width: 100%;
-    }
-    #currentTimeDisplay {
-      color: royalblue;
-    }
-    /* テキストエリア上に重なるモード切替ボタン */
+    /* モード切替ボタン（コメントアウト済み） */
     #modeToggle {
       position: absolute;
       top: 10px;
       right: 10px;
       padding: 0.3rem 0.5rem;
       z-index: 2;
+    }
+    #currentTimeDisplay {
+      color: royalblue;
     }
   </style>
 </head>
@@ -261,33 +242,24 @@
   
   <!-- コンテンツ領域 -->
   <div class="container">
-    <!-- 開始・終了時刻および現在時刻表示 -->
-    <div class="column range-column">
-      <div class="range-top">
-        <div id="startTimeDisplay">____</div>
-      </div>
-      <div class="range-middle">
-        <div id="currentTimeDisplay">____</div>
-      </div>
-      <div class="range-bottom">
-        <div id="stopTimeDisplay">____</div>
-      </div>
+    <!-- 左側：開始・現在・終了時刻（横並び、小さい文字） -->
+    <div class="range-column">
+      <div id="startTimeDisplay">____</div>
+      <div id="currentTimeDisplay">____</div>
+      <div id="stopTimeDisplay">____</div>
     </div>
     <!-- カウントアップ秒数表示 -->
-    <div class="column count-column">
-      <div class="time-display" id="timeDisplay">
-        <div class="integer-part">0:00</div>
-        <div class="fraction">.00</div>
-      </div>
+    <div class="count-column">
+      <div class="time-display" id="timeDisplay">0:00.00</div>
     </div>
-    <!-- スタート・ストップボタン -->
-    <div class="column button-column">
+    <!-- スタート・ストップボタン（横並び、文字も小さく） -->
+    <div class="button-column">
       <button id="startBtn">スタート</button>
       <button id="stopBtn" disabled>ストップ</button>
     </div>
     <!-- メモ用テキストエリア＋モード切替ボタン -->
-    <div class="column memo-column">
-      <textarea id="purpose" rows="5" placeholder="メモを入力"></textarea>
+    <div class="memo-column">
+      <textarea id="purpose" rows="3" placeholder="メモを入力"></textarea>
       <!-- ダーク/ライトモード切替ボタン（コメントアウト済み） -->
       <!-- <button id="modeToggle" title="ライト/ダークモード切替">☀</button> -->
     </div>
@@ -335,18 +307,10 @@
       }
     }
     
-    // 表示更新（整数部分と小数部分を分けて、整数部は中央、小数部は右寄せ）
+    // 表示更新：整数部と小数点を分けず、1つの文字列として表示する
     function updateDisplay(elapsedSeconds) {
       const formatted = formatTime(elapsedSeconds);
-      const dotIndex = formatted.indexOf(".");
-      if (dotIndex >= 0) {
-        const intPart = formatted.slice(0, dotIndex);
-        const fracPart = formatted.slice(dotIndex);
-        timeDisplay.innerHTML = "<div class='integer-part'>" + intPart + "</div>" +
-                                "<div class='fraction'>" + fracPart + "</div>";
-      } else {
-        timeDisplay.textContent = formatted;
-      }
+      timeDisplay.textContent = formatted;
     }
     
     // フラッシュ：動作中は --flash-color、停止中は --flash-stop-color
