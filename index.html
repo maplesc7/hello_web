@@ -110,7 +110,7 @@
       display: flex;
       flex-direction: row;
       justify-content: space-around;
-      height: 47px;
+      height: inherit;
       border-radius: 5px;
     }
     /* 左側：開始・終了・現在時刻の表示エリア */
@@ -139,7 +139,7 @@
       margin: 0;
       text-align: center;
     }
-    /* カウントアップ秒数表示（フォントサイズを1.5remに設定） */
+    /* カウントアップ秒数表示 */
     .count-column {
       flex: 0 0 10ch;
       width: 10ch;
@@ -149,7 +149,11 @@
       justify-content: center;
       align-items: center;
     }
+    /* .time-display を flex 化して上下中央寄せ */
     .time-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 2.5rem;
       font-weight: bold;
       width: 100%;
@@ -163,7 +167,7 @@
       font-size: 60%;
       display: inline;
     }
-    /* スタート・ストップボタン（文字・ボタン共に小さく） */
+    /* スタート・ストップボタン */
     .button-column {
       flex: 0.75;
       display: flex;
@@ -180,12 +184,12 @@
       font-size: 0.8rem;
       cursor: pointer;
       transition: background-color 0.3s;
-      height: 100%;
+      height: 50px;
     }
     button:hover {
       background-color: var(--button-hover);
     }
-    /* メモ用テキストエリア（サイズ小さめ） */
+    /* メモ用テキストエリア */
     .memo-column {
       flex: 3;
       position: relative;
