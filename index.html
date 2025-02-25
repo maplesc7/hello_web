@@ -32,6 +32,9 @@
       --dark-button-hover: #555;
       --flash-color-dark: #990000;
       --flash-stop-color-dark: #999900;
+
+      /* 現在時刻・分（または時:分）の文字色 */
+      --current-time-color: royalblue;
     }
     /* モード別のCSS変数を切り替え */
     body.light-mode {
@@ -118,8 +121,7 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 0.2rem;
-      flex: 0.5;
+      flex: 0;
     }
     /* スタート・ストップ時刻を縦に並べる */
     .time-vertical {
@@ -132,9 +134,10 @@
     .range-column #currentTimeDisplay {
       flex: 1;
       text-align: center;
+      color: var(--current-time-color);
     }
     .range-column div {
-      font-size: 1rem;
+      font-size: 1.3rem;
       font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
       margin: 0;
       text-align: center;
@@ -167,11 +170,15 @@
       font-size: 60%;
       display: inline;
     }
-    /* スタート・ストップボタン */
+    /* カウントアップの分、または時:分部分の文字色 */
+    .colored-minutes {
+      color: var(--current-time-color);
+    }
+    /* スタート・ストップボタン（上下に並べる） */
     .button-column {
-      flex: 0.75;
+      flex: 0;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 0.2rem;
@@ -184,7 +191,8 @@
       font-size: 0.8rem;
       cursor: pointer;
       transition: background-color 0.3s;
-      height: 50px;
+      height: 35px;
+      width: 100px;
     }
     button:hover {
       background-color: var(--button-hover);
@@ -217,9 +225,6 @@
       right: 10px;
       padding: 0.3rem 0.5rem;
       z-index: 2;
-    }
-    #currentTimeDisplay {
-      color: royalblue;
     }
   </style>
 </head>
@@ -266,15 +271,15 @@
     <div class="range-column">
       <div class="time-vertical">
         <div id="startTimeDisplay">----</div>
+        <div id="currentTimeDisplay">----</div>
         <div id="stopTimeDisplay">----</div>
       </div>
-      <div id="currentTimeDisplay">----</div>
     </div>
     <!-- カウントアップ秒数表示 -->
     <div class="count-column">
       <div class="time-display" id="timeDisplay">0:00<div class="fraction">.00</div></div>
     </div>
-    <!-- スタート・ストップボタン -->
+    <!-- スタート・ストップボタン（縦並び） -->
     <div class="button-column">
       <button id="startBtn">スタート</button>
       <button id="stopBtn" disabled>ストップ</button>
@@ -329,13 +334,23 @@
     }
     
     // 表示更新：整数部と小数部を分割して表示（小数部は60%サイズ）
+// カウントアップ部分の「分、または時:分」は colored-minutes クラスで色指定
     function updateDisplay(elapsedSeconds) {
       const formatted = formatTime(elapsedSeconds);
       const parts = formatted.split(".");
       if (parts.length === 2) {
         const intPart = parts[0];
         const decPart = '.' + parts[1];
-        timeDisplay.innerHTML = intPart + '<div class="fraction">' + decPart + '</div>';
+        const lastColonIndex = intPart.lastIndexOf(":");
+        if (lastColonIndex !== -1) {
+          const coloredPart = intPart.substring(0, lastColonIndex); // コロンを含まない
+          const colon = ":"; // コロンはデフォルトの文字色で表示
+          const remainingPart = intPart.substring(lastColonIndex + 1);
+          timeDisplay.innerHTML = '<span class="colored-minutes">' + coloredPart + '</span>' + colon + remainingPart +
+                                  '<div class="fraction">' + decPart + '</div>';
+        } else {
+          timeDisplay.innerHTML = intPart + '<div class="fraction">' + decPart + '</div>';
+        }
       } else {
         timeDisplay.textContent = formatted;
       }
