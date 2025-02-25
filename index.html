@@ -145,6 +145,11 @@
       overflow: hidden;
       text-align: center;
     }
+    /* 小数点以下部分用のスタイル */
+    .time-display .fraction {
+      font-size: 60%;
+      display: inline;
+    }
     /* スタート・ストップボタン（文字・ボタン共に小さく） */
     .button-column {
       flex: 0.9;
@@ -248,7 +253,8 @@
     </div>
     <!-- カウントアップ秒数表示 -->
     <div class="count-column">
-      <div class="time-display" id="timeDisplay">0:00.00</div>
+      <!-- timeDisplay内で整数部と小数部を分割 -->
+      <div class="time-display" id="timeDisplay">0:00<div class="fraction">.00</div></div>
     </div>
     <!-- スタート・ストップボタン（横並び、文字も小さく） -->
     <div class="button-column">
@@ -305,10 +311,20 @@
       }
     }
     
-    // 表示更新：整数部と小数点を分けず、1つの文字列として表示する
+    // 表示更新：整数部と小数部を分割して表示（小数部は60%サイズ）
     function updateDisplay(elapsedSeconds) {
       const formatted = formatTime(elapsedSeconds);
-      timeDisplay.textContent = formatted;
+      // "0:00.00" の形式であることを前提に、"." で分割
+      const parts = formatted.split(".");
+      if (parts.length === 2) {
+        const intPart = parts[0];
+        const decPart = '.' + parts[1];
+        // 内部HTMLを更新：整数部と小数部を分割したdivで表示
+        timeDisplay.innerHTML = intPart + '<div class="fraction">' + decPart + '</div>';
+      } else {
+        // 万が一ドットがない場合は通常のテキスト表示
+        timeDisplay.textContent = formatted;
+      }
     }
     
     // フラッシュ：動作中は --flash-color、停止中は --flash-stop-color
