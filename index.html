@@ -113,13 +113,25 @@
       height: 47px;
       border-radius: 5px;
     }
-    /* 左側：開始・終了・現在時刻（横並び、小さい文字） */
+    /* 左側：開始・終了・現在時刻の表示エリア */
     .range-column {
-      flex: 0.5;
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.2rem;
+      flex: 0.5;
+    }
+    /* スタート・ストップ時刻を縦に並べる */
+    .time-vertical {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    /* currentTimeDisplayは余った横幅を埋める */
+    .range-column #currentTimeDisplay {
+      flex: 1;
+      text-align: center;
     }
     .range-column div {
       font-size: 1rem;
@@ -127,23 +139,24 @@
       margin: 0;
       text-align: center;
     }
-    /* カウントアップ秒数表示（フォントサイズを2remに変更） */
+    /* カウントアップ秒数表示（フォントサイズを1.5remに設定） */
     .count-column {
       flex: 0 0 10ch;
       width: 10ch;
-      min-width: 19ch;
-      max-width: 19ch;
+      min-width: 21ch;
+      max-width: 21ch;
       display: flex;
       justify-content: center;
       align-items: center;
     }
     .time-display {
-      font-size: 1.5rem;
+      font-size: 2.5rem;
       font-weight: bold;
       width: 100%;
       white-space: nowrap;
       overflow: hidden;
       text-align: center;
+      color: #777;
     }
     /* 小数点以下部分用のスタイル */
     .time-display .fraction {
@@ -152,12 +165,12 @@
     }
     /* スタート・ストップボタン（文字・ボタン共に小さく） */
     .button-column {
-      flex: 0.9;
+      flex: 0.75;
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: 0.2rem;
     }
     button {
       background-color: var(--button-bg);
@@ -245,18 +258,19 @@
   
   <!-- コンテンツ領域 -->
   <div class="container">
-    <!-- 左側：開始・現在・終了時刻（横並び、小さい文字） -->
+    <!-- 左側：開始・終了・現在時刻表示 -->
     <div class="range-column">
-      <div id="startTimeDisplay">____</div>
-      <div id="currentTimeDisplay">____</div>
-      <div id="stopTimeDisplay">____</div>
+      <div class="time-vertical">
+        <div id="startTimeDisplay">----</div>
+        <div id="stopTimeDisplay">----</div>
+      </div>
+      <div id="currentTimeDisplay">----</div>
     </div>
     <!-- カウントアップ秒数表示 -->
     <div class="count-column">
-      <!-- timeDisplay内で整数部と小数部を分割 -->
       <div class="time-display" id="timeDisplay">0:00<div class="fraction">.00</div></div>
     </div>
-    <!-- スタート・ストップボタン（横並び、文字も小さく） -->
+    <!-- スタート・ストップボタン -->
     <div class="button-column">
       <button id="startBtn">スタート</button>
       <button id="stopBtn" disabled>ストップ</button>
@@ -281,7 +295,6 @@
     const stopTimeDisplay = document.getElementById('stopTimeDisplay');
     const currentTimeDisplay = document.getElementById('currentTimeDisplay');
     const purpose = document.getElementById('purpose');
-    // const modeToggle = document.getElementById('modeToggle'); // モード切替ボタン（コメントアウト）
     
     let countInterval;
     let flashInterval;
@@ -314,15 +327,12 @@
     // 表示更新：整数部と小数部を分割して表示（小数部は60%サイズ）
     function updateDisplay(elapsedSeconds) {
       const formatted = formatTime(elapsedSeconds);
-      // "0:00.00" の形式であることを前提に、"." で分割
       const parts = formatted.split(".");
       if (parts.length === 2) {
         const intPart = parts[0];
         const decPart = '.' + parts[1];
-        // 内部HTMLを更新：整数部と小数部を分割したdivで表示
         timeDisplay.innerHTML = intPart + '<div class="fraction">' + decPart + '</div>';
       } else {
-        // 万が一ドットがない場合は通常のテキスト表示
         timeDisplay.textContent = formatted;
       }
     }
@@ -357,7 +367,7 @@
       const startTimeStr = now.getHours().toString().padStart(2, '0') +
                            now.getMinutes().toString().padStart(2, '0');
       startTimeDisplay.textContent = startTimeStr;
-      stopTimeDisplay.textContent = "____";
+      stopTimeDisplay.textContent = "----";
       updateDisplay(0);
       
       startBtn.disabled = false;
@@ -395,7 +405,6 @@
     startBtn.addEventListener('click', startCount);
     stopBtn.addEventListener('click', stopCount);
     
-    // Shift+Enter でタイマースタート（Enter 単体は改行）
     purpose.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && e.shiftKey && !e.isComposing) {
         e.preventDefault();
@@ -409,20 +418,6 @@
     if (!countInterval && !flashInterval) {
       flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
     }
-    
-    /* モード切替ボタンの処理（コメントアウト済み）
-    modeToggle.addEventListener('click', function() {
-      if (document.body.classList.contains('light-mode')) {
-        document.body.classList.remove('light-mode');
-        document.body.classList.add('dark-mode');
-        modeToggle.textContent = '☀';
-      } else {
-        document.body.classList.remove('dark-mode');
-        document.body.classList.add('light-mode');
-        modeToggle.textContent = '☀';
-      }
-    });
-    */
   </script>
 </body>
 </html>
