@@ -446,6 +446,7 @@
     purpose.addEventListener('keydown', function(e) {
       if (e.key === 'Tab') {
         e.preventDefault();
+        e.stopPropagation();
         // Shift + Tab なら stopCount()、それ以外は startCount()
         if (e.shiftKey) {
           stopCount();
