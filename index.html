@@ -293,7 +293,7 @@
   <script>
     // 秒数単位での設定変数
     const FLASH_DURATION_SECONDS = 0;  // フラッシュの持続時間
-    const FLASH_INTERVAL_SECONDS = 300;   // フラッシュの間隔
+    const FLASH_INTERVAL_SECONDS = 300;  // フラッシュの間隔
     
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -306,7 +306,6 @@
     let countInterval;
     let flashInterval;
     let startTime;  // タイマー開始時刻（Dateオブジェクト）
-    let originalTextContent = "";  // スタート時の元テキストを保持
     let startTimeStrGlobal = "";   // スタート時の4桁時刻文字列を保持
     
     // 小数点以下2桁も含めた "0:SS.ss" / "M:SS.ss" / "H:MM:SS.ss" 形式に変換
@@ -384,10 +383,9 @@
       startBtn.disabled = false;
       stopBtn.disabled = false;
       
-      // 元々テキストエリアに書かれていた内容を保持
-      originalTextContent = purpose.value;
-      // 「- 🔶{開始時刻4桁}- 」を先頭に結合してテキストエリアに反映
-      const newText = `- 🔶${startTimeStr}- ${originalTextContent}`;
+      // スタート時に、テキストエリアの現在の内容の先頭にプレフィックスを付加
+      const currentContent = purpose.value;
+      const newText = `- 🔶${startTimeStr}- ${currentContent}`;
       purpose.value = newText;
       // クリップボードにコピー
       navigator.clipboard.writeText(newText).catch(err => console.error('Clipboard copy failed: ', err));
@@ -395,7 +393,7 @@
       // ストップ時に利用するため、開始時刻文字列をグローバル変数に保存
       startTimeStrGlobal = startTimeStr;
       
-      // 10ms毎に更新（内部では小数点以下を計算するが表示は整数のみ）
+      // 10ms毎に更新
       countInterval = setInterval(() => {
         const elapsedSeconds = (Date.now() - startTime.getTime()) / 1000;
         updateDisplay(elapsedSeconds);
@@ -418,11 +416,19 @@
       
       // 経過時間の分数（整数）を計算
       const elapsedMinutes = Math.floor((now.getTime() - startTime.getTime()) / 60000);
-      // 「- 🔶{開始時刻}-{停止時刻} {経過分数}m {元々の内容}」の文字列を生成
-      const finalText = `- 🔶${startTimeStrGlobal}-${stopTimeStr} ${elapsedMinutes}m ${originalTextContent}`;
+      
+      // 現在のテキストエリアの内容を取得し、スタート時に付加したプレフィックス部分（"- 🔶{開始時刻}- "）を除去
+      let currentContent = purpose.value;
+      const prefix = `- 🔶${startTimeStrGlobal}- `;
+      if (currentContent.startsWith(prefix)) {
+        currentContent = currentContent.substring(prefix.length);
+      }
+      
+      // 「- 🔶{開始時刻}-{停止時刻} {経過分数}m {現在の内容}」の文字列を生成
+      const finalText = `- 🔶${startTimeStrGlobal}-${stopTimeStr} ${elapsedMinutes}m ${currentContent}`;
       // 生成した文字列をクリップボードにコピー
       navigator.clipboard.writeText(finalText).catch(err => console.error('Clipboard copy failed: ', err));
-      // テキストエリアの内容は空文字に更新
+      // テキストエリアの内容を空文字に更新
       purpose.value = "";
     }
     
