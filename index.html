@@ -208,7 +208,7 @@
       border-radius: 5px;
       background-color: var(--textarea-bg);
       color: var(--textarea-text);
-      font-size: 1.7rem;
+      font-size: 1.5rem;
       resize: none;
       transition: background-color 3s ease, color 3s ease, border-color 3s ease;
     }
@@ -286,7 +286,6 @@
     <!-- メモ用テキストエリア＋モード切替ボタン -->
     <div class="memo-column">
       <textarea id="purpose" rows="3" placeholder=""></textarea>
-      <!-- ダーク/ライトモード切替ボタン（コメントアウト済み） -->
       <!-- <button id="modeToggle" title="ライト/ダークモード切替">☀</button> -->
     </div>
   </div>
@@ -307,8 +306,10 @@
     let countInterval;
     let flashInterval;
     let startTime;  // タイマー開始時刻（Dateオブジェクト）
+    let originalTextContent = "";  // スタート時の元テキストを保持
+    let startTimeStrGlobal = "";   // スタート時の4桁時刻文字列を保持
     
-    // 小数点以下2桁も含めた "0:SS.ss" / "M:SS.ss" / "H:MM:SS.ss" 形式に変換（内部計算用）
+    // 小数点以下2桁も含めた "0:SS.ss" / "M:SS.ss" / "H:MM:SS.ss" 形式に変換
     function formatTime(totalSeconds) {
       totalSeconds = Math.max(0, totalSeconds);
       if (totalSeconds < 60) {
@@ -332,10 +333,10 @@
       }
     }
     
-    // 表示更新：小数点以下は常に表示しない
+    // 表示更新：小数点以下は常に非表示
     function updateDisplay(elapsedSeconds) {
       const formatted = formatTime(elapsedSeconds);
-      const intPart = formatted.split(".")[0]; // 小数点以下を除去
+      const intPart = formatted.split(".")[0];
       const lastColonIndex = intPart.lastIndexOf(":");
       if (lastColonIndex !== -1) {
         const coloredPart = intPart.substring(0, lastColonIndex);
@@ -383,6 +384,17 @@
       startBtn.disabled = false;
       stopBtn.disabled = false;
       
+      // 元々テキストエリアに書かれていた内容を保持
+      originalTextContent = purpose.value;
+      // 「- 🔶{開始時刻4桁}- 」を先頭に結合してテキストエリアに反映
+      const newText = `- 🔶${startTimeStr}- ${originalTextContent}`;
+      purpose.value = newText;
+      // クリップボードにコピー
+      navigator.clipboard.writeText(newText).catch(err => console.error('Clipboard copy failed: ', err));
+      
+      // ストップ時に利用するため、開始時刻文字列をグローバル変数に保存
+      startTimeStrGlobal = startTimeStr;
+      
       // 10ms毎に更新（内部では小数点以下を計算するが表示は整数のみ）
       countInterval = setInterval(() => {
         const elapsedSeconds = (Date.now() - startTime.getTime()) / 1000;
@@ -403,6 +415,15 @@
         clearInterval(flashInterval);
       }
       flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
+      
+      // 経過時間の分数（整数）を計算
+      const elapsedMinutes = Math.floor((now.getTime() - startTime.getTime()) / 60000);
+      // 「- 🔶{開始時刻}-{停止時刻} {経過分数}m {元々の内容}」の文字列を生成
+      const finalText = `- 🔶${startTimeStrGlobal}-${stopTimeStr} ${elapsedMinutes}m ${originalTextContent}`;
+      // 生成した文字列をクリップボードにコピー
+      navigator.clipboard.writeText(finalText).catch(err => console.error('Clipboard copy failed: ', err));
+      // テキストエリアの内容は空文字に更新
+      purpose.value = "";
     }
     
     function updateCurrentTime() {
