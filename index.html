@@ -116,7 +116,7 @@
       height: inherit;
       border-radius: 5px;
     }
-    /* 左側：開始・終了・現在時刻の表示エリア */
+    /* 左側：開始・終了・現在時刻表示 */
     .range-column {
       display: flex;
       flex-direction: row;
@@ -165,10 +165,9 @@
       text-align: center;
       color: #777;
     }
-    /* 小数点以下部分用のスタイル */
+    /* 小数点以下部分は常に非表示 */
     .time-display .fraction {
-      font-size: 60%;
-      display: inline;
+      display: none;
     }
     /* カウントアップの分、または時:分部分の文字色 */
     .colored-minutes {
@@ -277,7 +276,7 @@
     </div>
     <!-- カウントアップ秒数表示 -->
     <div class="count-column">
-      <div class="time-display" id="timeDisplay">0:00<div class="fraction" style="display:none;">.00</div></div>
+      <div class="time-display" id="timeDisplay">0:00</div>
     </div>
     <!-- スタート・ストップボタン（縦並び） -->
     <div class="button-column">
@@ -309,7 +308,7 @@
     let flashInterval;
     let startTime;  // タイマー開始時刻（Dateオブジェクト）
     
-    // 小数点以下2桁も含めた "0:SS.ss" / "M:SS.ss" / "H:MM:SS.ss" 形式に変換
+    // 小数点以下2桁も含めた "0:SS.ss" / "M:SS.ss" / "H:MM:SS.ss" 形式に変換（内部計算用）
     function formatTime(totalSeconds) {
       totalSeconds = Math.max(0, totalSeconds);
       if (totalSeconds < 60) {
@@ -333,26 +332,18 @@
       }
     }
     
-    // 表示更新：整数部と小数部を分割して表示（小数部は60%サイズ）
-// カウントアップ部分の「分、または時:分」は colored-minutes クラスで色指定
+    // 表示更新：小数点以下は常に表示しない
     function updateDisplay(elapsedSeconds) {
       const formatted = formatTime(elapsedSeconds);
-      const parts = formatted.split(".");
-      if (parts.length === 2) {
-        const intPart = parts[0];
-        const decPart = '.' + parts[1];
-        const lastColonIndex = intPart.lastIndexOf(":");
-        if (lastColonIndex !== -1) {
-          const coloredPart = intPart.substring(0, lastColonIndex); // コロンを含まない
-          const colon = ":"; // コロンはデフォルトの文字色で表示
-          const remainingPart = intPart.substring(lastColonIndex + 1);
-          timeDisplay.innerHTML = '<span class="colored-minutes">' + coloredPart + '</span>' + colon + remainingPart +
-                                  '<div class="fraction">' + decPart + '</div>';
-        } else {
-          timeDisplay.innerHTML = intPart + '<div class="fraction">' + decPart + '</div>';
-        }
+      const intPart = formatted.split(".")[0]; // 小数点以下を除去
+      const lastColonIndex = intPart.lastIndexOf(":");
+      if (lastColonIndex !== -1) {
+        const coloredPart = intPart.substring(0, lastColonIndex);
+        const colon = ":";
+        const remainingPart = intPart.substring(lastColonIndex + 1);
+        timeDisplay.innerHTML = '<span class="colored-minutes">' + coloredPart + '</span>' + colon + remainingPart;
       } else {
-        timeDisplay.textContent = formatted;
+        timeDisplay.textContent = intPart;
       }
     }
     
@@ -392,7 +383,7 @@
       startBtn.disabled = false;
       stopBtn.disabled = false;
       
-      // 10ms毎に更新して小数点以下も反映
+      // 10ms毎に更新（内部では小数点以下を計算するが表示は整数のみ）
       countInterval = setInterval(() => {
         const elapsedSeconds = (Date.now() - startTime.getTime()) / 1000;
         updateDisplay(elapsedSeconds);
