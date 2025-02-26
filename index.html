@@ -442,13 +442,17 @@
     startBtn.addEventListener('click', startCount);
     stopBtn.addEventListener('click', stopCount);
     
-    // テキストエリアにフォーカス中、Tab キーで startCount() を実行
+    // テキストエリアにフォーカス中のキーダウンイベント
     purpose.addEventListener('keydown', function(e) {
       if (e.key === 'Tab') {
         e.preventDefault();
-        startCount();
-      }
-      else if (e.key === 'Enter' && e.shiftKey && !e.isComposing) {
+        // Shift + Tab なら stopCount()、それ以外は startCount()
+        if (e.shiftKey) {
+          stopCount();
+        } else {
+          startCount();
+        }
+      } else if (e.key === 'Enter' && e.shiftKey && !e.isComposing) {
         e.preventDefault();
         startCount();
       }
