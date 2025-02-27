@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=920px, initial-scale=1">
+  <meta name="viewport">
   <title>Count Up Tools</title>
   <style>
     :root {
@@ -550,6 +550,16 @@
     if (!countInterval && !flashInterval) {
       flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
     }
+    
+    window.addEventListener('beforeunload', function (e) {
+      const purposeValue = document.getElementById('purpose').value.trim();
+      const logValue = document.getElementById('log').value.trim();
+      if (purposeValue !== '' || logValue !== '') {
+        // 標準の確認ダイアログを表示
+        e.preventDefault();
+        e.returnValue = ''; // 古いブラウザ向け
+      }
+    });
   </script>
 </body>
 </html>
