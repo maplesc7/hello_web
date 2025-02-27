@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=920px, initial-scale=1">
   <title>Count Up Tools</title>
   <style>
     :root {
@@ -11,7 +11,7 @@
       --light-background-color: #ffffff;
       --light-text-color: #333333;
       --light-container-bg: rgba(200, 200, 200, 0.6);
-      --light-textarea-bg: #fafafa;
+      --light-textarea-bg: #eeeeee;
       --light-textarea-text: #333333;
       --light-textarea-border: #ccc;
       --light-button-bg: #d0d0d0;
@@ -35,6 +35,9 @@
 
       /* 現在時刻・分（または時:分）の文字色 */
       --current-time-color: royalblue;
+    }
+    html {
+      overflow: hidden;
     }
     /* モード別のCSS変数を切り替え */
     body.light-mode {
@@ -71,8 +74,6 @@
       color: var(--text-color);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       position: relative;
-      overflow: hidden;
-      height: 100vh;
       transition: background-color 3s ease, color 3s ease;
     }
     /* 動作中：フラッシュ（タイマー動作中は --flash-color、停止中は --flash-stop-color） */
@@ -105,15 +106,22 @@
     .wave-bg path {
       stroke-opacity: var(--wave-opacity);
     }
-    /* コンテンツ領域（元の高さに戻す） */
+    /* ラッパー：containerとログエリアを縦に並べ、ウィンドウ高に追従 */
+    #main-wrapper {
+      width: 920px;
+      height: 100vh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+    /* コンテンツ領域（タイマー部） */
     .container {
       background-color: var(--container-bg);
-      width: 920px;
-      position: absolute;
+      width: 100%;
+      position: relative;
       display: flex;
       flex-direction: row;
       justify-content: space-around;
-      height: inherit;
       border-radius: 5px;
     }
     /* 左側：開始・終了・現在時刻表示 */
@@ -122,6 +130,7 @@
       flex-direction: row;
       align-items: center;
       flex: 0;
+      height: 73px;
     }
     /* スタート・ストップ時刻を縦に並べる */
     .time-vertical {
@@ -151,6 +160,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 73px;
     }
     /* .time-display を flex 化して上下中央寄せ */
     .time-display {
@@ -173,14 +183,14 @@
     .colored-minutes {
       color: var(--current-time-color);
     }
-    /* スタート・ストップボタン（上下に並べる） */
+    /* スタート・ストップボタン（縦並び） */
     .button-column {
       flex: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       gap: 0.2rem;
+      height: 73px;
     }
     button {
       background-color: var(--button-bg);
@@ -201,6 +211,7 @@
       flex: 3;
       position: relative;
       display: flex;
+      height: 73px;
     }
     textarea#purpose {
       width: 98%;
@@ -216,6 +227,23 @@
       outline: none;
       box-shadow: none;
       border: 1px solid #ccc;
+    }
+    /* ログ用テキストエリアのコンテナ */
+    .log-container {
+      flex: 1;
+      width: 100%;
+    }
+    .log-container textarea#log {
+      width: 100%;
+      height: 98%;
+      box-sizing: border-box;
+      border: 2px solid var(--textarea-border);
+      border-radius: 5px;
+      background-color: var(--textarea-bg);
+      color: var(--textarea-text);
+      font-size: 1.2rem;
+      resize: none;
+      transition: background-color 3s ease, color 3s ease, border-color 3s ease;
     }
     /* モード切替ボタン（コメントアウト済み） */
     #modeToggle {
@@ -264,29 +292,37 @@
     </svg>
   </div>
   
-  <!-- コンテンツ領域 -->
-  <div class="container">
-    <!-- 左側：開始・終了・現在時刻表示 -->
-    <div class="range-column">
-      <div class="time-vertical">
-        <div id="startTimeDisplay">----</div>
-        <div id="currentTimeDisplay">----</div>
-        <div id="stopTimeDisplay">----</div>
+  <!-- ラッパー：containerとログテキストエリアを縦に配置 -->
+  <div id="main-wrapper">
+    <!-- コンテンツ領域 -->
+    <div class="container">
+      <!-- 左側：開始・終了・現在時刻表示 -->
+      <div class="range-column">
+        <div class="time-vertical">
+          <div id="startTimeDisplay">----</div>
+          <div id="currentTimeDisplay">----</div>
+          <div id="stopTimeDisplay">----</div>
+        </div>
+      </div>
+      <!-- カウントアップ秒数表示 -->
+      <div class="count-column">
+        <div class="time-display" id="timeDisplay">0:00</div>
+      </div>
+      <!-- スタート・ストップボタン -->
+      <div class="button-column">
+        <button id="startBtn">スタート</button>
+        <button id="stopBtn" disabled>ストップ</button>
+      </div>
+      <!-- メモ用テキストエリア＋モード切替ボタン -->
+      <div class="memo-column">
+        <textarea id="purpose" rows="3"></textarea>
+        <!-- <button id="modeToggle" title="ライト/ダークモード切替">☀</button> -->
       </div>
     </div>
-    <!-- カウントアップ秒数表示 -->
-    <div class="count-column">
-      <div class="time-display" id="timeDisplay">0:00</div>
-    </div>
-    <!-- スタート・ストップボタン（縦並び） -->
-    <div class="button-column">
-      <button id="startBtn">スタート</button>
-      <button id="stopBtn" disabled>ストップ</button>
-    </div>
-    <!-- メモ用テキストエリア＋モード切替ボタン -->
-    <div class="memo-column">
-      <textarea id="purpose" rows="3" placeholder=""></textarea>
-      <!-- <button id="modeToggle" title="ライト/ダークモード切替">☀</button> -->
+    
+    <!-- ログ用エリア -->
+    <div class="log-container">
+      <textarea id="log" rows="5"></textarea>
     </div>
   </div>
   
@@ -302,11 +338,23 @@
     const stopTimeDisplay = document.getElementById('stopTimeDisplay');
     const currentTimeDisplay = document.getElementById('currentTimeDisplay');
     const purpose = document.getElementById('purpose');
+    const logTextarea = document.getElementById('log');
     
     let countInterval;
     let flashInterval;
     let startTime;  // タイマー開始時刻（Dateオブジェクト）
     let startTimeStrGlobal = "";   // スタート時の4桁時刻文字列を保持
+    
+    // ログテキストエリアに内容を追記する関数
+    // 新規追加する内容内で、改行だけの行は除去する
+    function appendLog(newContent) {
+      const filteredContent = newContent.split("\n").filter(line => line.trim() !== "").join("\n");
+      if (logTextarea.value === "") {
+        logTextarea.value = filteredContent;
+      } else {
+        logTextarea.value += "\n" + filteredContent;
+      }
+    }
     
     // 小数点以下2桁も含めた "0:SS.ss" / "M:SS.ss" / "H:MM:SS.ss" 形式に変換
     function formatTime(totalSeconds) {
@@ -383,12 +431,19 @@
       startBtn.disabled = false;
       stopBtn.disabled = false;
       
-      // スタート時に、テキストエリアの現在の内容の先頭にプレフィックスを付加
+      // スタート時に、テキストエリアの現在の内容の先頭にプレフィックスとして「🔶」を付加
       const currentContent = purpose.value;
       const newText = `- 🔶${startTimeStr}- ${currentContent}`;
       purpose.value = newText;
       // クリップボードにコピー
       navigator.clipboard.writeText(newText).catch(err => console.error('Clipboard copy failed: ', err));
+      // ログ用textareaにも内容を追記（空行は除去）
+      appendLog(newText);
+      // 末尾に改行を追加し、ログ用エリアにフォーカス
+      if (!logTextarea.value.endsWith("\n")) {
+        logTextarea.value += "\n";
+      }
+      logTextarea.focus();
       
       // ストップ時に利用するため、開始時刻文字列をグローバル変数に保存
       startTimeStrGlobal = startTimeStr;
@@ -424,12 +479,16 @@
         currentContent = currentContent.substring(prefix.length);
       }
       
-      // 「- 🔶{開始時刻}-{停止時刻} {経過分数}m {現在の内容}」の文字列を生成
-      const finalText = `- 🔶${startTimeStrGlobal}-${stopTimeStr} ${elapsedMinutes}m ${currentContent}`;
+      // 「- 🔷{開始時刻}-{停止時刻} {経過分数}m {現在の内容}」の文字列を生成
+      const finalText = `- 🔷${startTimeStrGlobal}-${stopTimeStr} ${elapsedMinutes}m ${currentContent}`;
       // 生成した文字列をクリップボードにコピー
       navigator.clipboard.writeText(finalText).catch(err => console.error('Clipboard copy failed: ', err));
+      // ログ用textareaにも内容を追記（空行は除去）
+      appendLog(finalText);
       // テキストエリアの内容を空文字に更新
       purpose.value = "";
+      // ストップ時はメモ用テキストエリアへフォーカス移動
+      purpose.focus();
     }
     
     function updateCurrentTime() {
@@ -442,20 +501,45 @@
     startBtn.addEventListener('click', startCount);
     stopBtn.addEventListener('click', stopCount);
     
-    // テキストエリアにフォーカス中のキーダウンイベント
+    // メモ用テキストエリアのキーダウンイベント
+    // ※通常のTabでボタン動作、Shift+Tabでログ用テキストエリアへ移動
     purpose.addEventListener('keydown', function(e) {
       if (e.key === 'Tab') {
         e.preventDefault();
         e.stopPropagation();
-        // Shift + Tab なら stopCount()、それ以外は startCount()
         if (e.shiftKey) {
-          stopCount();
+          // Shift+Tab：テキストエリア移動（ログ用テキストエリアへ）
+          logTextarea.focus();
         } else {
-          startCount();
+          // Tab：ボタン動作（カウントアップ中ならストップ、そうでなければスタート）
+          if (countInterval) {
+            stopCount();
+          } else {
+            startCount();
+          }
         }
       } else if (e.key === 'Enter' && e.shiftKey && !e.isComposing) {
         e.preventDefault();
         startCount();
+      }
+    });
+    
+    // ログ用テキストエリアのキーダウンイベント
+    // ※通常のTabでボタン動作、Shift+Tabでテキストエリア移動（メモ用テキストエリアへ）
+    logTextarea.addEventListener('keydown', function(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          // Shift+Tab：テキストエリア移動（メモ用テキストエリアへ）
+          purpose.focus();
+        } else {
+          // Tab：ボタン動作
+          if (countInterval) {
+            stopCount();
+          } else {
+            startCount();
+          }
+        }
       }
     });
     
