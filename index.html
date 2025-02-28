@@ -435,7 +435,7 @@
       
       // スタート時に、テキストエリアの現在の内容の先頭にプレフィックスとして「🔶」を付加
       const currentContent = purpose.value;
-      const newText = `- 🔶${startTimeStr}- ${currentContent}`;
+      const newText = `- 🔶${startTimeStr}-　　　　${currentContent}`;
       purpose.value = newText;
       // クリップボードにコピー
       navigator.clipboard.writeText(newText).catch(err => console.error('Clipboard copy failed: ', err));
@@ -474,15 +474,19 @@
       // 経過時間の分数（整数）を計算
       const elapsedMinutes = Math.floor((now.getTime() - startTime.getTime()) / 60000);
       
-      // 現在のテキストエリアの内容を取得し、スタート時に付加したプレフィックス部分（"- 🔶{開始時刻}- "）を除去
+      // 現在のテキストエリアの内容を取得し、スタート時に付加したプレフィックス部分（"- 🔶{開始時刻}-　　　　"）を除去
       let currentContent = purpose.value;
-      const prefix = `- 🔶${startTimeStrGlobal}- `;
+      const prefix = `- 🔶${startTimeStrGlobal}-　　　　`;
       if (currentContent.startsWith(prefix)) {
         currentContent = currentContent.substring(prefix.length);
       }
       
       // 「- 🔷{開始時刻}-{停止時刻} {経過分数}m {現在の内容}」の文字列を生成
       const finalText = `- 🔷${startTimeStrGlobal}-${stopTimeStr} ${elapsedMinutes}m ${currentContent}`;
+      
+      // ストップ時、ログ用テキストエリアの末尾が改行だけの行の場合は削除する
+      logTextarea.value = logTextarea.value.replace(/\n+$/, '');
+      
       // 生成した文字列をクリップボードにコピー
       navigator.clipboard.writeText(finalText).catch(err => console.error('Clipboard copy failed: ', err));
       // ログ用textareaにも内容を追記（空行は除去）
