@@ -246,6 +246,7 @@
       resize: none;
       transition: background-color 3s ease, color 3s ease, border-color 3s ease;
       line-height: 1;
+      display: none; /* ログ用テキストエリアを非表示 */
     }
     /* モード切替ボタン（コメントアウト済み） */
     #modeToggle {
@@ -433,10 +434,10 @@
       startBtn.disabled = false;
       stopBtn.disabled = false;
       
-      // スタート時に、テキストエリアの現在の内容の先頭にプレフィックスとして「🔶」を付加
+      // 以下、テキストエリア内容の変更処理（プレフィックス追加、ログ追記、クリップボードコピー等）はコメントアウト
+      /*
       const currentContent = purpose.value;
-      const newText = `- 🔶${startTimeStr}-　　　　${currentContent}`;
-      purpose.value = newText;
+      const newText = `- 🔶${startTimeStr}- ${currentContent}`;
       // クリップボードにコピー
       navigator.clipboard.writeText(newText).catch(err => console.error('Clipboard copy failed: ', err));
       // ログ用textareaにも内容を追記（空行は除去）
@@ -446,6 +447,7 @@
         logTextarea.value += "\n";
       }
       logTextarea.focus();
+      */
       
       // ストップ時に利用するため、開始時刻文字列をグローバル変数に保存
       startTimeStrGlobal = startTimeStr;
@@ -474,27 +476,23 @@
       // 経過時間の分数（整数）を計算
       const elapsedMinutes = Math.floor((now.getTime() - startTime.getTime()) / 60000);
       
-      // 現在のテキストエリアの内容を取得し、スタート時に付加したプレフィックス部分（"- 🔶{開始時刻}-　　　　"）を除去
+      // 以下、テキストエリア内容の変更処理（プレフィックス除去、ログ追記、クリップボードコピー、内容クリア等）はコメントアウト
+      /*
       let currentContent = purpose.value;
-      const prefix = `- 🔶${startTimeStrGlobal}-　　　　`;
+      const prefix = `- 🔶${startTimeStrGlobal}- `;
       if (currentContent.startsWith(prefix)) {
         currentContent = currentContent.substring(prefix.length);
       }
       
-      // 「- 🔷{開始時刻}-{停止時刻} {経過分数}m {現在の内容}」の文字列を生成
       const finalText = `- 🔷${startTimeStrGlobal}-${stopTimeStr} ${elapsedMinutes}m ${currentContent}`;
       
-      // ストップ時、ログ用テキストエリアの末尾が改行だけの行の場合は削除する
       logTextarea.value = logTextarea.value.replace(/\n+$/, '');
       
-      // 生成した文字列をクリップボードにコピー
       navigator.clipboard.writeText(finalText).catch(err => console.error('Clipboard copy failed: ', err));
-      // ログ用textareaにも内容を追記（空行は除去）
       appendLog(finalText);
-      // テキストエリアの内容を空文字に更新
       purpose.value = "";
-      // ストップ時はメモ用テキストエリアへフォーカス移動
       purpose.focus();
+      */
     }
     
     function updateCurrentTime() {
@@ -508,14 +506,14 @@
     stopBtn.addEventListener('click', stopCount);
     
     // メモ用テキストエリアのキーダウンイベント
-    // ※通常のTabでボタン動作、Shift+Tabでログ用テキストエリアへ移動
+    // ※通常のTabでボタン動作、Shift+Tabでログ用テキストエリアへ移動（※テキストエリア移動処理はコメントアウト）
     purpose.addEventListener('keydown', function(e) {
       if (e.key === 'Tab') {
         e.preventDefault();
         e.stopPropagation();
         if (e.shiftKey) {
-          // Shift+Tab：テキストエリア移動（ログ用テキストエリアへ）
-          logTextarea.focus();
+          // Shift+Tab：テキストエリア移動（ログ用テキストエリアへ）※コメントアウト
+          // logTextarea.focus();
         } else {
           // Tab：ボタン動作（カウントアップ中ならストップ、そうでなければスタート）
           if (countInterval) {
@@ -531,13 +529,13 @@
     });
     
     // ログ用テキストエリアのキーダウンイベント
-    // ※通常のTabでボタン動作、Shift+Tabでテキストエリア移動（メモ用テキストエリアへ）
+    // ※通常のTabでボタン動作、Shift+Tabでテキストエリア移動（メモ用テキストエリアへ）※テキストエリア移動処理はコメントアウト
     logTextarea.addEventListener('keydown', function(e) {
       if (e.key === 'Tab') {
         e.preventDefault();
         if (e.shiftKey) {
-          // Shift+Tab：テキストエリア移動（メモ用テキストエリアへ）
-          purpose.focus();
+          // Shift+Tab：テキストエリア移動（メモ用テキストエリアへ）※コメントアウト
+          // purpose.focus();
         } else {
           // Tab：ボタン動作
           if (countInterval) {
