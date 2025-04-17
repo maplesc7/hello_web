@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Count Up Tools</title>
   <style>
     :root {
@@ -39,7 +39,6 @@
     html {
       overflow: hidden;
     }
-    /* モード別のCSS変数を切り替え */
     body.light-mode {
       --background-color: var(--light-background-color);
       --text-color: var(--light-text-color);
@@ -66,7 +65,6 @@
       --flash-color: var(--flash-color-dark);
       --flash-stop-color: var(--flash-stop-color-dark);
     }
-    
     body {
       margin: 0;
       padding: 0;
@@ -76,7 +74,6 @@
       position: relative;
       transition: background-color 3s ease, color 3s ease;
     }
-    /* 動作中：フラッシュ（タイマー動作中は --flash-color、停止中は --flash-stop-color） */
     body.flash {
       background-color: var(--flash-color);
     }
@@ -89,7 +86,8 @@
     body.flash-stop textarea#purpose {
       background-color: var(--flash-stop-color);
     }
-    /* 背景：縦に流れる虹色の波線 */
+
+    /* 背景の波線（省略可能） */
     .wave-bg {
       position: fixed;
       left: 7%;
@@ -106,25 +104,26 @@
     .wave-bg path {
       stroke-opacity: var(--wave-opacity);
     }
-    /* ラッパー：containerとログエリアを縦に並べ、ウィンドウ高に追従 */
+
+    /* ラッパーを縦 flex、全高 100vh に */
     #main-wrapper {
+      display: flex;
+      flex-direction: column;
       width: 920px;
       height: 100vh;
       margin: 0 auto;
-      display: flex;
-      flex-direction: column;
     }
-    /* コンテンツ領域（タイマー部） */
+
+    /* タイマー＋メモ部分を残り領域いっぱいに */
     .container {
+      flex: 1;
       background-color: var(--container-bg);
-      width: 100%;
-      position: relative;
       display: flex;
       flex-direction: row;
       justify-content: space-around;
       border-radius: 5px;
     }
-    /* 左側：開始・終了・現在時刻表示 */
+
     .range-column {
       display: flex;
       flex-direction: row;
@@ -132,14 +131,12 @@
       flex: 0;
       height: 73px;
     }
-    /* スタート・ストップ時刻を縦に並べる */
     .time-vertical {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
     }
-    /* currentTimeDisplayは余った横幅を埋める */
     .range-column #currentTimeDisplay {
       flex: 1;
       text-align: center;
@@ -151,7 +148,7 @@
       margin: 0;
       text-align: center;
     }
-    /* カウントアップ秒数表示 */
+
     .count-column {
       flex: 0 0 10ch;
       width: 10ch;
@@ -162,7 +159,6 @@
       align-items: center;
       height: 73px;
     }
-    /* .time-display を flex 化して上下中央寄せ */
     .time-display {
       display: flex;
       align-items: center;
@@ -175,15 +171,13 @@
       text-align: center;
       color: #7d7f59;
     }
-    /* 小数点以下部分は常に非表示 */
     .time-display .fraction {
       display: none;
     }
-    /* カウントアップの分、または時:分部分の文字色 */
     .colored-minutes {
       color: var(--current-time-color);
     }
-    /* スタート・ストップボタン（縦並び） */
+
     .button-column {
       flex: 0;
       display: flex;
@@ -206,15 +200,16 @@
     button:hover {
       background-color: var(--button-hover);
     }
-    /* メモ用テキストエリア */
+
+    /* メモ用カラムから固定高さを削除 */
     .memo-column {
       flex: 3;
-      position: relative;
       display: flex;
-      height: 73px;
+      position: relative;
     }
     textarea#purpose {
       width: 98%;
+
       border: 2px solid var(--textarea-border);
       border-radius: 5px;
       background-color: var(--textarea-bg);
@@ -229,10 +224,11 @@
       box-shadow: none;
       border: 1px solid #ccc;
     }
-    /* ログ用テキストエリアのコンテナ */
+
+    /* ログ用はお好みで */
     .log-container {
-      flex: 1;
-      width: 100%;
+      flex: 0;
+      /* display: none; */
     }
     .log-container textarea#log {
       width: 100%;
@@ -246,60 +242,17 @@
       resize: none;
       transition: background-color 3s ease, color 3s ease, border-color 3s ease;
       line-height: 1;
-      display: none; /* ログ用テキストエリアを非表示 */
-    }
-    /* モード切替ボタン（コメントアウト済み） */
-    #modeToggle {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 0.3rem 0.5rem;
-      z-index: 2;
+      display: none;
     }
   </style>
 </head>
 <body class="light-mode">
-  <!-- 背景 -->
   <div class="wave-bg" style="display:none;">
-    <svg viewBox="0 0 200 1200" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="rainbowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="red" />
-          <stop offset="20%" stop-color="orange" />
-          <stop offset="40%" stop-color="yellow" />
-          <stop offset="60%" stop-color="green" />
-          <stop offset="80%" stop-color="blue" />
-          <stop offset="100%" stop-color="violet" />
-        </linearGradient>
-        <filter id="blur1">
-          <feGaussianBlur stdDeviation="0.3" />
-        </filter>
-        <filter id="blur2">
-          <feGaussianBlur stdDeviation="0.6" />
-        </filter>
-        <filter id="blur3">
-          <feGaussianBlur stdDeviation="0.9" />
-        </filter>
-        <filter id="blur4">
-          <feGaussianBlur stdDeviation="1.2" />
-        </filter>
-        <filter id="blur5">
-          <feGaussianBlur stdDeviation="1.5" />
-        </filter>
-      </defs>
-      <path d="M80,0 Q60,300 80,600 T80,1200" fill="none" stroke="url(#rainbowGradient)" stroke-width="2" filter="url(#blur1)"/>
-      <path d="M90,0 Q70,300 90,600 T90,1200" fill="none" stroke="url(#rainbowGradient)" stroke-width="2" filter="url(#blur2)"/>
-      <path d="M100,0 Q80,300 100,600 T100,1200" fill="none" stroke="url(#rainbowGradient)" stroke-width="2" filter="url(#blur3)"/>
-      <path d="M110,0 Q90,300 110,600 T110,1200" fill="none" stroke="url(#rainbowGradient)" stroke-width="2" filter="url(#blur4)"/>
-      <path d="M120,0 Q100,300 120,600 T120,1200" fill="none" stroke="url(#rainbowGradient)" stroke-width="2" filter="url(#blur5)"/>
-    </svg>
+    <!-- SVG波線（略） -->
   </div>
-  
-  <!-- ラッパー：containerとログテキストエリアを縦に配置 -->
+
   <div id="main-wrapper">
-    <!-- コンテンツ領域 -->
     <div class="container">
-      <!-- 左側：開始・終了・現在時刻表示 -->
       <div class="range-column">
         <div class="time-vertical">
           <div id="startTimeDisplay">----</div>
@@ -307,28 +260,22 @@
           <div id="stopTimeDisplay">----</div>
         </div>
       </div>
-      <!-- カウントアップ秒数表示 -->
       <div class="count-column">
         <div class="time-display" id="timeDisplay">0:00</div>
       </div>
-      <!-- スタート・ストップボタン -->
       <div class="button-column">
         <button id="startBtn">スタート</button>
         <button id="stopBtn" disabled>ストップ</button>
       </div>
-      <!-- メモ用テキストエリア＋モード切替ボタン -->
       <div class="memo-column">
         <textarea id="purpose" rows="3"></textarea>
-        <!-- <button id="modeToggle" title="ライト/ダークモード切替">☀</button> -->
       </div>
     </div>
-    
-    <!-- ログ用エリア -->
     <div class="log-container">
       <textarea id="log" rows="5"></textarea>
     </div>
   </div>
-  
+
   <script>
     // 秒数単位での設定変数
     const FLASH_DURATION_SECONDS = 0;  // フラッシュの持続時間
