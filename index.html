@@ -6,91 +6,88 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="VaporClock" />
-  <title>VaporClock</title>
   <meta name="theme-color" content="#000000" />
-
+  <title>VaporClock</title>
   <style>
     :root {
-      /* Colors */
-      --bg-deep: #0b1020;   /* 濃紺 */
-      --bg-deeper: #05070d; /* さらに暗い */
-      --neon-a: #ff3ea5;    /* マゼンタ */
-      --neon-b: #ffb200;    /* オレンジ */
+      /* Base colors */
+      --bg-top: #0b1020;
+      --bg-bottom: #05070d;
+      --neon-a: #ff3ea5; /* magenta */
+      --neon-b: #ffb200; /* orange */
 
-      /* Layout ratios */
-      --top-margin-vh-min: 8;  /* 時計の上余白(%) */
-      --top-margin-vh-max: 10; /* 端末差対応で最小/最大を許容 */
-      --vanish-vh-min: 60;     /* 消失点の高さ(%) */
-      --vanish-vh-max: 65;
-
-      /* Typo */
-      --clock-max-width: 68vw; /* 余白を少し残す */
-      --clock-letter-spacing: -0.02em; /* ややタイトに */
-
-      /* Glow */
-      --glow-soft: 14px;
-      --glow-strong: 28px;
+      /* Typography */
+      --clock-letter-spacing: -0.016em;
+      --clock-glow-soft: 12px;
+      --clock-glow-strong: 24px;
 
       /* Noise */
-      --noise-opacity: 0.045; /* ごく薄い */
+      --noise-opacity: 0.045;
+
+      /* Visual viewport fallback */
+      --app-h: 100dvh;
     }
 
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
-      background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deeper) 100%);
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
       color: #fff;
       -webkit-text-size-adjust: 100%;
       overscroll-behavior: none;
     }
 
-    /* セーフエリア考慮 */
+    /* App layout: header(clock) + stage(scene) */
     .app {
       position: relative;
-      height: 100%;
+      height: var(--app-h);
       width: 100%;
-      padding-top: max(calc(var(--top-margin-vh-min) * 1vh), env(safe-area-inset-top));
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-      padding-bottom: env(safe-area-inset-bottom);
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto 1fr; /* [header] auto / [stage] 1fr */
       box-sizing: border-box;
-      touch-action: manipulation; /* 誤操作抑止 */
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      touch-action: manipulation;
     }
 
-    /* 時計 */
+    /* Header / Clock */
+    .header {
+      padding-top: max(env(safe-area-inset-top, 0px), 20px);
+      margin-top: 2vh; /* 視覚的ゆとり */
+      display: grid;
+      place-items: center;
+    }
+
     .clock {
-      place-self: start center;
-      width: min(92vw, var(--clock-max-width));
+      margin: 0 auto;
       font-family: -apple-system, system-ui, "SF Pro Display", "SF Pro Text", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
       font-weight: 600;
-      font-size: clamp(40px, 12.5vw, 88px);
+      /* 緑枠級に拡大（端末幅基準） */
+      font-size: clamp(64px, 18vw, 120px);
       letter-spacing: var(--clock-letter-spacing);
-      line-height: 1.05;
-      text-align: center;
+      line-height: 1.04;
       background: linear-gradient(90deg, var(--neon-a), var(--neon-b));
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
       text-shadow:
-        0 0 1px rgba(255,255,255,0.2),
-        0 0 var(--glow-soft) color-mix(in oklab, var(--neon-a) 60%, transparent),
-        0 0 var(--glow-strong) color-mix(in oklab, var(--neon-b) 40%, transparent);
+        0 0 1px rgba(255,255,255,0.22),
+        0 0 var(--clock-glow-soft) color-mix(in oklab, var(--neon-a) 55%, transparent),
+        0 0 var(--clock-glow-strong) color-mix(in oklab, var(--neon-b) 35%, transparent);
       user-select: none;
     }
 
-    /* 描画レイヤ（SVG） */
-    .scene {
+    /* Stage (scene container) */
+    .stage {
       position: relative;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      contain: strict;
     }
 
-    /* ノイズ(静止) */
+    /* Static noise overlay */
     .noise {
       position: absolute;
       inset: 0;
@@ -99,7 +96,7 @@
       mix-blend-mode: overlay;
     }
 
-    /* 回転時のガイダンス（縦固定の代替） */
+    /* Orientation hint (fallback) */
     .orientation-overlay {
       position: fixed;
       inset: 0;
@@ -108,196 +105,220 @@
       justify-content: center;
       background: #000;
       color: #fff;
+      z-index: 10;
       font-family: -apple-system, system-ui, "SF Pro Text", Inter, Roboto, sans-serif;
-      z-index: 20;
     }
     @media (orientation: landscape) {
       .orientation-overlay { display: flex; }
     }
 
-    /* ダーク固定（念のため） */
-    @media (prefers-color-scheme: light) {
-      :root { color-scheme: dark; }
-    }
+    /* Force dark appearance */
+    @media (prefers-color-scheme: light) { :root { color-scheme: dark; } }
   </style>
 </head>
 <body>
-  <div class="app" aria-label="VaporClock App">
-    <div class="clock" id="clock" aria-live="polite" aria-atomic="true">00:00</div>
-
-    <div class="scene" id="scene" aria-hidden="true">
-      <!-- 背面：静止ノイズ (SVGフィルタ) -->
+  <div class="app" id="app">
+    <header class="header">
+      <div class="clock" id="clock" aria-live="polite" aria-atomic="true">00:00</div>
+    </header>
+    <main class="stage" id="stage" aria-hidden="true">
+      <!-- Static noise -->
       <svg class="noise" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         <filter id="noiseFilter">
-          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"></feTurbulence>
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch" />
           <feColorMatrix type="saturate" values="0" />
         </filter>
         <rect width="100%" height="100%" filter="url(#noiseFilter)" />
       </svg>
-
-      <!-- メインシーン：高速道路＆ヤシ（SVG静止描画） -->
-      <svg id="vapor-svg" viewBox="0 0 100 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <defs>
-          <!-- ネオン用グラデ -->
-          <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="var(--neon-a)" />
-            <stop offset="100%" stop-color="var(--neon-b)" />
-          </linearGradient>
-
-          <!-- ネオングロー（フィルタ） -->
-          <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="0.8" result="blur1" />
-            <feGaussianBlur stdDeviation="2.6" in="blur1" result="blur2" />
-            <feMerge>
-              <feMergeNode in="blur2" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <!-- 路面の微グラデ（暗部） -->
-          <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#070a12"/>
-            <stop offset="100%" stop-color="#020308"/>
-          </linearGradient>
-        </defs>
-
-        <!-- 背景の地面（下半分付近） -->
-        <rect x="0" y="110" width="100" height="90" fill="url(#groundGrad)" />
-
-        <!-- 消失点（縦比 60〜65% の中間＝62.5%付近）: viewBox高さ200に対して 125 -->
-        <!-- 路面シルエット（台形） -->
-        <polygon id="road" points="
-          5,200  95,200  58,125  42,125
-        " fill="#05070d" />
-
-        <!-- 路肩ライン（ネオン） -->
-        <polyline points="5,200 42,125" fill="none" stroke="url(#neonGrad)" stroke-width="0.8" filter="url(#neonGlow)" />
-        <polyline points="95,200 58,125" fill="none" stroke="url(#neonGrad)" stroke-width="0.8" filter="url(#neonGlow)" />
-
-        <!-- センターレーン（破線風に数本を静的配置） -->
-        <g stroke="url(#neonGrad)" stroke-width="0.5" filter="url(#neonGlow)">
-          <polyline points="50,190 50,175" />
-          <polyline points="50,165 50,150" />
-          <polyline points="50,140 50,130" />
-        </g>
-
-        <!-- 右側ヤシの木（シルエット + ネオン縁） -->
-        <!-- 簡易ベクタ: 幹はわずかに右傾、葉は扇状に数本 -->
-        <g transform="translate(78,120) scale(1,1)">
-          <!-- 幹（影） -->
-          <path d="M0,0 C2,20 2,60 1.2,80 C1,92 0,100 -0.6,112 L-4,112 C-3,96 -2,80 -2.6,68 C-3,56 -3,20 -1,0 Z"
-                fill="#030308" />
-          <!-- 幹（ネオン縁） -->
-          <path d="M0,0 C2,20 2,60 1.2,80 C1,92 0,100 -0.6,112"
-                fill="none" stroke="url(#neonGrad)" stroke-width="1.2" filter="url(#neonGlow)" />
-
-          <!-- 葉（影） -->
-          <g fill="none" stroke="#04050a" stroke-width="3">
-            <path d="M0,2 C18,-10 34,-12 50,-10" />
-            <path d="M0,4 C16,-4 30,-6 44,-4" />
-            <path d="M0,6 C12,0 24,2 36,6" />
-            <path d="M0,8 C-10,2 -22,4 -34,10" />
-            <path d="M0,10 C-14,0 -28,-2 -40,-2" />
-          </g>
-          <!-- 葉（ネオン縁） -->
-          <g fill="none" stroke="url(#neonGrad)" stroke-width="0.9" filter="url(#neonGlow)">
-            <path d="M0,2 C18,-10 34,-12 50,-10" />
-            <path d="M0,4 C16,-4 30,-6 44,-4" />
-            <path d="M0,6 C12,0 24,2 36,6" />
-            <path d="M0,8 C-10,2 -22,4 -34,10" />
-            <path d="M0,10 C-14,0 -28,-2 -40,-2" />
-          </g>
-        </g>
-      </svg>
-    </div>
+      <!-- Scene SVG (動的に中身を生成) -->
+      <svg id="scene-svg" aria-hidden="true"></svg>
+    </main>
   </div>
-
   <div class="orientation-overlay" aria-hidden="true">縦向きでご利用ください</div>
 
   <script>
     (function() {
       'use strict';
 
-      /* ==========================
-         Utility: clamp helpers
-      ========================== */
-      const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+      // ===== Viewport height fallback (100dvh 対応外向け) =====
+      const setAppHeight = () => {
+        const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+        document.documentElement.style.setProperty('--app-h', h + 'px');
+      };
+      setAppHeight();
+      let vhTimer = null;
+      const onVVChanged = () => { clearTimeout(vhTimer); vhTimer = setTimeout(setAppHeight, 100); };
+      window.addEventListener('resize', onVVChanged);
+      window.addEventListener('orientationchange', onVVChanged);
+      document.addEventListener('visibilitychange', onVVChanged);
 
-      /* ==========================
-         Time: minute-sync update
-      ========================== */
-      function formatHHMM(d) {
-        const hh = String(d.getHours()).padStart(2, '0');
-        const mm = String(d.getMinutes()).padStart(2, '0');
-        return `${hh}:${mm}`;
-      }
-
-      function updateClockNow() {
-        const el = document.getElementById('clock');
-        el.textContent = formatHHMM(new Date());
-      }
-
-      function scheduleMinuteSync() {
-        // 初回: 直ちに表示
-        updateClockNow();
-        // 次の00秒までの残りmsを算出
+      // ===== Clock (minute-sync) =====
+      const clockEl = document.getElementById('clock');
+      const fmt = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      const updateClock = () => { clockEl.textContent = fmt(new Date()); };
+      const scheduleMinuteSync = () => {
+        updateClock();
         const now = new Date();
-        const msToNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
-        setTimeout(() => {
-          updateClockNow();
-          // 以後は毎分更新（ドリフト軽減のため再帰）
-          scheduleMinuteSync();
-        }, Math.max(0, msToNextMinute));
+        const ms = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+        setTimeout(scheduleMinuteSync, Math.max(0, ms));
+      };
+
+      // ===== Scene drawing (SVG, real pixels) =====
+      const sceneSvg = document.getElementById('scene-svg');
+      function createSvg(tag, attrs) {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        for (const k in attrs) el.setAttribute(k, attrs[k]);
+        return el;
       }
 
-      /* ==========================
-         Wake Lock (best-effort)
-      ========================== */
-      let wakeLock = null;
+      function drawScene() {
+        // Clear
+        while (sceneSvg.firstChild) sceneSvg.removeChild(sceneSvg.firstChild);
+        // Size from stage
+        const stage = document.getElementById('stage');
+        const rect = stage.getBoundingClientRect();
+        const W = Math.max(1, Math.floor(rect.width));
+        const H = Math.max(1, Math.floor(rect.height));
 
+        // Set SVG size & viewBox to real pixels (安定)
+        sceneSvg.setAttribute('width', String(W));
+        sceneSvg.setAttribute('height', String(H));
+        sceneSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        sceneSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+        // ===== Defs =====
+        const defs = createSvg('defs', {});
+        const grad = createSvg('linearGradient', { id: 'neonGrad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' });
+        grad.appendChild(createSvg('stop', { offset: '0%', 'stop-color': getCss('--neon-a') }));
+        grad.appendChild(createSvg('stop', { offset: '100%', 'stop-color': getCss('--neon-b') }));
+        const glow = createSvg('filter', { id: 'neonGlow', x: '-50%', y: '-50%', width: '200%', height: '200%' });
+        glow.appendChild(createSvg('feGaussianBlur', { stdDeviation: '0.8', result: 'b1' }));
+        glow.appendChild(createSvg('feGaussianBlur', { stdDeviation: '2.4', in: 'b1', result: 'b2' }));
+        const merge = createSvg('feMerge', {});
+        merge.appendChild(createSvg('feMergeNode', { in: 'b2' }));
+        merge.appendChild(createSvg('feMergeNode', { in: 'SourceGraphic' }));
+        glow.appendChild(merge);
+        const gnd = createSvg('linearGradient', { id: 'groundGrad', x1: '0', y1: '0', x2: '0', y2: '1' });
+        gnd.appendChild(createSvg('stop', { offset: '0%', 'stop-color': '#070a12' }));
+        gnd.appendChild(createSvg('stop', { offset: '100%', 'stop-color': '#020308' }));
+        defs.appendChild(grad); defs.appendChild(glow); defs.appendChild(gnd);
+        sceneSvg.appendChild(defs);
+
+        // ===== Ground =====
+        const groundY = H * 0.55; // 背景の暗部の開始（控えめに上げる）
+        sceneSvg.appendChild(createSvg('rect', { x: '0', y: String(groundY), width: String(W), height: String(H - groundY), fill: 'url(#groundGrad)' }));
+
+        // ===== Road (vanish at 50% height) =====
+        const vanishY = H * 0.5;
+        const bottomY = H;
+        const roadTopLeftX = W * 0.42;
+        const roadTopRightX = W * 0.58;
+        const roadBottomLeftX = W * 0.05;
+        const roadBottomRightX = W * 0.95;
+
+        const road = createSvg('polygon', {
+          points: `${roadBottomLeftX},${bottomY} ${roadBottomRightX},${bottomY} ${roadTopRightX},${vanishY} ${roadTopLeftX},${vanishY}`,
+          fill: '#05070d'
+        });
+        sceneSvg.appendChild(road);
+
+        // Shoulders (neon)
+        const leftShoulder = createSvg('polyline', {
+          points: `${roadBottomLeftX},${bottomY} ${roadTopLeftX},${vanishY}`,
+          fill: 'none', stroke: 'url(#neonGrad)', 'stroke-width': String(Math.max(0.8, W * 0.008)), filter: 'url(#neonGlow)'
+        });
+        const rightShoulder = createSvg('polyline', {
+          points: `${roadBottomRightX},${bottomY} ${roadTopRightX},${vanishY}`,
+          fill: 'none', stroke: 'url(#neonGrad)', 'stroke-width': String(Math.max(0.8, W * 0.008)), filter: 'url(#neonGlow)'
+        });
+        sceneSvg.appendChild(leftShoulder);
+        sceneSvg.appendChild(rightShoulder);
+
+        // Center dashed lines (static short segments)
+        const centerX = W * 0.5;
+        const dashW = Math.max(1, W * 0.006);
+        const dashes = [
+          [H * 0.95, H * 0.88],
+          [H * 0.84, H * 0.77],
+          [H * 0.73, H * 0.69]
+        ];
+        dashes.forEach(([y1, y2]) => {
+          sceneSvg.appendChild(createSvg('polyline', {
+            points: `${centerX},${y1} ${centerX},${y2}`,
+            fill: 'none', stroke: 'url(#neonGrad)', 'stroke-width': String(dashW), filter: 'url(#neonGlow)'
+          }));
+        });
+
+        // ===== Palm tree (top reaches 34% from top => bottom 66%) =====
+        // Base model dimensions (local): width ≈ 90, height = 112 (top at 0, bottom at 112)
+        const PALM_BASE_H = 112;
+        const palmTopTargetY = H * 0.34; // 上から34%
+        const s = (H - palmTopTargetY) / PALM_BASE_H; // scale so that bottom aligns with H
+        const palmX = W * 0.78; // 右寄り
+        const palmGroup = createSvg('g', { transform: `translate(${palmX}, ${H - PALM_BASE_H * s}) scale(${s})` });
+
+        // Trunk (shadow)
+        palmGroup.appendChild(createSvg('path', {
+          d: 'M0,0 C2,20 2,60 1.2,80 C1,92 0,100 -0.6,112 L-4,112 C-3,96 -2,80 -2.6,68 C-3,56 -3,20 -1,0 Z',
+          fill: '#030308'
+        }));
+        // Trunk neon edge
+        palmGroup.appendChild(createSvg('path', {
+          d: 'M0,0 C2,20 2,60 1.2,80 C1,92 0,100 -0.6,112',
+          fill: 'none', stroke: 'url(#neonGrad)', 'stroke-width': '1.2', filter: 'url(#neonGlow)'
+        }));
+        // Leaves (shadow)
+        const leafShadow = createSvg('g', { fill: 'none', stroke: '#04050a', 'stroke-width': '3' });
+        ['M0,2 C18,-10 34,-12 50,-10',
+         'M0,4 C16,-4 30,-6 44,-4',
+         'M0,6 C12,0 24,2 36,6',
+         'M0,8 C-10,2 -22,4 -34,10',
+         'M0,10 C-14,0 -28,-2 -40,-2']
+          .forEach(d => leafShadow.appendChild(createSvg('path', { d })));
+        palmGroup.appendChild(leafShadow);
+        // Leaves neon
+        const leafNeon = createSvg('g', { fill: 'none', stroke: 'url(#neonGrad)', 'stroke-width': '0.9', filter: 'url(#neonGlow)' });
+        ['M0,2 C18,-10 34,-12 50,-10',
+         'M0,4 C16,-4 30,-6 44,-4',
+         'M0,6 C12,0 24,2 36,6',
+         'M0,8 C-10,2 -22,4 -34,10',
+         'M0,10 C-14,0 -28,-2 -40,-2']
+          .forEach(d => leafNeon.appendChild(createSvg('path', { d })));
+        palmGroup.appendChild(leafNeon);
+
+        sceneSvg.appendChild(palmGroup);
+      }
+
+      function getCss(varName) {
+        return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      }
+
+      // ===== Wake Lock (best-effort) =====
+      let wakeLock = null;
       async function requestWakeLock() {
         try {
           if ('wakeLock' in navigator) {
             wakeLock = await navigator.wakeLock.request('screen');
-            wakeLock.addEventListener && wakeLock.addEventListener('release', () => {
-              // 何もしない（静かにフォールバック）
-            });
+            wakeLock.addEventListener && wakeLock.addEventListener('release', () => {});
           }
-        } catch (e) {
-          // iOS等で未対応/拒否の場合は無視
-        }
+        } catch (_) {}
       }
-
-      function setupWakeLockAutoReacquire() {
-        document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'visible' && wakeLock !== null) {
-            requestWakeLock();
-          }
-        });
-        // 初回はユーザー操作が無くても一度試す（許可されない場合は静かに失敗）
+      function setupWakeLock() {
         requestWakeLock();
-        // タップ時にも再試行（iOS対策）
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible' && wakeLock !== null) requestWakeLock();
+        });
         window.addEventListener('pointerdown', () => requestWakeLock(), { passive: true });
       }
 
-      /* ==========================
-         Layout helpers
-      ========================== */
-      function adjustScene() {
-        // 端末差による上余白/消失点の微調整が必要ならここで拡張
-        // （今回のSVGは比率で描画済みのため、特段の処理は不要）
-      }
-
-      /* ==========================
-         Init
-      ========================== */
+      // ===== Init =====
       window.addEventListener('load', () => {
         scheduleMinuteSync();
-        setupWakeLockAutoReacquire();
-        adjustScene();
+        setupWakeLock();
+        drawScene();
       }, { once: true });
-
-      window.addEventListener('resize', adjustScene);
+      window.addEventListener('resize', () => { onVVChanged(); drawScene(); });
+      window.addEventListener('orientationchange', () => { onVVChanged(); drawScene(); });
     })();
   </script>
 </body>
