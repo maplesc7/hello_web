@@ -15,13 +15,13 @@
       --blur: 18px;
       --ring: rgba(255,255,255,0.14);
       --shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08);
-
       /* default (cyber) */
       --accent-1:#7df9ff; --accent-2:#ff79c6;
       --glow-1: rgba(125,249,255,.45); --glow-2: rgba(255,121,198,.40);
       --card-grad-1: rgba(125,249,255,.15); --card-grad-2: rgba(255,121,198,.12);
     }
 
+    /* 7テーマ（文字色・背景グロー・カード内グラデを連動） */
     .theme-cyber { --accent-1:#7df9ff; --accent-2:#ff79c6; --glow-1: rgba(125,249,255,.45); --glow-2: rgba(255,121,198,.40); --card-grad-1: rgba(125,249,255,.15); --card-grad-2: rgba(255,121,198,.12); }
     .theme-ink   { --accent-1:#c2c8d0; --accent-2:#6e7a86; --glow-1: rgba(194,200,208,.35); --glow-2: rgba(110,122,134,.30); --card-grad-1: rgba(194,200,208,.16); --card-grad-2: rgba(110,122,134,.10); }
     .theme-sunrise { --accent-1:#ffb86b; --accent-2:#ff6b6b; --glow-1: rgba(255,184,107,.40); --glow-2: rgba(255,107,107,.38); --card-grad-1: rgba(255,184,107,.18); --card-grad-2: rgba(255,107,107,.12); }
@@ -39,9 +39,10 @@
       background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
       background-attachment: fixed;
       display: grid; place-items: center; overflow: hidden;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
-    /* 背景のぼやけカラー（テーマ連動） */
+    /* 背景ぼかし（テーマ連動） */
     body::before {
       content: ""; position: fixed; inset: -20%; pointer-events: none; z-index: -1;
       background:
@@ -50,51 +51,41 @@
       filter: blur(26px);
     }
 
-    .clock-card {
-      width: min(92vw, 760px);
-      aspect-ratio: 1 / 2; /* 縦長 */
-      border-radius: 28px;
+    /* ===== レイアウト ===== */
+    .stage { position: relative; width: min(92vw, 760px); aspect-ratio: 1/2; }
+
+    /* ガラス（カード）だけを斜めにする */
+    .glass-card {
+      position: absolute; inset: 0; border-radius: 28px; overflow: hidden; z-index: 1;
       background: rgba(255,255,255,.06);
-      backdrop-filter: blur(var(--blur)) saturate(1.15);
-      -webkit-backdrop-filter: blur(var(--blur)) saturate(1.15);
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255,255,255,.10);
-      position: relative; overflow: hidden;
-      display: grid; grid-template-rows: 1fr auto auto 1fr;
-      transform: rotate(-3deg); /* ほんの少し傾ける */
-      isolation: isolate;
+      backdrop-filter: blur(var(--blur)) saturate(1.15); -webkit-backdrop-filter: blur(var(--blur)) saturate(1.15);
+      box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,.10);
+      transform: rotate(3deg); /* 右上→左下へ傾ける */
+    }
+    .glass-card::before{ /* 薄い内部グラデ（テーマ連動） */
+      content:""; position:absolute; inset:0;
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+                  linear-gradient(120deg, var(--card-grad-1), var(--card-grad-2));
     }
 
-    /* カード内の薄いグラデーション（テーマ連動） */
-    .clock-card::before {
-      content: ""; position: absolute; inset: 0; z-index: -1;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
-        linear-gradient(120deg, var(--card-grad-1), var(--card-grad-2));
-    }
-
-    .time-wrap { align-self: start; justify-self: center; margin-top: 14%; width: 86%; }
-
+    /* 時計（水平のまま） */
+    .hud { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-rows: 1fr auto auto 1fr; }
+    .time-wrap { align-self: start; justify-self: center; margin-top: 13%; width: 86%; }
     .time {
-      font-weight: 800;
-      /* サイズはオートフィット用にJSで上書き */
-      font-size: 14vh;
-      letter-spacing: -0.03em;
-      font-variant-numeric: tabular-nums lining-nums;
-      display: inline-flex; align-items: baseline; gap: 0.06em; white-space: nowrap;
+      font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums lining-nums;
       background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-      -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent; color: transparent;
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
       filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
+      white-space: nowrap; display: inline-block;
+      /* フォントサイズはJSでfit */
+      font-size: 14vh;
     }
+    .date { align-self: start; justify-self: center; margin-top: 12px; font-size: clamp(14px, 2.2vh, 20px); font-weight: 600; opacity: .92; }
 
-    .main-time { line-height: .9; }
-    .secs { font-size: .36em; transform: translateY(-0.18em); background: linear-gradient(90deg, var(--accent-2), var(--accent-1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+    /* 画面下の説明書き */
+    .hints { position: fixed; left: 0; right: 0; bottom: max(10px, env(safe-area-inset-bottom)); text-align: center; font-size: 12px; opacity: .65; z-index: 3; }
 
-    .date { align-self: start; justify-self: center; margin-top: 10px; font-size: clamp(14px, 2.2vh, 20px); font-weight: 600; opacity: .92; }
-
-    .hints { align-self: end; justify-self: center; margin-bottom: 12px; font-size: 12px; opacity: .6; text-align: center; }
-
+    /* 設定ダイアログ */
     dialog#settings { border: none; padding: 0; background: transparent; }
     .sheet {
       width: min(92vw, 720px); margin: 0 auto; color: var(--fg-1);
@@ -111,13 +102,14 @@
   </style>
 </head>
 <body class="theme-cyber">
-  <div class="clock-card" id="card">
-    <div class="time-wrap">
-      <div class="time" id="time"><span class="main-time" id="mainTime">00:00</span><span class="secs" id="secs">:00</span></div>
+  <div class="stage" id="stage">
+    <div class="glass-card" aria-hidden="true"></div>
+    <div class="hud">
+      <div class="time-wrap"><div class="time" id="time">00:00</div></div>
+      <div class="date" id="date">1970-01-01 Thu</div>
     </div>
-    <div class="date" id="date">1970-01-01 Thu</div>
-    <div class="hints">タップ: 秒表示切替 / ダブルタップ: テーマ変更 / 長押し: 設定</div>
   </div>
+  <div class="hints">ダブルタップ: テーマ変更 / 長押し: 設定</div>
 
   <dialog id="settings">
     <form method="dialog" class="sheet">
@@ -126,13 +118,6 @@
         <div class="seg">
           <button type="button" id="b12" aria-pressed="false">12時間</button>
           <button type="button" id="b24" aria-pressed="true">24時間</button>
-        </div>
-      </div>
-      <div class="row">
-        <label>秒表示</label>
-        <div class="seg">
-          <button type="button" id="secOn" aria-pressed="true">ON</button>
-          <button type="button" id="secOff" aria-pressed="false">OFF</button>
         </div>
       </div>
       <div class="row">
@@ -162,83 +147,77 @@
   </dialog>
 
   <script>
-    const elMainTime = document.getElementById('mainTime');
-    const elSecs = document.getElementById('secs');
+    const elTime = document.getElementById('time');
     const elDate = document.getElementById('date');
-    const card = document.getElementById('card');
+    const stage = document.getElementById('stage');
+    const card = document.querySelector('.glass-card');
     const sheet = document.getElementById('settings');
-    const timeWrap = document.querySelector('.time-wrap');
-    const timeEl = document.getElementById('time');
+
     const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-    const state = { use24h: true, showSeconds: true, showDate: true, theme: 'theme-cyber' };
+    const storeKey = 'stylish-clock:v2';
+    const state = { use24h: true, showDate: true, theme: 'theme-cyber' };
+    try { Object.assign(state, JSON.parse(localStorage.getItem(storeKey)||'{}')); } catch {}
 
-    function pad(n) { return n < 10 ? '0' + n : ''+n; }
-    function formatDate(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${weekdays[d.getDay()]}`; }
+    function pad(n){ return n<10 ? '0'+n : ''+n; }
+    function formatDate(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${weekdays[d.getDay()]}`; }
 
     let lastMinute = -1;
-    function render() {
+    function render(){
       const d = new Date();
       let h = d.getHours();
-      let ampm = '';
-      if (!state.use24h) { ampm = h >= 12 ? ' PM' : ' AM'; h = h % 12; if (h === 0) h = 12; }
-      const m = pad(d.getMinutes());
-      const s = pad(d.getSeconds());
-      elMainTime.textContent = `${pad(h)}:${m}${!state.use24h ? ampm : ''}`;
-      elSecs.textContent = state.showSeconds ? `:${s}` : '';
-      if (state.showDate) elDate.textContent = formatDate(d); else elDate.textContent = '';
-
-      if (lastMinute !== d.getMinutes()) { lastMinute = d.getMinutes(); fitText(); }
+      if(!state.use24h){ h = h%12 || 12; }
+      const text = `${pad(h)}:${pad(d.getMinutes())}` + (state.use24h ? '' : (d.getHours()>=12?' PM':' AM'));
+      elTime.textContent = text;
+      elDate.textContent = state.showDate ? formatDate(d) : '';
+      if(lastMinute !== d.getMinutes()){ lastMinute = d.getMinutes(); fitText(); }
     }
 
-    // 横幅に合わせてフォントサイズを自動調整（秒表示も含めてフィット）
-    function fitText() {
-      const maxPx = Math.min(window.innerHeight * 0.22, window.innerWidth * 0.22); // 上限（安全値）
-      let size = maxPx; // 試行開始サイズ
-      timeEl.style.fontSize = size + 'px';
-      // 余白を考慮
-      const padX = timeWrap.clientWidth * 0.02;
-      let guard = 0;
-      while (timeEl.scrollWidth > timeWrap.clientWidth - padX && guard++ < 20) {
-        size -= 2; timeEl.style.fontSize = size + 'px';
+    // 時刻のフォントサイズをカード幅に自動フィット
+    function fitText(){
+      const wrapWidth = Math.min(stage.clientWidth * 0.86, 760 * 0.86);
+      let size = Math.min(window.innerHeight * 0.22, wrapWidth * 0.36); // 安全上限
+      elTime.style.fontSize = size + 'px';
+      // 少し余白を残してフィット
+      const guardMax = 40; let guard = 0;
+      while(elTime.scrollWidth > wrapWidth && guard++ < guardMax){
+        size -= 2; elTime.style.fontSize = size + 'px';
       }
     }
 
     setInterval(render, 1000); render(); fitText();
-    window.addEventListener('resize', fitText);
+    addEventListener('resize', fitText);
 
-    // タップで秒切替
-    card.addEventListener('click', () => { state.showSeconds = !state.showSeconds; render(); fitText(); });
+    // ジェスチャ
+    let lastTap = 0, pressTimer;
+    stage.addEventListener('touchend', () => { const now = Date.now(); if(now - lastTap < 300){ cycleTheme(); } lastTap = now; });
+    stage.addEventListener('pointerdown', () => { pressTimer = setTimeout(()=>{ sheet.showModal(); syncUI(); }, 500); });
+    stage.addEventListener('pointerup', () => clearTimeout(pressTimer));
 
-    // ダブルタップでテーマ切替
-    let lastTap = 0;
-    card.addEventListener('touchend', () => { const now = Date.now(); if (now - lastTap < 300) { cycleTheme(); } lastTap = now; });
-
-    // 長押しで設定表示
-    let pressTimer;
-    card.addEventListener('pointerdown', () => { pressTimer = setTimeout(() => { sheet.showModal(); syncUI(); }, 500); });
-    card.addEventListener('pointerup', () => clearTimeout(pressTimer));
-
-    function cycleTheme(){ const themes = ['theme-cyber','theme-ink','theme-sunrise','theme-ocean','theme-lava','theme-forest','theme-royal']; const idx = themes.indexOf(state.theme); state.theme = themes[(idx+1)%themes.length]; document.body.className = state.theme; }
-
-    function syncUI() {
-      b12.setAttribute('aria-pressed', String(!state.use24h));
-      b24.setAttribute('aria-pressed', String(state.use24h));
-      secOn.setAttribute('aria-pressed', String(state.showSeconds));
-      secOff.setAttribute('aria-pressed', String(!state.showSeconds));
-      dateOn.setAttribute('aria-pressed', String(state.showDate));
-      dateOff.setAttribute('aria-pressed', String(!state.showDate));
-      document.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === state.theme)));
+    function cycleTheme(){
+      const themes = ['theme-cyber','theme-ink','theme-sunrise','theme-ocean','theme-lava','theme-forest','theme-royal'];
+      const idx = themes.indexOf(state.theme); state.theme = themes[(idx+1)%themes.length];
+      document.body.className = state.theme; save();
     }
 
-    b12.addEventListener('click', () => { state.use24h = false; syncUI(); render(); fitText(); });
-    b24.addEventListener('click', () => { state.use24h = true; syncUI(); render(); fitText(); });
-    secOn.addEventListener('click', () => { state.showSeconds = true; syncUI(); render(); fitText(); });
-    secOff.addEventListener('click', () => { state.showSeconds = false; syncUI(); render(); fitText(); });
-    dateOn.addEventListener('click', () => { state.showDate = true; syncUI(); render(); });
-    dateOff.addEventListener('click', () => { state.showDate = false; syncUI(); render(); });
-    document.querySelectorAll('[data-theme]').forEach(btn => btn.addEventListener('click', () => { state.theme = btn.dataset.theme; document.body.className = state.theme; syncUI(); }));
-    reset.addEventListener('click', (e)=>{ e.preventDefault(); Object.assign(state, { use24h:true, showSeconds:true, showDate:true, theme:'theme-cyber' }); document.body.className = state.theme; syncUI(); render(); fitText(); });
+    function syncUI(){
+      b12.setAttribute('aria-pressed', String(!state.use24h));
+      b24.setAttribute('aria-pressed', String(state.use24h));
+      dateOn.setAttribute('aria-pressed', String(state.showDate));
+      dateOff.setAttribute('aria-pressed', String(!state.showDate));
+      document.querySelectorAll('[data-theme]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.theme===state.theme)));
+    }
+    function save(){ localStorage.setItem(storeKey, JSON.stringify(state)); }
+
+    b12.addEventListener('click', ()=>{ state.use24h=false; save(); syncUI(); render(); fitText(); });
+    b24.addEventListener('click', ()=>{ state.use24h=true; save(); syncUI(); render(); fitText(); });
+    dateOn.addEventListener('click', ()=>{ state.showDate=true; save(); syncUI(); render(); });
+    dateOff.addEventListener('click', ()=>{ state.showDate=false; save(); syncUI(); render(); });
+    document.querySelectorAll('[data-theme]').forEach(btn=>btn.addEventListener('click', ()=>{ state.theme = btn.dataset.theme; document.body.className = state.theme; save(); syncUI(); }));
+    reset.addEventListener('click',(e)=>{ e.preventDefault(); Object.assign(state,{use24h:true,showDate:true,theme:'theme-cyber'}); document.body.className = state.theme; save(); syncUI(); render(); fitText(); });
+
+    // 初期テーマ反映
+    document.body.className = state.theme;
   </script>
 </body>
 </html>
