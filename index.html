@@ -11,21 +11,24 @@
       --bg-1: #0f0f14;
       --bg-2: #141821;
       --fg-1: #e8ecf1;
-      --accent-1: #7df9ff;
-      --accent-2: #ff79c6;
       --glass: rgba(255, 255, 255, 0.08);
       --blur: 18px;
       --ring: rgba(255,255,255,0.14);
       --shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08);
+
+      /* default (cyber) */
+      --accent-1:#7df9ff; --accent-2:#ff79c6;
+      --glow-1: rgba(125,249,255,.45); --glow-2: rgba(255,121,198,.40);
+      --card-grad-1: rgba(125,249,255,.15); --card-grad-2: rgba(255,121,198,.12);
     }
 
-    .theme-cyber { --accent-1:#7df9ff; --accent-2:#ff79c6; }
-    .theme-ink   { --accent-1:#c2c8d0; --accent-2:#6e7a86; }
-    .theme-sunrise { --accent-1:#ffb86b; --accent-2:#ff6b6b; }
-    .theme-ocean { --accent-1:#00c9ff; --accent-2:#92fe9d; }
-    .theme-lava { --accent-1:#ff6a00; --accent-2:#ee0979; }
-    .theme-forest { --accent-1:#11998e; --accent-2:#38ef7d; }
-    .theme-royal { --accent-1:#8360c3; --accent-2:#2ebf91; }
+    .theme-cyber { --accent-1:#7df9ff; --accent-2:#ff79c6; --glow-1: rgba(125,249,255,.45); --glow-2: rgba(255,121,198,.40); --card-grad-1: rgba(125,249,255,.15); --card-grad-2: rgba(255,121,198,.12); }
+    .theme-ink   { --accent-1:#c2c8d0; --accent-2:#6e7a86; --glow-1: rgba(194,200,208,.35); --glow-2: rgba(110,122,134,.30); --card-grad-1: rgba(194,200,208,.16); --card-grad-2: rgba(110,122,134,.10); }
+    .theme-sunrise { --accent-1:#ffb86b; --accent-2:#ff6b6b; --glow-1: rgba(255,184,107,.40); --glow-2: rgba(255,107,107,.38); --card-grad-1: rgba(255,184,107,.18); --card-grad-2: rgba(255,107,107,.12); }
+    .theme-ocean { --accent-1:#00c9ff; --accent-2:#92fe9d; --glow-1: rgba(0,201,255,.42); --glow-2: rgba(146,254,157,.36); --card-grad-1: rgba(0,201,255,.16); --card-grad-2: rgba(146,254,157,.12); }
+    .theme-lava { --accent-1:#ff6a00; --accent-2:#ee0979; --glow-1: rgba(255,106,0,.45); --glow-2: rgba(238,9,121,.38); --card-grad-1: rgba(255,106,0,.16); --card-grad-2: rgba(238,9,121,.12); }
+    .theme-forest { --accent-1:#11998e; --accent-2:#38ef7d; --glow-1: rgba(17,153,142,.42); --glow-2: rgba(56,239,125,.34); --card-grad-1: rgba(17,153,142,.16); --card-grad-2: rgba(56,239,125,.12); }
+    .theme-royal { --accent-1:#8360c3; --accent-2:#2ebf91; --glow-1: rgba(131,96,195,.42); --glow-2: rgba(46,191,145,.34); --card-grad-1: rgba(131,96,195,.16); --card-grad-2: rgba(46,191,145,.12); }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
@@ -35,90 +38,83 @@
       color: var(--fg-1);
       background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
       background-attachment: fixed;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display: grid; place-items: center; overflow: hidden;
+    }
+
+    /* 背景のぼやけカラー（テーマ連動） */
+    body::before {
+      content: ""; position: fixed; inset: -20%; pointer-events: none; z-index: -1;
+      background:
+        radial-gradient(40% 28% at 86% 12%, var(--glow-2) 0%, transparent 60%),
+        radial-gradient(40% 28% at 12% 88%, var(--glow-1) 0%, transparent 60%);
+      filter: blur(26px);
     }
 
     .clock-card {
       width: min(92vw, 760px);
-      aspect-ratio: 1 / 2;
+      aspect-ratio: 1 / 2; /* 縦長 */
       border-radius: 28px;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      background: rgba(255,255,255,.06);
       backdrop-filter: blur(var(--blur)) saturate(1.15);
       -webkit-backdrop-filter: blur(var(--blur)) saturate(1.15);
       box-shadow: var(--shadow);
       border: 1px solid rgba(255,255,255,.10);
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
+      position: relative; overflow: hidden;
+      display: grid; grid-template-rows: 1fr auto auto 1fr;
+      transform: rotate(-3deg); /* ほんの少し傾ける */
+      isolation: isolate;
     }
 
+    /* カード内の薄いグラデーション（テーマ連動） */
+    .clock-card::before {
+      content: ""; position: absolute; inset: 0; z-index: -1;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
+        linear-gradient(120deg, var(--card-grad-1), var(--card-grad-2));
+    }
+
+    .time-wrap { align-self: start; justify-self: center; margin-top: 14%; width: 86%; }
+
     .time {
-      margin-top: 15%; /* 上1/3あたりに配置 */
-      font-weight: 700;
-      font-size: clamp(60px, 20vh, 220px);
+      font-weight: 800;
+      /* サイズはオートフィット用にJSで上書き */
+      font-size: 14vh;
       letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums lining-nums;
+      display: inline-flex; align-items: baseline; gap: 0.06em; white-space: nowrap;
       background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
       -webkit-background-clip: text; background-clip: text;
       -webkit-text-fill-color: transparent; color: transparent;
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
     }
 
-    .secs {
-      font-size: 0.5em;
-      vertical-align: super;
-      background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
-      -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent; color: transparent;
-    }
+    .main-time { line-height: .9; }
+    .secs { font-size: .36em; transform: translateY(-0.18em); background: linear-gradient(90deg, var(--accent-2), var(--accent-1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 
-    .date {
-      margin-top: 8px;
-      font-size: clamp(16px, 2.4vh, 24px);
-      font-weight: 500;
-      opacity: 0.92;
-    }
+    .date { align-self: start; justify-self: center; margin-top: 10px; font-size: clamp(14px, 2.2vh, 20px); font-weight: 600; opacity: .92; }
 
-    .hints {
-      position: absolute;
-      bottom: 14px;
-      font-size: 12px;
-      opacity: .6;
-      text-align: center;
-    }
+    .hints { align-self: end; justify-self: center; margin-bottom: 12px; font-size: 12px; opacity: .6; text-align: center; }
 
-    /* グラスモーフィズム追加レイヤー */
-    .glass-layer {
-      position: absolute;
-      top: 10%; left: 5%; right: 5%; height: 25%;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(20px) saturate(1.3);
-      -webkit-backdrop-filter: blur(20px) saturate(1.3);
-      border-radius: 30px;
-      box-shadow: 0 8px 30px rgba(0,0,0,.3);
-      transform: rotate(-3deg);
+    dialog#settings { border: none; padding: 0; background: transparent; }
+    .sheet {
+      width: min(92vw, 720px); margin: 0 auto; color: var(--fg-1);
+      background: var(--glass); backdrop-filter: blur(14px) saturate(1.1); -webkit-backdrop-filter: blur(14px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,.12); border-radius: 20px; box-shadow: var(--shadow); padding: 18px;
     }
-    .glass-layer2 {
-      position: absolute;
-      bottom: 10%; left: 8%; right: 8%; height: 20%;
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(25px) saturate(1.2);
-      -webkit-backdrop-filter: blur(25px) saturate(1.2);
-      border-radius: 40px;
-      box-shadow: inset 0 0 30px rgba(255,255,255,.15);
-      transform: rotate(2deg);
-    }
+    .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 6px; }
+    .row + .row { border-top: 1px solid rgba(255,255,255,.08); }
+    .row label { font-size: 14px; opacity: .9; }
+    .row .seg { display: inline-grid; grid-auto-flow: column; gap: 6px; }
+    button, .seg > button { appearance: none; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--fg-1); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+    .seg > button[aria-pressed="true"]{ background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); color: #0a0b0f; font-weight: 700; }
+    .footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
   </style>
 </head>
 <body class="theme-cyber">
   <div class="clock-card" id="card">
-    <div class="glass-layer"></div>
-    <div class="glass-layer2"></div>
-    <div class="time" id="time">00:00<span class="secs" id="secs">:00</span></div>
+    <div class="time-wrap">
+      <div class="time" id="time"><span class="main-time" id="mainTime">00:00</span><span class="secs" id="secs">:00</span></div>
+    </div>
     <div class="date" id="date">1970-01-01 Thu</div>
     <div class="hints">タップ: 秒表示切替 / ダブルタップ: テーマ変更 / 長押し: 設定</div>
   </div>
@@ -126,78 +122,123 @@
   <dialog id="settings">
     <form method="dialog" class="sheet">
       <div class="row">
+        <label>時間表示</label>
+        <div class="seg">
+          <button type="button" id="b12" aria-pressed="false">12時間</button>
+          <button type="button" id="b24" aria-pressed="true">24時間</button>
+        </div>
+      </div>
+      <div class="row">
         <label>秒表示</label>
         <div class="seg">
           <button type="button" id="secOn" aria-pressed="true">ON</button>
           <button type="button" id="secOff" aria-pressed="false">OFF</button>
         </div>
       </div>
+      <div class="row">
+        <label>日付</label>
+        <div class="seg">
+          <button type="button" id="dateOn" aria-pressed="true">表示</button>
+          <button type="button" id="dateOff" aria-pressed="false">非表示</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>テーマ</label>
+        <div class="seg">
+          <button type="button" data-theme="theme-cyber" aria-pressed="true">CYBER</button>
+          <button type="button" data-theme="theme-ink" aria-pressed="false">INK</button>
+          <button type="button" data-theme="theme-sunrise" aria-pressed="false">SUNRISE</button>
+          <button type="button" data-theme="theme-ocean" aria-pressed="false">OCEAN</button>
+          <button type="button" data-theme="theme-lava" aria-pressed="false">LAVA</button>
+          <button type="button" data-theme="theme-forest" aria-pressed="false">FOREST</button>
+          <button type="button" data-theme="theme-royal" aria-pressed="false">ROYAL</button>
+        </div>
+      </div>
       <div class="footer">
         <button value="cancel">閉じる</button>
+        <button id="reset">初期化</button>
       </div>
     </form>
   </dialog>
 
   <script>
-    const elTime = document.getElementById('time');
+    const elMainTime = document.getElementById('mainTime');
     const elSecs = document.getElementById('secs');
     const elDate = document.getElementById('date');
     const card = document.getElementById('card');
     const sheet = document.getElementById('settings');
+    const timeWrap = document.querySelector('.time-wrap');
+    const timeEl = document.getElementById('time');
     const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-    const state = { showSeconds: true, theme: 'theme-cyber' };
+    const state = { use24h: true, showSeconds: true, showDate: true, theme: 'theme-cyber' };
 
-    function pad(n) { return n < 10 ? '0' + n : n; }
+    function pad(n) { return n < 10 ? '0' + n : ''+n; }
+    function formatDate(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${weekdays[d.getDay()]}`; }
 
-    function formatDate(d) {
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${weekdays[d.getDay()]}`;
-    }
-
+    let lastMinute = -1;
     function render() {
       const d = new Date();
-      const h = pad(d.getHours());
+      let h = d.getHours();
+      let ampm = '';
+      if (!state.use24h) { ampm = h >= 12 ? ' PM' : ' AM'; h = h % 12; if (h === 0) h = 12; }
       const m = pad(d.getMinutes());
       const s = pad(d.getSeconds());
-      elTime.innerHTML = `${h}:${m}${state.showSeconds ? `<span class="secs">:${s}</span>` : ''}`;
-      elDate.textContent = formatDate(d);
+      elMainTime.textContent = `${pad(h)}:${m}${!state.use24h ? ampm : ''}`;
+      elSecs.textContent = state.showSeconds ? `:${s}` : '';
+      if (state.showDate) elDate.textContent = formatDate(d); else elDate.textContent = '';
+
+      if (lastMinute !== d.getMinutes()) { lastMinute = d.getMinutes(); fitText(); }
     }
 
-    setInterval(render, 1000);
-    render();
+    // 横幅に合わせてフォントサイズを自動調整（秒表示も含めてフィット）
+    function fitText() {
+      const maxPx = Math.min(window.innerHeight * 0.22, window.innerWidth * 0.22); // 上限（安全値）
+      let size = maxPx; // 試行開始サイズ
+      timeEl.style.fontSize = size + 'px';
+      // 余白を考慮
+      const padX = timeWrap.clientWidth * 0.02;
+      let guard = 0;
+      while (timeEl.scrollWidth > timeWrap.clientWidth - padX && guard++ < 20) {
+        size -= 2; timeEl.style.fontSize = size + 'px';
+      }
+    }
+
+    setInterval(render, 1000); render(); fitText();
+    window.addEventListener('resize', fitText);
 
     // タップで秒切替
-    card.addEventListener('click', () => {
-      state.showSeconds = !state.showSeconds;
-      render();
-    });
+    card.addEventListener('click', () => { state.showSeconds = !state.showSeconds; render(); fitText(); });
 
     // ダブルタップでテーマ切替
     let lastTap = 0;
-    card.addEventListener('touchend', () => {
-      const now = Date.now();
-      if (now - lastTap < 300) {
-        cycleTheme();
-      }
-      lastTap = now;
-    });
+    card.addEventListener('touchend', () => { const now = Date.now(); if (now - lastTap < 300) { cycleTheme(); } lastTap = now; });
 
     // 長押しで設定表示
     let pressTimer;
-    card.addEventListener('pointerdown', () => {
-      pressTimer = setTimeout(() => { sheet.showModal(); }, 500);
-    });
+    card.addEventListener('pointerdown', () => { pressTimer = setTimeout(() => { sheet.showModal(); syncUI(); }, 500); });
     card.addEventListener('pointerup', () => clearTimeout(pressTimer));
 
-    function cycleTheme(){
-      const themes = ['theme-cyber','theme-ink','theme-sunrise','theme-ocean','theme-lava','theme-forest','theme-royal'];
-      const idx = themes.indexOf(state.theme);
-      state.theme = themes[(idx+1)%themes.length];
-      document.body.className = state.theme;
+    function cycleTheme(){ const themes = ['theme-cyber','theme-ink','theme-sunrise','theme-ocean','theme-lava','theme-forest','theme-royal']; const idx = themes.indexOf(state.theme); state.theme = themes[(idx+1)%themes.length]; document.body.className = state.theme; }
+
+    function syncUI() {
+      b12.setAttribute('aria-pressed', String(!state.use24h));
+      b24.setAttribute('aria-pressed', String(state.use24h));
+      secOn.setAttribute('aria-pressed', String(state.showSeconds));
+      secOff.setAttribute('aria-pressed', String(!state.showSeconds));
+      dateOn.setAttribute('aria-pressed', String(state.showDate));
+      dateOff.setAttribute('aria-pressed', String(!state.showDate));
+      document.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === state.theme)));
     }
 
-    document.getElementById('secOn').addEventListener('click', () => { state.showSeconds = true; render(); });
-    document.getElementById('secOff').addEventListener('click', () => { state.showSeconds = false; render(); });
+    b12.addEventListener('click', () => { state.use24h = false; syncUI(); render(); fitText(); });
+    b24.addEventListener('click', () => { state.use24h = true; syncUI(); render(); fitText(); });
+    secOn.addEventListener('click', () => { state.showSeconds = true; syncUI(); render(); fitText(); });
+    secOff.addEventListener('click', () => { state.showSeconds = false; syncUI(); render(); fitText(); });
+    dateOn.addEventListener('click', () => { state.showDate = true; syncUI(); render(); });
+    dateOff.addEventListener('click', () => { state.showDate = false; syncUI(); render(); });
+    document.querySelectorAll('[data-theme]').forEach(btn => btn.addEventListener('click', () => { state.theme = btn.dataset.theme; document.body.className = state.theme; syncUI(); }));
+    reset.addEventListener('click', (e)=>{ e.preventDefault(); Object.assign(state, { use24h:true, showSeconds:true, showDate:true, theme:'theme-cyber' }); document.body.className = state.theme; syncUI(); render(); fitText(); });
   </script>
 </body>
 </html>
