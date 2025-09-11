@@ -2,222 +2,303 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Stylish Clock</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="VaporClock" />
+  <title>VaporClock</title>
+  <meta name="theme-color" content="#000000" />
+
   <style>
     :root {
-      --bg-1: #0f0f14;
-      --bg-2: #141821;
-      --fg-1: #e8ecf1;
-      --glass: rgba(255, 255, 255, 0.08);
-      --blur: 18px;
-      --ring: rgba(255,255,255,0.14);
-      --shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08);
-      /* default (cyber) */
-      --accent-1:#7df9ff; --accent-2:#ff79c6;
-      --glow-1: rgba(125,249,255,.45); --glow-2: rgba(255,121,198,.40);
-      --card-grad-1: rgba(125,249,255,.15); --card-grad-2: rgba(255,121,198,.12);
+      /* Colors */
+      --bg-deep: #0b1020;   /* 濃紺 */
+      --bg-deeper: #05070d; /* さらに暗い */
+      --neon-a: #ff3ea5;    /* マゼンタ */
+      --neon-b: #ffb200;    /* オレンジ */
+
+      /* Layout ratios */
+      --top-margin-vh-min: 8;  /* 時計の上余白(%) */
+      --top-margin-vh-max: 10; /* 端末差対応で最小/最大を許容 */
+      --vanish-vh-min: 60;     /* 消失点の高さ(%) */
+      --vanish-vh-max: 65;
+
+      /* Typo */
+      --clock-max-width: 68vw; /* 余白を少し残す */
+      --clock-letter-spacing: -0.02em; /* ややタイトに */
+
+      /* Glow */
+      --glow-soft: 14px;
+      --glow-strong: 28px;
+
+      /* Noise */
+      --noise-opacity: 0.045; /* ごく薄い */
     }
 
-    /* 7テーマ（文字色・背景グロー・カード内グラデを連動） */
-    .theme-cyber { --accent-1:#7df9ff; --accent-2:#ff79c6; --glow-1: rgba(125,249,255,.45); --glow-2: rgba(255,121,198,.40); --card-grad-1: rgba(125,249,255,.15); --card-grad-2: rgba(255,121,198,.12); }
-    .theme-ink   { --accent-1:#c2c8d0; --accent-2:#6e7a86; --glow-1: rgba(194,200,208,.35); --glow-2: rgba(110,122,134,.30); --card-grad-1: rgba(194,200,208,.16); --card-grad-2: rgba(110,122,134,.10); }
-    .theme-sunrise { --accent-1:#ffb86b; --accent-2:#ff6b6b; --glow-1: rgba(255,184,107,.40); --glow-2: rgba(255,107,107,.38); --card-grad-1: rgba(255,184,107,.18); --card-grad-2: rgba(255,107,107,.12); }
-    .theme-ocean { --accent-1:#00c9ff; --accent-2:#92fe9d; --glow-1: rgba(0,201,255,.42); --glow-2: rgba(146,254,157,.36); --card-grad-1: rgba(0,201,255,.16); --card-grad-2: rgba(146,254,157,.12); }
-    .theme-lava { --accent-1:#ff6a00; --accent-2:#ee0979; --glow-1: rgba(255,106,0,.45); --glow-2: rgba(238,9,121,.38); --card-grad-1: rgba(255,106,0,.16); --card-grad-2: rgba(238,9,121,.12); }
-    .theme-forest { --accent-1:#11998e; --accent-2:#38ef7d; --glow-1: rgba(17,153,142,.42); --glow-2: rgba(56,239,125,.34); --card-grad-1: rgba(17,153,142,.16); --card-grad-2: rgba(56,239,125,.12); }
-    .theme-royal { --accent-1:#8360c3; --accent-2:#2ebf91; --glow-1: rgba(131,96,195,.42); --glow-2: rgba(46,191,145,.34); --card-grad-1: rgba(131,96,195,.16); --card-grad-2: rgba(46,191,145,.12); }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
-
-    body {
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      color: var(--fg-1);
-      background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
-      background-attachment: fixed;
-      display: grid; place-items: center; overflow: hidden;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deeper) 100%);
+      color: #fff;
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior: none;
     }
 
-    /* 背景ぼかし（テーマ連動） */
-    body::before {
-      content: ""; position: fixed; inset: -20%; pointer-events: none; z-index: -1;
-      background:
-        radial-gradient(40% 28% at 86% 12%, var(--glow-2) 0%, transparent 60%),
-        radial-gradient(40% 28% at 12% 88%, var(--glow-1) 0%, transparent 60%);
-      filter: blur(26px);
+    /* セーフエリア考慮 */
+    .app {
+      position: relative;
+      height: 100%;
+      width: 100%;
+      padding-top: max(calc(var(--top-margin-vh-min) * 1vh), env(safe-area-inset-top));
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      padding-bottom: env(safe-area-inset-bottom);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      box-sizing: border-box;
+      touch-action: manipulation; /* 誤操作抑止 */
     }
 
-    /* ===== レイアウト ===== */
-    .stage { position: relative; width: min(92vw, 760px); aspect-ratio: 1/2; }
-
-    /* ガラス（カード）だけを斜めにする */
-    .glass-card {
-      position: absolute; inset: 0; border-radius: 28px; overflow: hidden; z-index: 1;
-      background: rgba(255,255,255,.06);
-      backdrop-filter: blur(var(--blur)) saturate(1.15); -webkit-backdrop-filter: blur(var(--blur)) saturate(1.15);
-      box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,.10);
-      transform: rotate(3deg); /* 右上→左下へ傾ける */
+    /* 時計 */
+    .clock {
+      place-self: start center;
+      width: min(92vw, var(--clock-max-width));
+      font-family: -apple-system, system-ui, "SF Pro Display", "SF Pro Text", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-weight: 600;
+      font-size: clamp(40px, 12.5vw, 88px);
+      letter-spacing: var(--clock-letter-spacing);
+      line-height: 1.05;
+      text-align: center;
+      background: linear-gradient(90deg, var(--neon-a), var(--neon-b));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow:
+        0 0 1px rgba(255,255,255,0.2),
+        0 0 var(--glow-soft) color-mix(in oklab, var(--neon-a) 60%, transparent),
+        0 0 var(--glow-strong) color-mix(in oklab, var(--neon-b) 40%, transparent);
+      user-select: none;
     }
-    .glass-card::before{ /* 薄い内部グラデ（テーマ連動） */
-      content:""; position:absolute; inset:0;
-      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
-                  linear-gradient(120deg, var(--card-grad-1), var(--card-grad-2));
+
+    /* 描画レイヤ（SVG） */
+    .scene {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      contain: strict;
     }
 
-    /* 時計（水平のまま） */
-    .hud { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-rows: 1fr auto auto 1fr; }
-    .time-wrap { align-self: start; justify-self: center; margin-top: 13%; width: 86%; }
-    .time {
-      font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums lining-nums;
-      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-      filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
-      white-space: nowrap; display: inline-block;
-      /* フォントサイズはJSでfit */
-      font-size: 14vh;
+    /* ノイズ(静止) */
+    .noise {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: var(--noise-opacity);
+      mix-blend-mode: overlay;
     }
-    .date { align-self: start; justify-self: center; margin-top: 12px; font-size: clamp(14px, 2.2vh, 20px); font-weight: 600; opacity: .92; }
 
-    /* 画面下の説明書き */
-    .hints { position: fixed; left: 0; right: 0; bottom: max(10px, env(safe-area-inset-bottom)); text-align: center; font-size: 12px; opacity: .65; z-index: 3; }
-
-    /* 設定ダイアログ */
-    dialog#settings { border: none; padding: 0; background: transparent; }
-    .sheet {
-      width: min(92vw, 720px); margin: 0 auto; color: var(--fg-1);
-      background: var(--glass); backdrop-filter: blur(14px) saturate(1.1); -webkit-backdrop-filter: blur(14px) saturate(1.1);
-      border: 1px solid rgba(255,255,255,.12); border-radius: 20px; box-shadow: var(--shadow); padding: 18px;
+    /* 回転時のガイダンス（縦固定の代替） */
+    .orientation-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, system-ui, "SF Pro Text", Inter, Roboto, sans-serif;
+      z-index: 20;
     }
-    .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 6px; }
-    .row + .row { border-top: 1px solid rgba(255,255,255,.08); }
-    .row label { font-size: 14px; opacity: .9; }
-    .row .seg { display: inline-grid; grid-auto-flow: column; gap: 6px; }
-    button, .seg > button { appearance: none; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--fg-1); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
-    .seg > button[aria-pressed="true"]{ background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); color: #0a0b0f; font-weight: 700; }
-    .footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    @media (orientation: landscape) {
+      .orientation-overlay { display: flex; }
+    }
+
+    /* ダーク固定（念のため） */
+    @media (prefers-color-scheme: light) {
+      :root { color-scheme: dark; }
+    }
   </style>
 </head>
-<body class="theme-cyber">
-  <div class="stage" id="stage">
-    <div class="glass-card" aria-hidden="true"></div>
-    <div class="hud">
-      <div class="time-wrap"><div class="time" id="time">00:00</div></div>
-      <div class="date" id="date">1970-01-01 Thu</div>
+<body>
+  <div class="app" aria-label="VaporClock App">
+    <div class="clock" id="clock" aria-live="polite" aria-atomic="true">00:00</div>
+
+    <div class="scene" id="scene" aria-hidden="true">
+      <!-- 背面：静止ノイズ (SVGフィルタ) -->
+      <svg class="noise" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <filter id="noiseFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"></feTurbulence>
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+      </svg>
+
+      <!-- メインシーン：高速道路＆ヤシ（SVG静止描画） -->
+      <svg id="vapor-svg" viewBox="0 0 100 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <!-- ネオン用グラデ -->
+          <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="var(--neon-a)" />
+            <stop offset="100%" stop-color="var(--neon-b)" />
+          </linearGradient>
+
+          <!-- ネオングロー（フィルタ） -->
+          <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="0.8" result="blur1" />
+            <feGaussianBlur stdDeviation="2.6" in="blur1" result="blur2" />
+            <feMerge>
+              <feMergeNode in="blur2" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <!-- 路面の微グラデ（暗部） -->
+          <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#070a12"/>
+            <stop offset="100%" stop-color="#020308"/>
+          </linearGradient>
+        </defs>
+
+        <!-- 背景の地面（下半分付近） -->
+        <rect x="0" y="110" width="100" height="90" fill="url(#groundGrad)" />
+
+        <!-- 消失点（縦比 60〜65% の中間＝62.5%付近）: viewBox高さ200に対して 125 -->
+        <!-- 路面シルエット（台形） -->
+        <polygon id="road" points="
+          5,200  95,200  58,125  42,125
+        " fill="#05070d" />
+
+        <!-- 路肩ライン（ネオン） -->
+        <polyline points="5,200 42,125" fill="none" stroke="url(#neonGrad)" stroke-width="0.8" filter="url(#neonGlow)" />
+        <polyline points="95,200 58,125" fill="none" stroke="url(#neonGrad)" stroke-width="0.8" filter="url(#neonGlow)" />
+
+        <!-- センターレーン（破線風に数本を静的配置） -->
+        <g stroke="url(#neonGrad)" stroke-width="0.5" filter="url(#neonGlow)">
+          <polyline points="50,190 50,175" />
+          <polyline points="50,165 50,150" />
+          <polyline points="50,140 50,130" />
+        </g>
+
+        <!-- 右側ヤシの木（シルエット + ネオン縁） -->
+        <!-- 簡易ベクタ: 幹はわずかに右傾、葉は扇状に数本 -->
+        <g transform="translate(78,120) scale(1,1)">
+          <!-- 幹（影） -->
+          <path d="M0,0 C2,20 2,60 1.2,80 C1,92 0,100 -0.6,112 L-4,112 C-3,96 -2,80 -2.6,68 C-3,56 -3,20 -1,0 Z"
+                fill="#030308" />
+          <!-- 幹（ネオン縁） -->
+          <path d="M0,0 C2,20 2,60 1.2,80 C1,92 0,100 -0.6,112"
+                fill="none" stroke="url(#neonGrad)" stroke-width="1.2" filter="url(#neonGlow)" />
+
+          <!-- 葉（影） -->
+          <g fill="none" stroke="#04050a" stroke-width="3">
+            <path d="M0,2 C18,-10 34,-12 50,-10" />
+            <path d="M0,4 C16,-4 30,-6 44,-4" />
+            <path d="M0,6 C12,0 24,2 36,6" />
+            <path d="M0,8 C-10,2 -22,4 -34,10" />
+            <path d="M0,10 C-14,0 -28,-2 -40,-2" />
+          </g>
+          <!-- 葉（ネオン縁） -->
+          <g fill="none" stroke="url(#neonGrad)" stroke-width="0.9" filter="url(#neonGlow)">
+            <path d="M0,2 C18,-10 34,-12 50,-10" />
+            <path d="M0,4 C16,-4 30,-6 44,-4" />
+            <path d="M0,6 C12,0 24,2 36,6" />
+            <path d="M0,8 C-10,2 -22,4 -34,10" />
+            <path d="M0,10 C-14,0 -28,-2 -40,-2" />
+          </g>
+        </g>
+      </svg>
     </div>
   </div>
-  <div class="hints">ダブルタップ: テーマ変更 / 長押し: 設定</div>
 
-  <dialog id="settings">
-    <form method="dialog" class="sheet">
-      <div class="row">
-        <label>時間表示</label>
-        <div class="seg">
-          <button type="button" id="b12" aria-pressed="false">12時間</button>
-          <button type="button" id="b24" aria-pressed="true">24時間</button>
-        </div>
-      </div>
-      <div class="row">
-        <label>日付</label>
-        <div class="seg">
-          <button type="button" id="dateOn" aria-pressed="true">表示</button>
-          <button type="button" id="dateOff" aria-pressed="false">非表示</button>
-        </div>
-      </div>
-      <div class="row">
-        <label>テーマ</label>
-        <div class="seg">
-          <button type="button" data-theme="theme-cyber" aria-pressed="true">CYBER</button>
-          <button type="button" data-theme="theme-ink" aria-pressed="false">INK</button>
-          <button type="button" data-theme="theme-sunrise" aria-pressed="false">SUNRISE</button>
-          <button type="button" data-theme="theme-ocean" aria-pressed="false">OCEAN</button>
-          <button type="button" data-theme="theme-lava" aria-pressed="false">LAVA</button>
-          <button type="button" data-theme="theme-forest" aria-pressed="false">FOREST</button>
-          <button type="button" data-theme="theme-royal" aria-pressed="false">ROYAL</button>
-        </div>
-      </div>
-      <div class="footer">
-        <button value="cancel">閉じる</button>
-        <button id="reset">初期化</button>
-      </div>
-    </form>
-  </dialog>
+  <div class="orientation-overlay" aria-hidden="true">縦向きでご利用ください</div>
 
   <script>
-    const elTime = document.getElementById('time');
-    const elDate = document.getElementById('date');
-    const stage = document.getElementById('stage');
-    const card = document.querySelector('.glass-card');
-    const sheet = document.getElementById('settings');
+    (function() {
+      'use strict';
 
-    const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      /* ==========================
+         Utility: clamp helpers
+      ========================== */
+      const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 
-    const storeKey = 'stylish-clock:v2';
-    const state = { use24h: true, showDate: true, theme: 'theme-cyber' };
-    try { Object.assign(state, JSON.parse(localStorage.getItem(storeKey)||'{}')); } catch {}
-
-    function pad(n){ return n<10 ? '0'+n : ''+n; }
-    function formatDate(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${weekdays[d.getDay()]}`; }
-
-    let lastMinute = -1;
-    function render(){
-      const d = new Date();
-      let h = d.getHours();
-      if(!state.use24h){ h = h%12 || 12; }
-      const text = `${pad(h)}:${pad(d.getMinutes())}` + (state.use24h ? '' : (d.getHours()>=12?' PM':' AM'));
-      elTime.textContent = text;
-      elDate.textContent = state.showDate ? formatDate(d) : '';
-      if(lastMinute !== d.getMinutes()){ lastMinute = d.getMinutes(); fitText(); }
-    }
-
-    // 時刻のフォントサイズをカード幅に自動フィット
-    function fitText(){
-      const wrapWidth = Math.min(stage.clientWidth * 0.86, 760 * 0.86);
-      let size = Math.min(window.innerHeight * 0.22, wrapWidth * 0.36); // 安全上限
-      elTime.style.fontSize = size + 'px';
-      // 少し余白を残してフィット
-      const guardMax = 40; let guard = 0;
-      while(elTime.scrollWidth > wrapWidth && guard++ < guardMax){
-        size -= 2; elTime.style.fontSize = size + 'px';
+      /* ==========================
+         Time: minute-sync update
+      ========================== */
+      function formatHHMM(d) {
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
       }
-    }
 
-    setInterval(render, 1000); render(); fitText();
-    addEventListener('resize', fitText);
+      function updateClockNow() {
+        const el = document.getElementById('clock');
+        el.textContent = formatHHMM(new Date());
+      }
 
-    // ジェスチャ
-    let lastTap = 0, pressTimer;
-    stage.addEventListener('touchend', () => { const now = Date.now(); if(now - lastTap < 300){ cycleTheme(); } lastTap = now; });
-    stage.addEventListener('pointerdown', () => { pressTimer = setTimeout(()=>{ sheet.showModal(); syncUI(); }, 500); });
-    stage.addEventListener('pointerup', () => clearTimeout(pressTimer));
+      function scheduleMinuteSync() {
+        // 初回: 直ちに表示
+        updateClockNow();
+        // 次の00秒までの残りmsを算出
+        const now = new Date();
+        const msToNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+        setTimeout(() => {
+          updateClockNow();
+          // 以後は毎分更新（ドリフト軽減のため再帰）
+          scheduleMinuteSync();
+        }, Math.max(0, msToNextMinute));
+      }
 
-    function cycleTheme(){
-      const themes = ['theme-cyber','theme-ink','theme-sunrise','theme-ocean','theme-lava','theme-forest','theme-royal'];
-      const idx = themes.indexOf(state.theme); state.theme = themes[(idx+1)%themes.length];
-      document.body.className = state.theme; save();
-    }
+      /* ==========================
+         Wake Lock (best-effort)
+      ========================== */
+      let wakeLock = null;
 
-    function syncUI(){
-      b12.setAttribute('aria-pressed', String(!state.use24h));
-      b24.setAttribute('aria-pressed', String(state.use24h));
-      dateOn.setAttribute('aria-pressed', String(state.showDate));
-      dateOff.setAttribute('aria-pressed', String(!state.showDate));
-      document.querySelectorAll('[data-theme]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.theme===state.theme)));
-    }
-    function save(){ localStorage.setItem(storeKey, JSON.stringify(state)); }
+      async function requestWakeLock() {
+        try {
+          if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener && wakeLock.addEventListener('release', () => {
+              // 何もしない（静かにフォールバック）
+            });
+          }
+        } catch (e) {
+          // iOS等で未対応/拒否の場合は無視
+        }
+      }
 
-    b12.addEventListener('click', ()=>{ state.use24h=false; save(); syncUI(); render(); fitText(); });
-    b24.addEventListener('click', ()=>{ state.use24h=true; save(); syncUI(); render(); fitText(); });
-    dateOn.addEventListener('click', ()=>{ state.showDate=true; save(); syncUI(); render(); });
-    dateOff.addEventListener('click', ()=>{ state.showDate=false; save(); syncUI(); render(); });
-    document.querySelectorAll('[data-theme]').forEach(btn=>btn.addEventListener('click', ()=>{ state.theme = btn.dataset.theme; document.body.className = state.theme; save(); syncUI(); }));
-    reset.addEventListener('click',(e)=>{ e.preventDefault(); Object.assign(state,{use24h:true,showDate:true,theme:'theme-cyber'}); document.body.className = state.theme; save(); syncUI(); render(); fitText(); });
+      function setupWakeLockAutoReacquire() {
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible' && wakeLock !== null) {
+            requestWakeLock();
+          }
+        });
+        // 初回はユーザー操作が無くても一度試す（許可されない場合は静かに失敗）
+        requestWakeLock();
+        // タップ時にも再試行（iOS対策）
+        window.addEventListener('pointerdown', () => requestWakeLock(), { passive: true });
+      }
 
-    // 初期テーマ反映
-    document.body.className = state.theme;
+      /* ==========================
+         Layout helpers
+      ========================== */
+      function adjustScene() {
+        // 端末差による上余白/消失点の微調整が必要ならここで拡張
+        // （今回のSVGは比率で描画済みのため、特段の処理は不要）
+      }
+
+      /* ==========================
+         Init
+      ========================== */
+      window.addEventListener('load', () => {
+        scheduleMinuteSync();
+        setupWakeLockAutoReacquire();
+        adjustScene();
+      }, { once: true });
+
+      window.addEventListener('resize', adjustScene);
+    })();
   </script>
 </body>
 </html>
