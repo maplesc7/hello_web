@@ -1,515 +1,389 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Count Up Tools</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Stylish Clock</title>
   <style>
     :root {
-      --wave-opacity: 0.8;
-      /* ライトモード用カラー */
-      --light-background-color: #ffffff;
-      --light-text-color: #333333;
-      --light-container-bg: #e4e6bd;
-      --light-textarea-bg: #eceeb8;
-      --light-textarea-text: #626343;
-      --light-textarea-border: #616313;
-      --light-button-bg: #c6c89c;
-      --light-button-text: #7f8064;
-      --light-button-hover: #d0d0d0;
-      --flash-color-light: #ffcccc;
-      --flash-stop-color-light: #ffffcc;
-      
-      /* ダークモード用カラー */
-      --dark-background-color: #121212;
-      --dark-text-color: #e0e0e0;
-      --dark-container-bg: rgba(100, 100, 100, 0.4);
-      --dark-textarea-bg: #3c3400;
-      --dark-textarea-text: #ffffff;
-      --dark-textarea-border: #555;
-      --dark-button-bg: #3a3a3a;
-      --dark-button-text: #ffffff;
-      --dark-button-hover: #555;
-      --flash-color-dark: #990000;
-      --flash-stop-color-dark: #999900;
+      --bg-1: #0f0f14;
+      --bg-2: #141821;
+      --fg-1: #e8ecf1;
+      --accent-1: #7df9ff; /* cyber cyan */
+      --accent-2: #ff79c6; /* neon magenta */
+      --glass: rgba(255, 255, 255, 0.08);
+      --blur: 18px;
+      --ring: rgba(255,255,255,0.14);
+      --shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+    
+    /* Themes */
+    .theme-cyber { --accent-1:#7df9ff; --accent-2:#ff79c6; }
+    .theme-ink   { --accent-1:#c2c8d0; --accent-2:#6e7a86; }
+    .theme-sunrise { --accent-1:#ffb86b; --accent-2:#ff6b6b; }
 
-      /* 現在時刻・分（または時:分）の文字色 */
-      --current-time-color: #80990f;
-    }
-    html {
-      overflow: hidden;
-    }
-    body.light-mode {
-      --background-color: var(--light-background-color);
-      --text-color: var(--light-text-color);
-      --container-bg: var(--light-container-bg);
-      --textarea-bg: var(--light-textarea-bg);
-      --textarea-text: var(--light-textarea-text);
-      --textarea-border: var(--light-textarea-border);
-      --button-bg: var(--light-button-bg);
-      --button-text: var(--light-button-text);
-      --button-hover: var(--light-button-hover);
-      --flash-color: var(--flash-color-light);
-      --flash-stop-color: var(--flash-stop-color-light);
-    }
-    body.dark-mode {
-      --background-color: var(--dark-background-color);
-      --text-color: var(--dark-text-color);
-      --container-bg: var(--dark-container-bg);
-      --textarea-bg: var(--dark-textarea-bg);
-      --textarea-text: var(--dark-textarea-text);
-      --textarea-border: var(--dark-textarea-border);
-      --button-bg: var(--dark-button-bg);
-      --button-text: var(--dark-button-text);
-      --button-hover: var(--dark-button-hover);
-      --flash-color: var(--flash-color-dark);
-      --flash-stop-color: var(--flash-stop-color-dark);
-    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
     body {
       margin: 0;
-      padding: 0;
-      background-color: var(--background-color);
-      color: var(--text-color);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      color: var(--fg-1);
+      background: radial-gradient(120% 80% at 80% 0%, var(--accent-2) 0%, transparent 40%),
+                  radial-gradient(120% 80% at 0% 100%, var(--accent-1) 0%, transparent 40%),
+                  linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      background-attachment: fixed;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .safe {
+      padding: constant(safe-area-inset-top) constant(safe-area-inset-right)
+               constant(safe-area-inset-bottom) constant(safe-area-inset-left);
+      padding: env(safe-area-inset-top) env(safe-area-inset-right)
+               env(safe-area-inset-bottom) env(safe-area-inset-left);
+      display: grid;
+      place-items: center;
+      height: 100dvh;
       position: relative;
-      transition: background-color 3s ease, color 3s ease;
-    }
-    body.flash {
-      background-color: var(--flash-color);
-    }
-    body.flash textarea#purpose {
-      background-color: var(--flash-color);
-    }
-    body.flash-stop {
-      background-color: var(--flash-stop-color);
-    }
-    body.flash-stop textarea#purpose {
-      background-color: var(--flash-stop-color);
     }
 
-    /* 背景の波線（省略可能） */
-    .wave-bg {
-      position: fixed;
-      left: 7%;
-      top: 0;
-      width: 15vw;
-      height: 100vh;
-      z-index: -1;
-    }
-    .wave-bg svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-    .wave-bg path {
-      stroke-opacity: var(--wave-opacity);
-    }
-
-    /* ラッパーを縦 flex、全高 100vh に */
-    #main-wrapper {
-      display: flex;
-      flex-direction: column;
-      width: 920px;
-      height: 100vh;
-      margin: 0 auto;
-    }
-
-    /* タイマー＋メモ部分を残り領域いっぱいに */
-    .container {
-      flex: 1;
-      background-color: var(--container-bg);
-      display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-      border-radius: 5px;
-    }
-
-    .range-column {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      flex: 0;
-      height: 73px;
-    }
-    .time-vertical {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    .range-column #currentTimeDisplay {
-      flex: 1;
-      text-align: center;
-      color: var(--current-time-color);
-    }
-    .range-column div {
-      font-size: 1.3rem;
-      font-family: 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-      margin: 0;
-      text-align: center;
-    }
-
-    .count-column {
-      flex: 0 0 10ch;
-      width: 10ch;
-      min-width: 21ch;
-      max-width: 21ch;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 73px;
-    }
-    .time-display {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      font-weight: bold;
-      width: 100%;
-      white-space: nowrap;
+    .clock-card {
+      position: relative;
+      width: min(92vw, 760px);
+      aspect-ratio: 1 / 2; /* ほぼ1:2の比率に最適化 */
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      backdrop-filter: blur(var(--blur)) saturate(1.15);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(1.15);
+      box-shadow: var(--shadow);
       overflow: hidden;
-      text-align: center;
-      color: #7d7f59;
-    }
-    .time-display .fraction {
-      display: none;
-    }
-    .colored-minutes {
-      color: var(--current-time-color);
+      border: 1px solid rgba(255,255,255,.10);
+      isolation: isolate;
     }
 
-    .button-column {
-      flex: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-      height: 73px;
-    }
-    button {
-      background-color: var(--button-bg);
-      border: none;
-      border-radius: 5px;
-      color: var(--button-text);
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      height: 35px;
-      width: 100px;
-    }
-    button:hover {
-      background-color: var(--button-hover);
+    /* 装飾リング */
+    .clock-card::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(60% 20% at 50% -10%, rgba(255,255,255,.35), transparent 60%),
+        conic-gradient(from 180deg at 50% 50%, var(--ring), transparent 40%, var(--ring) 60%, transparent 75%);
+      mix-blend-mode: overlay;
+      pointer-events: none;
     }
 
-    /* メモ用カラムから固定高さを削除 */
-    .memo-column {
-      flex: 3;
-      display: flex;
+    .content {
+      height: 100%; width: 100%;
+      display: grid;
+      grid-template-rows: 1fr auto 1fr; /* 上余白 / 時計 / 下余白 */
+      padding: 4vh 4vw;
       position: relative;
     }
-    textarea#purpose {
-      width: 98%;
 
-      border: 2px solid var(--textarea-border);
-      border-radius: 5px;
-      background-color: var(--textarea-bg);
-      color: var(--textarea-text);
-      font-size: 1rem;
-      resize: none;
-      transition: background-color 3s ease, color 3s ease, border-color 3s ease;
-      line-height: 1;
-    }
-    textarea:focus {
-      outline: none;
-      box-shadow: none;
-      border: 1px solid #ccc;
+    .now {
+      align-self: center;
+      justify-self: center;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums lining-nums;
+      line-height: 0.94;
+      display: grid; gap: 0.7vh;
+      text-align: center;
+      filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
+      user-select: none;
     }
 
-    /* ログ用はお好みで */
-    .log-container {
-      flex: 0;
-      /* display: none; */
+    .time {
+      font-weight: 700;
+      /* 画面にあわせてダイナミックに拡大。1:2 縦長に最適化 */
+      font-size: clamp(48px, min(14vh, 18vw), 160px);
+      letter-spacing: -0.03em;
+      background: linear-gradient( 90deg, var(--accent-1), var(--accent-2) );
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
     }
-    .log-container textarea#log {
-      width: 100%;
-      height: 98%;
-      box-sizing: border-box;
-      border: 2px solid var(--textarea-border);
-      border-radius: 5px;
-      background-color: var(--textarea-bg);
-      color: var(--textarea-text);
-      font-size: 1.2rem;
-      resize: none;
-      transition: background-color 3s ease, color 3s ease, border-color 3s ease;
-      line-height: 1;
-      display: none;
+
+    .secs { opacity: .85; }
+
+    .date {
+      font-size: clamp(14px, 2.2vh, 20px);
+      font-weight: 500;
+      opacity: 0.92;
+    }
+
+    .status {
+      position: absolute; top: 10px; left: 12px; right: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+      opacity: .7;
+    }
+
+    .hints {
+      position: absolute; bottom: 14px; left: 0; right: 0;
+      text-align: center; opacity: .6; font-size: 12px;
+    }
+
+    .glow {
+      position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: .55;
+      background:
+        radial-gradient(40% 20% at 50% 0%, rgba(125,249,255,.4), transparent 60%),
+        radial-gradient(40% 20% at 50% 100%, rgba(255,121,198,.35), transparent 60%);
+      filter: blur(22px);
+    }
+
+    /* 設定シート */
+    dialog#settings {
+      border: none; padding: 0; background: transparent;
+    }
+    .sheet {
+      width: min(92vw, 720px);
+      margin: 0 auto;
+      background: var(--glass);
+      backdrop-filter: blur(14px) saturate(1.1);
+      -webkit-backdrop-filter: blur(14px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: var(--shadow);
+      border-radius: 20px;
+      padding: 18px;
+      color: var(--fg-1);
+    }
+    .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 6px; }
+    .row + .row { border-top: 1px solid rgba(255,255,255,.08); }
+    .row label { font-size: 14px; opacity: .9; }
+    .row .seg { display: inline-grid; grid-auto-flow: column; gap: 6px; }
+    button, .seg > button {
+      appearance: none; border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--fg-1); border-radius: 12px; padding: 10px 12px; font-size: 14px;
+    }
+    button:hover{ filter: brightness(1.05); }
+    .seg > button[aria-pressed="true"]{ background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); color: #0a0b0f; font-weight: 700; }
+
+    .footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+    @media (prefers-color-scheme: light) {
+      :root { --fg-1:#0e1014; --glass: rgba(255,255,255,0.56); --ring: rgba(0,0,0,.10); }
+      .sheet { background: rgba(255,255,255,0.85); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .glow, .clock-card::before { display: none; }
     }
   </style>
 </head>
-<body class="light-mode">
-  <div class="wave-bg" style="display:none;">
-    <!-- SVG波線（略） -->
+<body class="theme-cyber">
+  <div class="safe">
+    <div class="clock-card" id="card">
+      <div class="status"><span id="themeLabel">CYBER</span><span id="fmtLabel">24H</span></div>
+      <div class="content">
+        <div></div>
+        <div class="now" id="now">
+          <div class="time" id="time">00:00<span class="secs" id="secs">:00</span></div>
+          <div class="date" id="date">1970-01-01 Thu</div>
+        </div>
+        <div></div>
+      </div>
+      <div class="hints">タップ: 秒の表示 / ダブルタップ: テーマ変更 / 長押し: 設定</div>
+      <div class="glow"></div>
+    </div>
   </div>
 
-  <div id="main-wrapper">
-    <div class="container">
-      <div class="range-column">
-        <div class="time-vertical">
-          <div id="startTimeDisplay">----</div>
-          <div id="currentTimeDisplay">----</div>
-          <div id="stopTimeDisplay">----</div>
+  <dialog id="settings">
+    <form method="dialog" class="sheet">
+      <div class="row">
+        <label>時間表示</label>
+        <div class="seg">
+          <button type="button" id="b12" aria-pressed="false">12時間</button>
+          <button type="button" id="b24" aria-pressed="true">24時間</button>
         </div>
       </div>
-      <div class="count-column">
-        <div class="time-display" id="timeDisplay">0:00</div>
+      <div class="row">
+        <label>秒</label>
+        <div class="seg">
+          <button type="button" id="bSecOn" aria-pressed="true">表示</button>
+          <button type="button" id="bSecOff" aria-pressed="false">非表示</button>
+        </div>
       </div>
-      <div class="button-column">
-        <button id="startBtn">スタート</button>
-        <button id="stopBtn" disabled>ストップ</button>
+      <div class="row">
+        <label>日付</label>
+        <div class="seg">
+          <button type="button" id="bDateOn" aria-pressed="true">表示</button>
+          <button type="button" id="bDateOff" aria-pressed="false">非表示</button>
+        </div>
       </div>
-      <div class="memo-column">
-        <textarea id="purpose" rows="3"></textarea>
+      <div class="row">
+        <label>テーマ</label>
+        <div class="seg">
+          <button type="button" data-theme="theme-cyber" aria-pressed="true">CYBER</button>
+          <button type="button" data-theme="theme-ink" aria-pressed="false">INK</button>
+          <button type="button" data-theme="theme-sunrise" aria-pressed="false">SUNRISE</button>
+        </div>
       </div>
-    </div>
-    <div class="log-container">
-      <textarea id="log" rows="5"></textarea>
-    </div>
-  </div>
+      <div class="footer">
+        <button value="cancel">閉じる</button>
+        <button id="bReset" value="default">初期化</button>
+      </div>
+    </form>
+  </dialog>
 
   <script>
-    // 秒数単位での設定変数
-    const FLASH_DURATION_SECONDS = 0;  // フラッシュの持続時間
-    const FLASH_INTERVAL_SECONDS = 300;  // フラッシュの間隔
-    
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const timeDisplay = document.getElementById('timeDisplay');
-    const startTimeDisplay = document.getElementById('startTimeDisplay');
-    const stopTimeDisplay = document.getElementById('stopTimeDisplay');
-    const currentTimeDisplay = document.getElementById('currentTimeDisplay');
-    const purpose = document.getElementById('purpose');
-    const logTextarea = document.getElementById('log');
-    
-    let countInterval;
-    let flashInterval;
-    let startTime;  // タイマー開始時刻（Dateオブジェクト）
-    let startTimeStrGlobal = "";   // スタート時の4桁時刻文字列を保持
-    
-    // ログテキストエリアに内容を追記する関数
-    // 新規追加する内容内で、改行だけの行は除去する
-    function appendLog(newContent) {
-      const filteredContent = newContent.split("\n").filter(line => line.trim() !== "").join("\n");
-      if (logTextarea.value === "") {
-        logTextarea.value = filteredContent;
-      } else {
-        logTextarea.value += "\n" + filteredContent;
+    (() => {
+      const $ = (q, p=document) => p.querySelector(q);
+      const $$ = (q, p=document) => [...p.querySelectorAll(q)];
+
+      const elTime = $('#time');
+      const elSecs = $('#secs');
+      const elDate = $('#date');
+      const themeLabel = $('#themeLabel');
+      const fmtLabel = $('#fmtLabel');
+      const sheet = $('#settings');
+      const card = $('#card');
+
+      const state = {
+        use24h: true,
+        showSeconds: true,
+        showDate: true,
+        theme: 'theme-cyber',
+      };
+
+      const storeKey = 'stylish-clock:v1';
+      try {
+        const saved = JSON.parse(localStorage.getItem(storeKey) || '{}');
+        Object.assign(state, saved);
+      } catch {}
+
+      function syncUI() {
+        document.body.classList.remove('theme-cyber','theme-ink','theme-sunrise');
+        document.body.classList.add(state.theme);
+        themeLabel.textContent = (state.theme.split('-')[1] || 'CYBER').toUpperCase();
+        fmtLabel.textContent = state.use24h ? '24H' : '12H';
+        elSecs.style.display = state.showSeconds ? '' : 'none';
+        elDate.style.display = state.showDate ? '' : 'none';
+        // settings buttons
+        $('#b12').setAttribute('aria-pressed', String(!state.use24h));
+        $('#b24').setAttribute('aria-pressed', String(state.use24h));
+        $('#bSecOn').setAttribute('aria-pressed', String(state.showSeconds));
+        $('#bSecOff').setAttribute('aria-pressed', String(!state.showSeconds));
+        $('#bDateOn').setAttribute('aria-pressed', String(state.showDate));
+        $('#bDateOff').setAttribute('aria-pressed', String(!state.showDate));
+        $$("[data-theme]").forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === state.theme)));
       }
-    }
-    
-    // 小数点以下2桁も含めた "0:SS.ss" / "M:SS.ss" / "H:MM:SS.ss" 形式に変換
-    function formatTime(totalSeconds) {
-      totalSeconds = Math.max(0, totalSeconds);
-      if (totalSeconds < 60) {
-        const secInt = Math.floor(totalSeconds);
-        const hundredths = Math.floor((totalSeconds - secInt) * 100);
-        return "0:" + secInt.toString().padStart(2, '0') + "." + hundredths.toString().padStart(2, '0');
-      } else if (totalSeconds < 3600) {
-        const m = Math.floor(totalSeconds / 60);
-        const s = totalSeconds % 60;
-        const sInt = Math.floor(s);
-        const hundredths = Math.floor((s - sInt) * 100);
-        return m + ":" + sInt.toString().padStart(2, '0') + "." + hundredths.toString().padStart(2, '0');
-      } else {
-        const h = Math.floor(totalSeconds / 3600);
-        const remainder = totalSeconds % 3600;
-        const m = Math.floor(remainder / 60);
-        const s = remainder % 60;
-        const sInt = Math.floor(s);
-        const hundredths = Math.floor((s - sInt) * 100);
-        return h + ":" + m.toString().padStart(2, '0') + ":" + sInt.toString().padStart(2, '0') + "." + hundredths.toString().padStart(2, '0');
+
+      function save() { localStorage.setItem(storeKey, JSON.stringify(state)); }
+
+      const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+      function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+      function formatDate(d) {
+        const Y = d.getFullYear();
+        const M = pad(d.getMonth()+1);
+        const D = pad(d.getDate());
+        const W = weekdays[d.getDay()];
+        return `${Y}-${M}-${D} ${W}`;
       }
-    }
-    
-    // 表示更新：小数点以下は常に非表示
-    function updateDisplay(elapsedSeconds) {
-      const formatted = formatTime(elapsedSeconds);
-      const intPart = formatted.split(".")[0];
-      const lastColonIndex = intPart.lastIndexOf(":");
-      if (lastColonIndex !== -1) {
-        const coloredPart = intPart.substring(0, lastColonIndex);
-        const colon = ":";
-        const remainingPart = intPart.substring(lastColonIndex + 1);
-        timeDisplay.innerHTML = '<span class="colored-minutes">' + coloredPart + '</span>' + colon + remainingPart;
-      } else {
-        timeDisplay.textContent = intPart;
-      }
-    }
-    
-    // フラッシュ：動作中は --flash-color、停止中は --flash-stop-color
-    function flash() {
-      if (countInterval) {
-        document.body.classList.add('flash');
-        setTimeout(() => {
-          document.body.classList.remove('flash');
-        }, FLASH_DURATION_SECONDS * 1000);
-      } else {
-        document.body.classList.add('flash-stop');
-        setTimeout(() => {
-          document.body.classList.remove('flash-stop');
-        }, FLASH_DURATION_SECONDS * 1000);
-      }
-    }
-    
-    function startCount() {
-      if (countInterval) {
-        clearInterval(countInterval);
-        countInterval = null;
-      }
-      if (flashInterval) {
-        clearInterval(flashInterval);
-      }
-      flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
-      
-      const now = new Date();
-      startTime = now;
-      const startTimeStr = now.getHours().toString().padStart(2, '0') +
-                           now.getMinutes().toString().padStart(2, '0');
-      startTimeDisplay.textContent = startTimeStr;
-      stopTimeDisplay.textContent = "----";
-      updateDisplay(0);
-      
-      startBtn.disabled = false;
-      stopBtn.disabled = false;
-      
-      // 以下、テキストエリア内容の変更処理（プレフィックス追加、ログ追記、クリップボードコピー等）はコメントアウト
-      /*
-      const currentContent = purpose.value;
-      const newText = `- 🔶${startTimeStr}- ${currentContent}`;
-      // クリップボードにコピー
-      navigator.clipboard.writeText(newText).catch(err => console.error('Clipboard copy failed: ', err));
-      // ログ用textareaにも内容を追記（空行は除去）
-      appendLog(newText);
-      // 末尾に改行を追加し、ログ用エリアにフォーカス
-      if (!logTextarea.value.endsWith("\n")) {
-        logTextarea.value += "\n";
-      }
-      logTextarea.focus();
-      */
-      
-      // ストップ時に利用するため、開始時刻文字列をグローバル変数に保存
-      startTimeStrGlobal = startTimeStr;
-      
-      // 10ms毎に更新
-      countInterval = setInterval(() => {
-        const elapsedSeconds = (Date.now() - startTime.getTime()) / 1000;
-        updateDisplay(elapsedSeconds);
-      }, 10);
-    }
-    
-    function stopCount() {
-      clearInterval(countInterval);
-      countInterval = null;
-      const now = new Date();
-      const stopTimeStr = now.getHours().toString().padStart(2, '0') +
-                          now.getMinutes().toString().padStart(2, '0');
-      stopTimeDisplay.textContent = stopTimeStr;
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      if (flashInterval) {
-        clearInterval(flashInterval);
-      }
-      flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
-      
-      // 経過時間の分数（整数）を計算
-      const elapsedMinutes = Math.floor((now.getTime() - startTime.getTime()) / 60000);
-      
-      // 以下、テキストエリア内容の変更処理（プレフィックス除去、ログ追記、クリップボードコピー、内容クリア等）はコメントアウト
-      /*
-      let currentContent = purpose.value;
-      const prefix = `- 🔶${startTimeStrGlobal}- `;
-      if (currentContent.startsWith(prefix)) {
-        currentContent = currentContent.substring(prefix.length);
-      }
-      
-      const finalText = `- 🔷${startTimeStrGlobal}-${stopTimeStr} ${elapsedMinutes}m ${currentContent}`;
-      
-      logTextarea.value = logTextarea.value.replace(/\n+$/, '');
-      
-      navigator.clipboard.writeText(finalText).catch(err => console.error('Clipboard copy failed: ', err));
-      appendLog(finalText);
-      purpose.value = "";
-      purpose.focus();
-      */
-    }
-    
-    function updateCurrentTime() {
-      const now = new Date();
-      const hh = now.getHours().toString().padStart(2, '0');
-      const mm = now.getMinutes().toString().padStart(2, '0');
-      currentTimeDisplay.textContent = hh + mm;
-    }
-    
-    startBtn.addEventListener('click', startCount);
-    stopBtn.addEventListener('click', stopCount);
-    
-    // メモ用テキストエリアのキーダウンイベント
-    // ※通常のTabでボタン動作、Shift+Tabでログ用テキストエリアへ移動（※テキストエリア移動処理はコメントアウト）
-    purpose.addEventListener('keydown', function(e) {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.shiftKey) {
-          // Shift+Tab：テキストエリア移動（ログ用テキストエリアへ）※コメントアウト
-          // logTextarea.focus();
-        } else {
-          // Tab：ボタン動作（カウントアップ中ならストップ、そうでなければスタート）
-          if (countInterval) {
-            stopCount();
-          } else {
-            startCount();
-          }
+
+      // 高精度更新：requestAnimationFrameで秒境界を狙う
+      let lastSec = -1;
+      function tick() {
+        const now = new Date();
+        const ms = now.getMilliseconds();
+        const sec = now.getSeconds();
+        if (sec !== lastSec) {
+          render(now);
+          lastSec = sec;
         }
-      } else if (e.key === 'Enter' && e.shiftKey && !e.isComposing) {
-        e.preventDefault();
-        startCount();
+        // 次のフレームへ
+        requestAnimationFrame(tick);
       }
-    });
-    
-    // ログ用テキストエリアのキーダウンイベント
-    // ※通常のTabでボタン動作、Shift+Tabでテキストエリア移動（メモ用テキストエリアへ）※テキストエリア移動処理はコメントアウト
-    logTextarea.addEventListener('keydown', function(e) {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        if (e.shiftKey) {
-          // Shift+Tab：テキストエリア移動（メモ用テキストエリアへ）※コメントアウト
-          // purpose.focus();
-        } else {
-          // Tab：ボタン動作
-          if (countInterval) {
-            stopCount();
-          } else {
-            startCount();
-          }
+
+      function render(d) {
+        let h = d.getHours();
+        let ampm = '';
+        if (!state.use24h) {
+          ampm = h >= 12 ? ' PM' : ' AM';
+          h = h % 12; if (h === 0) h = 12;
         }
+        const m = d.getMinutes();
+        const s = d.getSeconds();
+        const base = `${pad(h)}:${pad(m)}`;
+        elTime.firstChild && elTime.removeChild(elTime.firstChild);
+        elTime.insertAdjacentText('afterbegin', base);
+        elSecs.textContent = state.showSeconds ? `:${pad(s)}` + (state.use24h ? '' : ampm) : (state.use24h ? '' : ampm);
+        if (state.showDate) elDate.textContent = formatDate(d);
       }
-    });
-    
-    setInterval(updateCurrentTime, 1000);
-    updateCurrentTime();
-    
-    if (!countInterval && !flashInterval) {
-      flashInterval = setInterval(flash, FLASH_INTERVAL_SECONDS * 1000);
-    }
-    
-    window.addEventListener('beforeunload', function (e) {
-      const purposeValue = document.getElementById('purpose').value.trim();
-      const logValue = document.getElementById('log').value.trim();
-      if (purposeValue !== '' || logValue !== '') {
-        // 標準の確認ダイアログを表示
+
+      // 直感的操作: タップ/ダブルタップ/長押し
+      let tapTimer = null, lastTap = 0, pressTimer = null;
+
+      card.addEventListener('pointerdown', () => {
+        pressTimer = setTimeout(() => { openSettings(); }, 420);
+      });
+      card.addEventListener('pointerup', () => {
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+      });
+
+      card.addEventListener('click', (e) => {
+        const now = performance.now();
+        if (now - lastTap < 260) { // double tap
+          cycleTheme();
+          lastTap = 0;
+        } else {
+          lastTap = now;
+          if (tapTimer) clearTimeout(tapTimer);
+          tapTimer = setTimeout(() => {
+            state.showSeconds = !state.showSeconds; save(); syncUI();
+          }, 250);
+        }
+      });
+
+      function openSettings(){ sheet.showModal(); }
+
+      // 設定操作
+      $('#b12').addEventListener('click', () => { state.use24h = false; save(); syncUI(); });
+      $('#b24').addEventListener('click', () => { state.use24h = true; save(); syncUI(); });
+      $('#bSecOn').addEventListener('click', () => { state.showSeconds = true; save(); syncUI(); });
+      $('#bSecOff').addEventListener('click', () => { state.showSeconds = false; save(); syncUI(); });
+      $('#bDateOn').addEventListener('click', () => { state.showDate = true; save(); syncUI(); });
+      $('#bDateOff').addEventListener('click', () => { state.showDate = false; save(); syncUI(); });
+
+      $$("[data-theme]").forEach(btn => btn.addEventListener('click', () => {
+        state.theme = btn.dataset.theme; save(); syncUI();
+      }));
+
+      $('#bReset').addEventListener('click', (e)=>{
         e.preventDefault();
-        e.returnValue = ''; // 古いブラウザ向け
+        Object.assign(state, { use24h:true, showSeconds:true, showDate:true, theme:'theme-cyber' });
+        save(); syncUI();
+      });
+
+      function cycleTheme(){
+        const themes = ['theme-cyber','theme-ink','theme-sunrise'];
+        const idx = themes.indexOf(state.theme);
+        state.theme = themes[(idx+1)%themes.length];
+        save(); syncUI();
       }
-    });
+
+      // 画面常時点灯（対応ブラウザのみ）
+      async function tryWakeLock(){
+        try {
+          if ('wakeLock' in navigator) {
+            await navigator.wakeLock.request('screen');
+          }
+        } catch {}
+      }
+
+      // 初期化
+      syncUI();
+      render(new Date());
+      requestAnimationFrame(tick);
+      tryWakeLock();
+
+      // iOSでのダブルタップズーム抑止（UX向上）
+      document.addEventListener('gesturestart', e => e.preventDefault());
+    })();
   </script>
 </body>
 </html>
