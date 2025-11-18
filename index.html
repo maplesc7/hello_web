@@ -365,6 +365,90 @@ body {
   opacity: 0.5;
 }
 
+/* ===================== VAPOR WIREFRAME SCENE ===================== */
+.scene {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.scene-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 1) 足元に沈むフロアグリッド */
+.scene-grid::before {
+  content: "";
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: -10%;
+  height: 45vh;
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--wire-sub) 0,
+      var(--wire-sub) 1px,
+      transparent 1px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      to top,
+      var(--wire-sub) 0,
+      var(--wire-sub) 1px,
+      transparent 1px,
+      transparent 40px
+    );
+  opacity: 0.32;
+  transform-origin: bottom center;
+  transform: perspective(900px) rotateX(70deg);
+  filter: blur(0.3px);
+}
+
+/* 2) 時計を貫くメインライン */
+.scene-grid::after {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--wire-main) 15%,
+    var(--wire-main) 85%,
+    transparent 100%
+  );
+  opacity: 0.9;
+}
+
+/* 3) 背後でにじむ大きなリング */
+.scene::before {
+  content: "";
+  position: absolute;
+  width: 60vmin;
+  height: 60vmin;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle,
+      transparent 0,
+      transparent 56%,
+      var(--wire-main) 60%,
+      transparent 64%
+    );
+  opacity: 0.65;
+  filter: blur(1px);
+}
+
 </style>
 </head>
 <body>
