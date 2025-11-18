@@ -12,6 +12,8 @@
   --glow: #ff45ff;
   --glow2: #45e6ff;
   --text: #ffffff;
+  --wire-main: rgba(255,255,255,0.9);
+  --wire-sub: rgba(255,255,255,0.5);
 }
 
 /* ===================== RESET ===================== */
@@ -62,6 +64,8 @@ body {
   --glow: #00ffaa;
   --glow2: #00ccff;
   --text: #eaffff;
+  --wire-main: rgba(0,255,170,0.95);
+  --wire-sub: rgba(0,204,255,0.7);
 }
 
 [data-theme="sunset"] {
@@ -70,6 +74,8 @@ body {
   --glow: #ff6b6b;
   --glow2: #ffcc66;
   --text: #ffe6e6;
+  --wire-main: rgba(255,107,107,0.95);
+  --wire-sub: rgba(255,204,102,0.7);
 }
 
 /* switch button */
@@ -93,14 +99,42 @@ body {
   position: absolute;
   inset: 0;
   background-image:
+    /* stronger wireframe */
     repeating-linear-gradient(
+      12deg,
+      rgba(255,255,255,0.18) 0px,
+      rgba(255,255,255,0.18) 2px,
+      transparent 2px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      -12deg,
+      rgba(255,255,255,0.12) 0px,
+      rgba(255,255,255,0.12) 2px,
+      transparent 2px,
+      transparent 36px
+    )(
       12deg,
       rgba(255,255,255,0.06) 0px,
       rgba(255,255,255,0.06) 1px,
       transparent 1px,
       transparent 30px
     ),
+    /* stronger wireframe */
     repeating-linear-gradient(
+      12deg,
+      rgba(255,255,255,0.18) 0px,
+      rgba(255,255,255,0.18) 2px,
+      transparent 2px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      -12deg,
+      rgba(255,255,255,0.12) 0px,
+      rgba(255,255,255,0.12) 2px,
+      transparent 2px,
+      transparent 36px
+    )(
       -12deg,
       rgba(255,255,255,0.04) 0px,
       rgba(255,255,255,0.04) 1px,
@@ -115,19 +149,227 @@ body {
 /* theme coloring */
 [data-theme="cyber"] .background-grid::before {
   background-image:
-    repeating-linear-gradient(12deg, rgba(0,255,170,0.10) 0px, rgba(0,255,170,0.10) 1px, transparent 1px, transparent 30px),
-    repeating-linear-gradient(-12deg, rgba(0,204,255,0.08) 0px, rgba(0,204,255,0.08) 1px, transparent 1px, transparent 40px);
+    /* stronger wireframe */
+    repeating-linear-gradient(
+      12deg,
+      rgba(255,255,255,0.18) 0px,
+      rgba(255,255,255,0.18) 2px,
+      transparent 2px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      -12deg,
+      rgba(255,255,255,0.12) 0px,
+      rgba(255,255,255,0.12) 2px,
+      transparent 2px,
+      transparent 36px
+    )(12deg, rgba(0,255,170,0.10) 0px, rgba(0,255,170,0.10) 1px, transparent 1px, transparent 30px),
+    /* stronger wireframe */
+    repeating-linear-gradient(
+      12deg,
+      rgba(255,255,255,0.18) 0px,
+      rgba(255,255,255,0.18) 2px,
+      transparent 2px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      -12deg,
+      rgba(255,255,255,0.12) 0px,
+      rgba(255,255,255,0.12) 2px,
+      transparent 2px,
+      transparent 36px
+    )(-12deg, rgba(0,204,255,0.08) 0px, rgba(0,204,255,0.08) 1px, transparent 1px, transparent 40px);
 }
 
 [data-theme="sunset"] .background-grid::before {
   background-image:
-    repeating-linear-gradient(12deg, rgba(255,107,107,0.12) 0px, rgba(255,107,107,0.12) 1px, transparent 1px, transparent 30px),
-    repeating-linear-gradient(-12deg, rgba(255,204,102,0.10) 0px, rgba(255,204,102,0.10) 1px, transparent 1px, transparent 40px);
+    /* stronger wireframe */
+    repeating-linear-gradient(
+      12deg,
+      rgba(255,255,255,0.18) 0px,
+      rgba(255,255,255,0.18) 2px,
+      transparent 2px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      -12deg,
+      rgba(255,255,255,0.12) 0px,
+      rgba(255,255,255,0.12) 2px,
+      transparent 2px,
+      transparent 36px
+    )(12deg, rgba(255,107,107,0.12) 0px, rgba(255,107,107,0.12) 1px, transparent 1px, transparent 30px),
+    /* stronger wireframe */
+    repeating-linear-gradient(
+      12deg,
+      rgba(255,255,255,0.18) 0px,
+      rgba(255,255,255,0.18) 2px,
+      transparent 2px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      -12deg,
+      rgba(255,255,255,0.12) 0px,
+      rgba(255,255,255,0.12) 2px,
+      transparent 2px,
+      transparent 36px
+    )(-12deg, rgba(255,204,102,0.10) 0px, rgba(255,204,102,0.10) 1px, transparent 1px, transparent 40px);
+}
+
+/* ===================== WIREFRAME BACKGROUND (override) ===================== */
+.background-grid {
+  position: relative;
+}
+
+.background-grid::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(12deg, rgba(255,255,255,0.22) 1px, transparent 1px),
+    linear-gradient(-12deg, rgba(255,255,255,0.16) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mix-blend-mode: screen;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="cyber"] .background-grid::before {
+  background-image:
+    linear-gradient(12deg, rgba(0,255,170,0.35) 1px, transparent 1px),
+    linear-gradient(-12deg, rgba(0,204,255,0.28) 1px, transparent 1px);
+}
+
+[data-theme="sunset"] .background-grid::before {
+  background-image:
+    linear-gradient(12deg, rgba(255,107,107,0.35) 1px, transparent 1px),
+    linear-gradient(-12deg, rgba(255,204,102,0.28) 1px, transparent 1px);
+}
+
+.clock {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================== SCENE & GRID ===================== */
+.scene {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.scene-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.scene-grid::before,
+.scene-grid::after {
+  content: "";
+  position: absolute;
+  left: -20%;
+  width: 140%;
+}
+
+/* central horizontal line that "cuts through" the clock */
+.scene-grid::before {
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(to right,
+    transparent 0%,
+    var(--wire-main) 20%,
+    var(--wire-main) 80%,
+    transparent 100%
+  );
+  filter: blur(0.5px);
+}
+
+/* angled wireframe band behind clock */
+.scene-grid::after {
+  top: 5%;
+  height: 90%;
+  border-top: 1px solid var(--wire-sub);
+  border-bottom: 1px solid var(--wire-sub);
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 14px,
+      var(--wire-sub) 14px,
+      var(--wire-sub) 15px
+    );
+  opacity: 0.75;
+  transform: skewY(-12deg);
+}
+
+/* ===================== SIMPLE WIREFRAME LINES ===================== */
+.scene::before,
+.scene-grid::before,
+.scene-grid::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 1) 中央を貫く水平ライン（細め・シャープ） */
+.scene-grid::before {
+  left: -10%;
+  right: -10%;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent 0%,
+    var(--wire-main) 15%,
+    var(--wire-main) 85%,
+    transparent 100%
+  );
+}
+
+/* 2) やや右上がりのライン（少しだけぼかし） */
+.scene-grid::after {
+  top: 20%;
+  left: -20%;
+  width: 140%;
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent 0%,
+    var(--wire-sub) 10%,
+    var(--wire-sub) 90%,
+    transparent 100%
+  );
+  transform: rotate(12deg);
+  filter: blur(0.4px);
+  opacity: 0.8;
+}
+
+/* 3) やや右下がりのライン（さらに薄め） */
+.scene::before {
+  bottom: 25%;
+  left: -20%;
+  width: 140%;
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent 0%,
+    var(--wire-sub) 20%,
+    var(--wire-sub) 80%,
+    transparent 100%
+  );
+  transform: rotate(-8deg);
+  filter: blur(0.6px);
+  opacity: 0.5;
 }
 
 </style>
 </head>
-<body class="background-grid">
+<body>
+<div class="scene">
+  <div class="scene-grid"></div>
 <div class="clock" id="clock">--:--</div>
 <div class="theme-btn" id="themeBtn">テーマ切替</div>
 
@@ -156,5 +398,6 @@ document.getElementById("themeBtn").onclick = () => {
   }
 };
 </script>
+</div>
 </body>
 </html>
