@@ -21,15 +21,15 @@
       --floor-grid-accent: rgba(69, 230, 255, 0.65);
     }
 
-    /* ===================== RESET & LAYOUT ===================== */
+    /* ===================== RESET & BASE ===================== */
     html,
     body {
       margin: 0;
       padding: 0;
       height: 100%;
-      color: var(--text);
       font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
         sans-serif;
+      color: var(--text);
       background: var(--bg1);
       -webkit-text-size-adjust: 100%;
       overflow-x: hidden;
@@ -41,28 +41,95 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(
-          circle at top,
-          rgba(255, 255, 255, 0.12),
-          transparent 55%
-        ),
-        radial-gradient(circle at bottom, rgba(0, 0, 0, 0.9), var(--bg1));
-      padding-bottom: env(safe-area-inset-bottom, 0px);
       box-sizing: border-box;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 55%),
+        radial-gradient(circle at bottom, rgba(0, 0, 0, 0.9), var(--bg1));
+    }
+
+    /* ===================== SCENE & FLOOR GRID ===================== */
+    .scene {
+      position: relative;
+      width: 100%;
+      max-width: 100vw;
+      min-height: 100vh;
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-sizing: border-box;
+      padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+      background:
+        radial-gradient(circle at top, var(--bg2), var(--bg1) 45%),
+        radial-gradient(circle at bottom, #000000, var(--bg1));
+    }
+
+    .scene-grid {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 画面下 1/3 付近をしっかり覆うフロアグリッド */
+    .scene-grid::before {
+      content: "";
+      position: absolute;
+      left: -24%;
+      right: -24%;
+      bottom: -18%;
+      height: 65vh;
+      background-image:
+        /* 奥に向かって淡くなる発光ベース */
+        linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.9) 0%,
+          rgba(0, 0, 0, 0.55) 18%,
+          rgba(255, 255, 255, 0.08) 55%,
+          transparent 100%
+        ),
+        /* 横ライン（手前寄りマゼンタ） */
+        repeating-linear-gradient(
+          to right,
+          var(--floor-grid-main) 0,
+          var(--floor-grid-main) 1.2px,
+          transparent 1.2px,
+          transparent 34px
+        ),
+        /* 奥行きライン（シアン／アクセント） */
+        repeating-linear-gradient(
+          to top,
+          var(--floor-grid-accent) 0,
+          var(--floor-grid-accent) 1.2px,
+          transparent 1.2px,
+          transparent 36px
+        );
+      opacity: 0.8;
+      transform-origin: bottom center;
+      transform: perspective(900px) rotateX(70deg);
+      filter: blur(0.35px);
+      mix-blend-mode: screen;
     }
 
     /* ===================== CLOCK ===================== */
     .clock {
       position: relative;
       z-index: 1;
-      font-size: clamp(72px, 20vw, 160px);
+      /* スマホ縦画面で横幅の 3/4 前後を狙うサイズ感 */
+      font-size: clamp(110px, 24vw, 230px);
       font-weight: 600;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.04em;
       line-height: 1;
-      text-shadow: 0 0 24px var(--glow), 0 0 48px var(--glow2),
-        0 0 80px rgba(0, 0, 0, 0.8);
+      text-shadow:
+        0 0 24px var(--glow),
+        0 0 48px var(--glow2),
+        0 0 80px rgba(0, 0, 0, 0.9);
       user-select: none;
       pointer-events: none;
+      /* 画面中央より少し上に */
+      transform: translateY(-6vh);
       animation: pulse 6s ease-in-out infinite;
     }
 
@@ -75,6 +142,14 @@
       50% {
         opacity: 0.85;
         filter: hue-rotate(18deg);
+      }
+    }
+
+    /* 画面がかなり低い場合の微調整（小型機種など） */
+    @media (max-height: 700px) {
+      .clock {
+        font-size: clamp(96px, 22vw, 210px);
+        transform: translateY(-4vh);
       }
     }
 
@@ -149,70 +224,6 @@
       --wire-sub: rgba(158, 158, 158, 0.6);
       --floor-grid-main: rgba(245, 245, 245, 0.7);
       --floor-grid-accent: rgba(158, 158, 158, 0.65);
-    }
-
-    /* ===================== SCENE & FLOOR GRID ===================== */
-    .scene {
-      position: relative;
-      width: 100%;
-      max-width: 100vw;
-      min-height: 100vh;
-      min-height: 100svh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      background: radial-gradient(circle at top, var(--bg2), var(--bg1) 45%),
-        radial-gradient(circle at bottom, #000000, var(--bg1));
-      box-sizing: border-box;
-      padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
-    }
-
-    .scene-grid {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* 足元に沈むフロアグリッド（強調版） */
-    .scene-grid::before {
-      content: "";
-      position: absolute;
-      left: -24%;
-      right: -24%;
-      bottom: -12%;
-      height: 55vh;
-      background-image:
-        /* 奥に向かって淡くなる発光 */
-        linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.85) 0%,
-          rgba(0, 0, 0, 0.4) 18%,
-          rgba(255, 255, 255, 0.06) 55%,
-          transparent 100%
-        ),
-        /* 横ライン（マゼンタ寄り） */
-        repeating-linear-gradient(
-          to right,
-          var(--floor-grid-main) 0,
-          var(--floor-grid-main) 1.2px,
-          transparent 1.2px,
-          transparent 36px
-        ),
-        /* 奥行きライン（シアン／アクセント） */
-        repeating-linear-gradient(
-          to top,
-          var(--floor-grid-accent) 0,
-          var(--floor-grid-accent) 1.2px,
-          transparent 1.2px,
-          transparent 38px
-        );
-      opacity: 0.7;
-      transform-origin: bottom center;
-      transform: perspective(900px) rotateX(70deg);
-      filter: blur(0.35px);
-      mix-blend-mode: screen;
     }
 
     /* ===================== THEME PANEL UI ===================== */
@@ -325,7 +336,12 @@
     <div class="scene-grid"></div>
     <div class="clock" id="clock">--:--</div>
 
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="テーマ切り替え">
+    <button
+      class="theme-toggle"
+      id="themeToggle"
+      type="button"
+      aria-label="テーマ切り替え"
+    >
       🎨
     </button>
 
@@ -351,66 +367,35 @@
 
     /* ===================== THEME SWITCH ===================== */
     const themeDefs = [
-      {
-        id: "default",
-        label: "Vapor Pink",
-        swatch: "linear-gradient(135deg,#ff3ea5,#ffb200)",
-      },
-      {
-        id: "cyber",
-        label: "Cyber Green",
-        swatch: "linear-gradient(135deg,#00ffaa,#00ccff)",
-      },
-      {
-        id: "sunset",
-        label: "Sunset Orange",
-        swatch: "linear-gradient(135deg,#ff6b6b,#ffcc66)",
-      },
-      {
-        id: "ocean",
-        label: "Deep Ocean",
-        swatch: "linear-gradient(135deg,#00b4ff,#0044ff)",
-      },
-      {
-        id: "violet",
-        label: "Neon Violet",
-        swatch: "linear-gradient(135deg,#c471ff,#7f00ff)",
-      },
-      {
-        id: "amber",
-        label: "Warm Amber",
-        swatch: "linear-gradient(135deg,#ffb347,#ffcc33)",
-      },
-      {
-        id: "mono",
-        label: "Soft Mono",
-        swatch: "linear-gradient(135deg,#f5f5f5,#777777)",
-      },
+      { id: "default", label: "Vapor Pink", swatch: "linear-gradient(135deg,#ff3ea5,#ffb200)" },
+      { id: "cyber",   label: "Cyber Green", swatch: "linear-gradient(135deg,#00ffaa,#00ccff)" },
+      { id: "sunset",  label: "Sunset Orange", swatch: "linear-gradient(135deg,#ff6b6b,#ffcc66)" },
+      { id: "ocean",   label: "Deep Ocean",   swatch: "linear-gradient(135deg,#00b4ff,#0044ff)" },
+      { id: "violet",  label: "Neon Violet",  swatch: "linear-gradient(135deg,#c471ff,#7f00ff)" },
+      { id: "amber",   label: "Warm Amber",   swatch: "linear-gradient(135deg,#ffb347,#ffcc33)" },
+      { id: "mono",    label: "Soft Mono",    swatch: "linear-gradient(135deg,#f5f5f5,#777777)" }
     ];
 
-    const rootEl = document.documentElement;
-    const panelEl = document.getElementById("themePanel");
+    const rootEl   = document.documentElement;
+    const panelEl  = document.getElementById("themePanel");
     const toggleEl = document.getElementById("themeToggle");
-    const closeEl = document.getElementById("themeClose");
-    const listEl = document.getElementById("themeList");
-    let currentThemeId = "default";
+    const closeEl  = document.getElementById("themeClose");
+    const listEl   = document.getElementById("themeList");
 
     function applyTheme(id) {
-      currentThemeId = id;
       if (id === "default") {
         rootEl.removeAttribute("data-theme");
       } else {
         rootEl.setAttribute("data-theme", id);
       }
-      const chips = listEl.querySelectorAll(".theme-chip");
-      chips.forEach((chip) => {
+      listEl.querySelectorAll(".theme-chip").forEach(chip => {
         chip.classList.toggle("active", chip.dataset.themeId === id);
       });
     }
 
     function buildThemeList() {
-      listEl.innerHTML = "";
-      themeDefs.forEach((theme) => {
+      const frag = document.createDocumentFragment();
+      themeDefs.forEach(theme => {
         const chip = document.createElement("button");
         chip.type = "button";
         chip.className = "theme-chip";
@@ -425,12 +410,12 @@
 
         chip.appendChild(swatch);
         chip.appendChild(label);
-        chip.addEventListener("click", () => {
-          applyTheme(theme.id);
-        });
+        chip.addEventListener("click", () => applyTheme(theme.id));
 
-        listEl.appendChild(chip);
+        frag.appendChild(chip);
       });
+      listEl.innerHTML = "";
+      listEl.appendChild(frag);
     }
 
     buildThemeList();
