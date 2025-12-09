@@ -6,7 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
   />
-  <title>VaporClock</title>
+  <title>Minute Vapor Timer</title>
   <style>
     /* ===================== VARIABLES ===================== */
     :root {
@@ -19,6 +19,17 @@
       --wire-sub: rgba(255, 255, 255, 0.5);
       --floor-grid-main: rgba(255, 69, 255, 0.7);
       --floor-grid-accent: rgba(69, 230, 255, 0.65);
+
+      --panel-bg: rgba(0, 0, 0, 0.55);
+      --panel-border: rgba(255, 255, 255, 0.28);
+      --panel-blur: 14px;
+      --accent: rgba(255,255,255,0.95);
+      --accent-soft: rgba(255,255,255,0.7);
+      --btn-bg: rgba(255,255,255,0.06);
+      --btn-bg-hover: rgba(255,255,255,0.12);
+      --btn-border: rgba(255,255,255,0.22);
+      --danger: #ff6b6b;
+      --ok: #7dffb3;
     }
 
     /* ===================== RESET & BASE ===================== */
@@ -113,11 +124,10 @@
       mix-blend-mode: screen;
     }
 
-    /* ===================== CLOCK ===================== */
+    /* ===================== CLOCK / TIMER DISPLAY ===================== */
     .clock {
       position: relative;
       z-index: 1;
-      /* スマホ縦画面で横幅の 3/4 前後を狙うサイズ感 */
       font-size: clamp(110px, 24vw, 230px);
       font-weight: 600;
       letter-spacing: -0.04em;
@@ -128,9 +138,17 @@
         0 0 80px rgba(0, 0, 0, 0.9);
       user-select: none;
       pointer-events: none;
-      /* 画面中央より少し上に */
       transform: translateY(-6vh);
       animation: pulse 6s ease-in-out infinite;
+      white-space: nowrap;
+    }
+
+    .clock small {
+      font-size: 0.28em;
+      font-weight: 500;
+      opacity: 0.9;
+      margin-left: 0.1em;
+      letter-spacing: 0;
     }
 
     @keyframes pulse {
@@ -145,7 +163,6 @@
       }
     }
 
-    /* 画面がかなり低い場合の微調整（小型機種など） */
     @media (max-height: 700px) {
       .clock {
         font-size: clamp(96px, 22vw, 210px);
@@ -164,6 +181,8 @@
       --wire-sub: rgba(0, 204, 255, 0.7);
       --floor-grid-main: rgba(0, 255, 170, 0.78);
       --floor-grid-accent: rgba(0, 204, 255, 0.7);
+
+      --panel-bg: rgba(0, 0, 0, 0.45);
     }
 
     [data-theme="sunset"] {
@@ -237,9 +256,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(var(--panel-blur));
       color: #fff;
       font-size: 18px;
       cursor: pointer;
@@ -316,6 +335,80 @@
       background: rgba(255, 255, 255, 0.08);
     }
 
+    /* ===================== TIMER CONTROLS ===================== */
+    .controls {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+      left: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(var(--panel-blur));
+      z-index: 10;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ctrl-btn {
+      appearance: none;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease, transform .08s ease;
+      min-width: 64px;
+      text-align: center;
+    }
+
+    .ctrl-btn:hover { background: var(--btn-bg-hover); }
+    .ctrl-btn:active { transform: translateY(1px) scale(0.98); }
+
+    .ctrl-btn.primary {
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.12);
+    }
+
+    .ctrl-btn.stop {
+      border-color: color-mix(in srgb, var(--danger) 60%, white 0%);
+      color: #fff;
+    }
+
+    .ctrl-btn.reset {
+      border-color: rgba(255,255,255,0.18);
+      opacity: 0.85;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.35);
+      box-shadow: 0 0 8px rgba(255,255,255,0.35);
+      margin-right: 2px;
+    }
+
+    .status-dot.running {
+      background: var(--ok);
+      box-shadow: 0 0 10px color-mix(in srgb, var(--ok) 70%, white 0%);
+    }
+
+    .status-text {
+      font-size: 11px;
+      opacity: 0.85;
+      margin-right: 6px;
+      user-select: none;
+      white-space: nowrap;
+    }
+
     /* ===================== SMALL SCREEN TWEAKS ===================== */
     @media (max-width: 480px) {
       .theme-panel {
@@ -328,14 +421,46 @@
       .theme-toggle {
         right: 12px;
       }
+
+      .controls {
+        left: 10px;
+        right: 70px; /* allow space for theme button */
+        justify-content: space-between;
+      }
+
+      .ctrl-btn {
+        min-width: 58px;
+        padding: 8px 10px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="scene">
     <div class="scene-grid"></div>
-    <div class="clock" id="clock">--:--</div>
 
+    <!-- 分だけのカウントアップ表示 -->
+    <div class="clock" id="clock">
+      <span id="minuteValue">0</span><small>分</small>
+    </div>
+
+    <!-- タイマー操作 -->
+    <div class="controls" role="group" aria-label="タイマー操作">
+      <span class="status-dot" id="statusDot" aria-hidden="true"></span>
+      <span class="status-text" id="statusText">停止中</span>
+
+      <button class="ctrl-btn primary" id="startBtn" type="button">
+        スタート
+      </button>
+      <button class="ctrl-btn stop" id="stopBtn" type="button" disabled>
+        ストップ
+      </button>
+      <button class="ctrl-btn reset" id="resetBtn" type="button">
+        リセット
+      </button>
+    </div>
+
+    <!-- テーマ -->
     <button
       class="theme-toggle"
       id="themeToggle"
@@ -355,17 +480,151 @@
   </div>
 
   <script>
-    /* ===================== CLOCK ===================== */
-    function updateClock() {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, "0");
-      const m = String(now.getMinutes()).padStart(2, "0");
-      document.getElementById("clock").textContent = `${h}:${m}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+    /* =========================================================
+       Minute-only Count Up Timer
+       - 秒は表示しない
+       - 0分から開始
+       - 経過時間は Date.now() ベースで計算してズレを最小化
+       - 状態を localStorage に保存（リロードやPWA化でも安心）
+    ========================================================= */
 
-    /* ===================== THEME SWITCH ===================== */
+    const minuteValueEl = document.getElementById("minuteValue");
+    const statusDotEl   = document.getElementById("statusDot");
+    const statusTextEl  = document.getElementById("statusText");
+    const startBtn      = document.getElementById("startBtn");
+    const stopBtn       = document.getElementById("stopBtn");
+    const resetBtn      = document.getElementById("resetBtn");
+
+    const STORAGE_KEY = "minute-vapor-timer:v1";
+
+    let state = {
+      running: false,
+      startEpochMs: null,   // running開始時刻
+      elapsedMs: 0          // 停止中に保持する累積経過
+    };
+
+    let tickHandle = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (
+          typeof parsed === "object" &&
+          parsed &&
+          typeof parsed.running === "boolean" &&
+          (parsed.startEpochMs === null || Number.isFinite(parsed.startEpochMs)) &&
+          Number.isFinite(parsed.elapsedMs)
+        ) {
+          state = parsed;
+        }
+      } catch (_) {}
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (_) {}
+    }
+
+    function nowElapsedMs() {
+      if (!state.running) return state.elapsedMs;
+      if (!state.startEpochMs) return state.elapsedMs;
+      const delta = Date.now() - state.startEpochMs;
+      return Math.max(0, state.elapsedMs + delta);
+    }
+
+    function render() {
+      const ms = nowElapsedMs();
+      const minutes = Math.floor(ms / 60000);
+      minuteValueEl.textContent = String(minutes);
+
+      statusDotEl.classList.toggle("running", state.running);
+      statusTextEl.textContent = state.running ? "計測中" : "停止中";
+
+      startBtn.disabled = state.running;
+      stopBtn.disabled  = !state.running;
+    }
+
+    // 次の「分」が変わる直前に再描画するためのタイマー
+    function scheduleTick() {
+      if (tickHandle) {
+        clearTimeout(tickHandle);
+        tickHandle = null;
+      }
+      if (!state.running) return;
+
+      const ms = nowElapsedMs();
+      const remainder = ms % 60000;
+      const wait = Math.max(250, 60000 - remainder); // 安全マージン
+      tickHandle = setTimeout(() => {
+        render();
+        scheduleTick();
+      }, wait);
+    }
+
+    function start() {
+      if (state.running) return;
+
+      // 既にelapsedMsがある場合は「再開」
+      state.running = true;
+      state.startEpochMs = Date.now();
+      saveState();
+      render();
+      scheduleTick();
+    }
+
+    function stop() {
+      if (!state.running) return;
+
+      // 今までの経過をelapsedMsに確定
+      state.elapsedMs = nowElapsedMs();
+      state.running = false;
+      state.startEpochMs = null;
+      saveState();
+
+      if (tickHandle) {
+        clearTimeout(tickHandle);
+        tickHandle = null;
+      }
+      render();
+    }
+
+    function reset() {
+      state.running = false;
+      state.startEpochMs = null;
+      state.elapsedMs = 0;
+      saveState();
+
+      if (tickHandle) {
+        clearTimeout(tickHandle);
+        tickHandle = null;
+      }
+      render();
+    }
+
+    startBtn.addEventListener("click", start);
+    stopBtn.addEventListener("click", stop);
+    resetBtn.addEventListener("click", reset);
+
+    // 初期化
+    loadState();
+    render();
+    if (state.running) {
+      // リロード中に経過が伸びるのを正しく反映する
+      scheduleTick();
+    }
+
+    // 画面が復帰したら再描画（スマホのスリープ復帰対策）
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        render();
+        scheduleTick();
+      }
+    });
+
+    /* ===================== THEME SWITCH (from your sample) ===================== */
     const themeDefs = [
       { id: "default", label: "Vapor Pink", swatch: "linear-gradient(135deg,#ff3ea5,#ffb200)" },
       { id: "cyber",   label: "Cyber Green", swatch: "linear-gradient(135deg,#00ffaa,#00ccff)" },
@@ -382,15 +641,27 @@
     const closeEl  = document.getElementById("themeClose");
     const listEl   = document.getElementById("themeList");
 
+    const THEME_KEY = "minute-vapor-theme:v1";
+
     function applyTheme(id) {
       if (id === "default") {
         rootEl.removeAttribute("data-theme");
       } else {
         rootEl.setAttribute("data-theme", id);
       }
+      try { localStorage.setItem(THEME_KEY, id); } catch (_) {}
+
       listEl.querySelectorAll(".theme-chip").forEach(chip => {
         chip.classList.toggle("active", chip.dataset.themeId === id);
       });
+    }
+
+    function loadTheme() {
+      try {
+        const id = localStorage.getItem(THEME_KEY);
+        if (id) return id;
+      } catch (_) {}
+      return "default";
     }
 
     function buildThemeList() {
@@ -419,7 +690,7 @@
     }
 
     buildThemeList();
-    applyTheme("default");
+    applyTheme(loadTheme());
 
     toggleEl.addEventListener("click", () => {
       const showing = panelEl.style.display === "block";
