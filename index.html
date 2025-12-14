@@ -12,6 +12,8 @@
     :root {
       --bg1: #0e0e1a;
       --bg2: #1a1a2e;
+      --bg3: #000000;
+
       --glow: #ff45ff;
       --glow2: #45e6ff;
       --text: #ffffff;
@@ -36,7 +38,10 @@
       --memo-glow: color-mix(in srgb, var(--glow) 38%, transparent 62%);
       --memo-glow2: color-mix(in srgb, var(--glow2) 26%, transparent 74%);
       --memo-radius: 18px;
-      --memo-h: clamp(170px, 30svh, 290px); /* 上1/3くらいの固定高(可変だが固定枠) */
+      --memo-h: clamp(170px, 30svh, 290px);
+
+      /* 画面下UIぶんの退避（controls + 余白 + safe-area） */
+      --ui-safe-bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     }
 
     /* ===================== RESET & BASE ===================== */
@@ -45,8 +50,7 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
-        sans-serif;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       color: var(--text);
       background: var(--bg1);
       -webkit-text-size-adjust: 100%;
@@ -78,11 +82,9 @@
       padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
       background:
         radial-gradient(circle at top, var(--bg2), var(--bg1) 45%),
-        radial-gradient(circle at bottom, #000000, var(--bg1));
-
-      /* 上:メモ / 中:時計 / 下:余白(操作UIはfixed) */
+        radial-gradient(circle at bottom, var(--bg3), var(--bg1));
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr;
       align-items: start;
       justify-items: center;
       -webkit-tap-highlight-color: transparent;
@@ -95,7 +97,6 @@
       z-index: 0;
     }
 
-    /* 画面下 1/3 付近をしっかり覆うフロアグリッド */
     .scene-grid::before {
       content: "";
       position: absolute;
@@ -104,7 +105,6 @@
       bottom: -18%;
       height: 65vh;
       background-image:
-        /* 奥に向かって淡くなる発光ベース */
         linear-gradient(
           to top,
           rgba(0, 0, 0, 0.9) 0%,
@@ -112,7 +112,6 @@
           rgba(255, 255, 255, 0.08) 55%,
           transparent 100%
         ),
-        /* 横ライン（手前寄りマゼンタ） */
         repeating-linear-gradient(
           to right,
           var(--floor-grid-main) 0,
@@ -120,7 +119,6 @@
           transparent 1.2px,
           transparent 34px
         ),
-        /* 奥行きライン（シアン／アクセント） */
         repeating-linear-gradient(
           to top,
           var(--floor-grid-accent) 0,
@@ -184,7 +182,7 @@
     }
 
     .memo-title {
-      font-size: 12px;
+      font-size: 10px; /* 20%小さめ */
       letter-spacing: 0.06em;
       opacity: 0.92;
       display: inline-flex;
@@ -193,7 +191,7 @@
     }
 
     .memo-title .badge {
-      font-size: 11px;
+      font-size: 10px;
       padding: 3px 10px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.16);
@@ -202,7 +200,7 @@
     }
 
     .memo-hint {
-      font-size: 11px;
+      font-size: 10px;
       opacity: 0.72;
       white-space: nowrap;
     }
@@ -231,11 +229,9 @@
       box-sizing: border-box;
       color: var(--text);
       background: transparent;
-      font-size: 14px;
+      font-size: 12px; /* 20%小さめ */
       line-height: 1.6;
       letter-spacing: 0.02em;
-
-      /* 「めっちゃ改行」でも中でスクロール */
       overflow: auto;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
@@ -253,7 +249,7 @@
       gap: 10px;
       margin-top: 8px;
       padding: 0 2px 2px;
-      font-size: 11px;
+      font-size: 10px; /* 20%小さめ */
       opacity: 0.78;
       user-select: none;
     }
@@ -285,118 +281,150 @@
       opacity: 0.95;
     }
 
-    /* ===================== CLOCK / TIMER DISPLAY ===================== */
-    .clock {
-      position: relative;
-      z-index: 1;
-      font-size: clamp(110px, 24vw, 230px);
-      font-weight: 600;
-      letter-spacing: -0.04em;
-      line-height: 1;
-      text-shadow:
-        0 0 24px var(--glow),
-        0 0 48px var(--glow2),
-        0 0 80px rgba(0, 0, 0, 0.9);
-      user-select: none;
-      pointer-events: none; /* 表示はタップ対象にしない */
-      transform: translateY(-1vh);
-      animation: pulse 6s ease-in-out infinite;
-      white-space: nowrap;
-      margin-top: 18px;
+    @media (max-width: 480px) {
+      .memo-hint { display: none; }
     }
 
-    .clock small {
+    /* ===================== MID AREA (for clock placement) ===================== */
+    .mid-area {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+
+      /* メモ下端〜下UIの間くらいに置くために、下UI分を避けて下寄せ */
+      padding: 16px 0 var(--ui-safe-bottom);
+      box-sizing: border-box;
+    }
+
+    /* ===================== CLOCK / TIMER DISPLAY ===================== */
+    .clock {
+      user-select: none;
+      pointer-events: none;
+      text-align: center;
+      text-shadow:
+        0 0 22px var(--glow),
+        0 0 44px var(--glow2),
+        0 0 70px rgba(0, 0, 0, 0.9);
+      animation: pulse 6s ease-in-out infinite;
+    }
+
+    .clock .minutes-line {
+      font-size: clamp(88px, 19.2vw, 184px); /* 約20%小さめ */
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1.0;
+      white-space: nowrap;
+    }
+
+    .clock .minutes-unit {
       font-size: 0.28em;
       font-weight: 500;
       opacity: 0.9;
-      margin-left: 0.1em;
+      margin-left: 0.12em;
       letter-spacing: 0;
     }
 
+    .clock .nowtime {
+      margin-top: 6px;
+      font-size: clamp(18px, 4.2vw, 28px); /* 1行下に常時表示 */
+      font-weight: 550;
+      letter-spacing: 0.06em;
+      opacity: 0.92;
+    }
+
     @keyframes pulse {
-      0%,
-      100% {
-        opacity: 1;
-        filter: hue-rotate(0deg);
-      }
-      50% {
-        opacity: 0.85;
-        filter: hue-rotate(18deg);
-      }
+      0%, 100% { opacity: 1; filter: hue-rotate(0deg); }
+      50% { opacity: 0.86; filter: hue-rotate(18deg); }
     }
 
     @media (max-height: 700px) {
-      .clock {
-        font-size: clamp(96px, 22vw, 210px);
-        transform: translateY(-0.5vh);
+      .clock .minutes-line {
+        font-size: clamp(78px, 18vw, 168px);
+      }
+      .clock .nowtime {
+        font-size: clamp(16px, 3.8vw, 26px);
+      }
+      .mid-area {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
       }
     }
 
     /* ===================== THEMES ===================== */
+    /* デフォルトは控えめ（指定通り） */
+
     [data-theme="cyber"] {
       --bg1: #00110f;
       --bg2: #003b36;
+      --bg3: #001f2b;
       --glow: #00ffaa;
       --glow2: #00ccff;
       --text: #eaffff;
       --wire-main: rgba(0, 255, 170, 0.95);
       --wire-sub: rgba(0, 204, 255, 0.7);
-      --floor-grid-main: rgba(0, 255, 170, 0.78);
-      --floor-grid-accent: rgba(0, 204, 255, 0.7);
+      --floor-grid-main: rgba(0, 255, 170, 0.82);
+      --floor-grid-accent: rgba(0, 204, 255, 0.78);
       --panel-bg: rgba(0, 0, 0, 0.45);
     }
 
     [data-theme="sunset"] {
       --bg1: #1a0d0d;
       --bg2: #4d1a1a;
-      --glow: #ff6b6b;
-      --glow2: #ffcc66;
+      --bg3: #2b001a;
+      --glow: #ff4d6d;
+      --glow2: #ffd166;
       --text: #ffe6e6;
-      --wire-main: rgba(255, 107, 107, 0.95);
-      --wire-sub: rgba(255, 204, 102, 0.7);
-      --floor-grid-main: rgba(255, 107, 107, 0.8);
-      --floor-grid-accent: rgba(255, 204, 102, 0.72);
+      --wire-main: rgba(255, 77, 109, 0.95);
+      --wire-sub: rgba(255, 209, 102, 0.75);
+      --floor-grid-main: rgba(255, 77, 109, 0.84);
+      --floor-grid-accent: rgba(255, 209, 102, 0.78);
     }
 
     [data-theme="ocean"] {
       --bg1: #020817;
       --bg2: #012a4a;
+      --bg3: #001b3a;
       --glow: #00b4ff;
-      --glow2: #38bdf8;
+      --glow2: #7c3aed;
       --text: #e0f2fe;
       --wire-main: rgba(56, 189, 248, 0.95);
-      --wire-sub: rgba(37, 99, 235, 0.7);
-      --floor-grid-main: rgba(56, 189, 248, 0.8);
-      --floor-grid-accent: rgba(37, 99, 235, 0.72);
+      --wire-sub: rgba(124, 58, 237, 0.75);
+      --floor-grid-main: rgba(56, 189, 248, 0.86);
+      --floor-grid-accent: rgba(124, 58, 237, 0.72);
     }
 
     [data-theme="violet"] {
       --bg1: #120021;
       --bg2: #2a0a4a;
+      --bg3: #1a0033;
       --glow: #c471ff;
-      --glow2: #7f00ff;
+      --glow2: #00e5ff;
       --text: #f5e9ff;
       --wire-main: rgba(196, 113, 255, 0.95);
-      --wire-sub: rgba(127, 0, 255, 0.7);
-      --floor-grid-main: rgba(196, 113, 255, 0.8);
-      --floor-grid-accent: rgba(127, 0, 255, 0.7);
+      --wire-sub: rgba(0, 229, 255, 0.72);
+      --floor-grid-main: rgba(196, 113, 255, 0.86);
+      --floor-grid-accent: rgba(0, 229, 255, 0.66);
     }
 
     [data-theme="amber"] {
       --bg1: #1b1204;
       --bg2: #4a2600;
+      --bg3: #220a00;
       --glow: #ffb347;
-      --glow2: #ffcc33;
+      --glow2: #ff3d00;
       --text: #fff4dd;
       --wire-main: rgba(255, 179, 71, 0.95);
-      --wire-sub: rgba(255, 204, 51, 0.75);
-      --floor-grid-main: rgba(255, 179, 71, 0.82);
-      --floor-grid-accent: rgba(255, 204, 51, 0.75);
+      --wire-sub: rgba(255, 61, 0, 0.7);
+      --floor-grid-main: rgba(255, 179, 71, 0.88);
+      --floor-grid-accent: rgba(255, 61, 0, 0.62);
     }
 
     [data-theme="mono"] {
       --bg1: #050506;
       --bg2: #141414;
+      --bg3: #000000;
       --glow: #f5f5f5;
       --glow2: #9e9e9e;
       --text: #f5f5f5;
@@ -431,7 +459,7 @@
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
       right: 16px;
-      width: 230px;
+      width: 246px;
       max-width: calc(100vw - 32px);
       background: rgba(6, 10, 30, 0.96);
       border-radius: 14px;
@@ -448,7 +476,7 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 8px;
-      font-size: 13px;
+      font-size: 12px; /* 20%小さめ */
       opacity: 0.9;
     }
 
@@ -521,12 +549,12 @@
       color: var(--text);
       padding: 8px 12px;
       border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 10px; /* 20%小さめ */
+      font-weight: 650;
       letter-spacing: 0.02em;
       cursor: pointer;
       transition: background .15s ease, border-color .15s ease, transform .08s ease;
-      min-width: 64px;
+      min-width: 62px;
       text-align: center;
     }
 
@@ -563,14 +591,13 @@
     }
 
     .status-text {
-      font-size: 11px;
+      font-size: 10px; /* 20%小さめ */
       opacity: 0.85;
       margin-right: 6px;
       user-select: none;
       white-space: nowrap;
     }
 
-    /* ===================== SMALL SCREEN TWEAKS ===================== */
     @media (max-width: 480px) {
       .theme-panel {
         bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
@@ -579,23 +606,17 @@
         margin: 0 auto;
       }
 
-      .theme-toggle {
-        right: 12px;
-      }
+      .theme-toggle { right: 12px; }
 
       .controls {
         left: 10px;
-        right: 70px; /* allow space for theme button */
+        right: 70px;
         justify-content: space-between;
       }
 
       .ctrl-btn {
         min-width: 58px;
         padding: 8px 10px;
-      }
-
-      .memo-hint {
-        display: none;
       }
     }
   </style>
@@ -634,9 +655,14 @@
       </div>
     </div>
 
-    <!-- 分だけのカウントアップ表示 -->
-    <div class="clock" id="clock">
-      <span id="minuteValue">0</span><small>分</small>
+    <!-- 中段: 分表示 + 現在時刻（下UIとの間あたり） -->
+    <div class="mid-area" id="midArea">
+      <div class="clock" id="clock" aria-label="経過分と現在時刻">
+        <div class="minutes-line">
+          <span id="minuteValue">0</span><span class="minutes-unit">分</span>
+        </div>
+        <div class="nowtime" id="timeNow">--:--</div>
+      </div>
     </div>
 
     <!-- タイマー操作 -->
@@ -680,12 +706,15 @@
        - 秒は表示しない
        - 0分から開始
        - 経過時間は Date.now() ベースで計算してズレを最小化
-       - 状態を localStorage に保存（リロードやPWA化でも安心）
+       - 状態を localStorage に保存
        - メイン画面(ボタン以外)クリック/タップでも Start/Stop 切替
-       - 上部メモは localStorage に自動保存
+       - メモは localStorage に自動保存
+       - 現在時刻(HH:MM)を常時表示（分切替で更新）
     ========================================================= */
 
     const minuteValueEl = document.getElementById("minuteValue");
+    const timeNowEl     = document.getElementById("timeNow");
+
     const statusDotEl   = document.getElementById("statusDot");
     const statusTextEl  = document.getElementById("statusText");
     const startBtn      = document.getElementById("startBtn");
@@ -699,14 +728,41 @@
 
     const STORAGE_KEY = "minute-vapor-timer:v1";
     const MEMO_KEY    = "minute-vapor-memo:v1";
+    const THEME_KEY   = "minute-vapor-theme:v1";
 
     let state = {
       running: false,
-      startEpochMs: null,   // running開始時刻
-      elapsedMs: 0          // 停止中に保持する累積経過
+      startEpochMs: null,
+      elapsedMs: 0
     };
 
     let tickHandle = null;
+    let nowHandle  = null;
+
+    function pad2(n) { return String(n).padStart(2, "0"); }
+
+    function formatHHMM(d) {
+      return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    }
+
+    function renderNowTime() {
+      timeNowEl.textContent = formatHHMM(new Date());
+    }
+
+    function scheduleNowTime() {
+      if (nowHandle) {
+        clearTimeout(nowHandle);
+        nowHandle = null;
+      }
+      // 次の分境界に合わせて更新
+      const now = new Date();
+      const ms = now.getSeconds() * 1000 + now.getMilliseconds();
+      const wait = Math.max(250, 60000 - ms);
+      nowHandle = setTimeout(() => {
+        renderNowTime();
+        scheduleNowTime();
+      }, wait);
+    }
 
     function loadState() {
       try {
@@ -726,9 +782,7 @@
     }
 
     function saveState() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
     }
 
     function nowElapsedMs() {
@@ -748,9 +802,11 @@
 
       startBtn.disabled = state.running;
       stopBtn.disabled  = !state.running;
+
+      // 時刻も「常に」表示更新（主に復帰時）
+      renderNowTime();
     }
 
-    // 次の「分」が変わる直前に再描画するためのタイマー
     function scheduleTick() {
       if (tickHandle) {
         clearTimeout(tickHandle);
@@ -760,7 +816,7 @@
 
       const ms = nowElapsedMs();
       const remainder = ms % 60000;
-      const wait = Math.max(250, 60000 - remainder); // 安全マージン
+      const wait = Math.max(250, 60000 - remainder);
       tickHandle = setTimeout(() => {
         render();
         scheduleTick();
@@ -769,7 +825,6 @@
 
     function start() {
       if (state.running) return;
-
       state.running = true;
       state.startEpochMs = Date.now();
       saveState();
@@ -779,7 +834,6 @@
 
     function stop() {
       if (!state.running) return;
-
       state.elapsedMs = nowElapsedMs();
       state.running = false;
       state.startEpochMs = null;
@@ -815,7 +869,6 @@
     resetBtn.addEventListener("click", (e) => { e.stopPropagation(); reset(); });
 
     // ボタン以外のメイン画面クリック/タップで Start/Stop
-    // - controls / theme panel / theme button / memo は除外
     function isExcludedTarget(target) {
       const t = target;
       return (
@@ -828,14 +881,12 @@
       );
     }
 
-    function onScenePointerUp(ev) {
+    sceneEl.addEventListener("pointerup", (ev) => {
       if (isExcludedTarget(ev.target)) return;
       toggleStartStop();
-    }
+    });
 
-    sceneEl.addEventListener("pointerup", onScenePointerUp);
-
-    // Ctrl+Enter で計測切替（メモ入力中でも使える）
+    // Ctrl+Enter で計測切替
     document.addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
@@ -843,22 +894,7 @@
       }
     });
 
-    // 初期化
-    loadState();
-    render();
-    if (state.running) {
-      scheduleTick();
-    }
-
-    // 画面が復帰したら再描画（スマホのスリープ復帰対策）
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
-        render();
-        scheduleTick();
-      }
-    });
-
-    /* ===================== MEMO (localStorage) ===================== */
+    // ===================== MEMO (localStorage) =====================
     let memoSaveHandle = null;
 
     function setMemoCount() {
@@ -875,9 +911,7 @@
     }
 
     function saveMemoNow() {
-      try {
-        localStorage.setItem(MEMO_KEY, memoEl.value || "");
-      } catch (_) {}
+      try { localStorage.setItem(MEMO_KEY, memoEl.value || ""); } catch (_) {}
     }
 
     function scheduleMemoSave() {
@@ -893,23 +927,31 @@
       scheduleMemoSave();
     });
 
-    // フォーカス外れたら確実に保存
     memoEl.addEventListener("blur", saveMemoNow);
-
-    // メモ領域クリックが計測切替にならないように（pointerupはscene側で除外済みだが保険）
     memoWrapEl.addEventListener("pointerup", (e) => e.stopPropagation());
 
-    loadMemo();
-
-    /* ===================== THEME SWITCH ===================== */
+    // ===================== THEME SWITCH =====================
+    // デフォルトだけ控えめ、他は大胆グラデ
     const themeDefs = [
-      { id: "default", label: "蒸気桃色", swatch: "linear-gradient(135deg,#ff3ea5,#ffb200)" },
-      { id: "cyber",   label: "電脳翠",   swatch: "linear-gradient(135deg,#00ffaa,#00ccff)" },
-      { id: "sunset",  label: "夕焼橙",   swatch: "linear-gradient(135deg,#ff6b6b,#ffcc66)" },
-      { id: "ocean",   label: "深海蒼",   swatch: "linear-gradient(135deg,#00b4ff,#0044ff)" },
-      { id: "violet",  label: "妖紫光",   swatch: "linear-gradient(135deg,#c471ff,#7f00ff)" },
-      { id: "amber",   label: "琥珀灯",   swatch: "linear-gradient(135deg,#ffb347,#ffcc33)" },
-      { id: "mono",    label: "白墨",     swatch: "linear-gradient(135deg,#f5f5f5,#777777)" }
+      { id: "default", label: "蒸気（標準）", swatch: "linear-gradient(135deg,#23233b,#0e0e1a)" },
+
+      { id: "cyber",   label: "サイバー（緑×青）",
+        swatch: "linear-gradient(135deg,#00ffaa 0%,#00ccff 45%,#0047ff 100%)" },
+
+      { id: "sunset",  label: "サンセット（紅×金）",
+        swatch: "linear-gradient(135deg,#ff2d55 0%,#ff7a18 45%,#ffd166 100%)" },
+
+      { id: "ocean",   label: "オーシャン（青×紫）",
+        swatch: "linear-gradient(135deg,#00b4ff 0%,#0044ff 45%,#7c3aed 100%)" },
+
+      { id: "violet",  label: "バイオレット（紫×シアン）",
+        swatch: "linear-gradient(135deg,#c471ff 0%,#7f00ff 45%,#00e5ff 100%)" },
+
+      { id: "amber",   label: "アンバー（琥珀×紅）",
+        swatch: "linear-gradient(135deg,#ffb347 0%,#ff6a00 45%,#ff3d00 100%)" },
+
+      { id: "mono",    label: "モノクロ（白×黒）",
+        swatch: "linear-gradient(135deg,#f5f5f5 0%,#8a8a8a 50%,#050506 100%)" }
     ];
 
     const rootEl   = document.documentElement;
@@ -918,14 +960,10 @@
     const closeEl  = document.getElementById("themeClose");
     const listEl   = document.getElementById("themeList");
 
-    const THEME_KEY = "minute-vapor-theme:v1";
-
     function applyTheme(id) {
-      if (id === "default") {
-        rootEl.removeAttribute("data-theme");
-      } else {
-        rootEl.setAttribute("data-theme", id);
-      }
+      if (id === "default") rootEl.removeAttribute("data-theme");
+      else rootEl.setAttribute("data-theme", id);
+
       try { localStorage.setItem(THEME_KEY, id); } catch (_) {}
 
       listEl.querySelectorAll(".theme-chip").forEach(chip => {
@@ -958,6 +996,7 @@
 
         chip.appendChild(swatch);
         chip.appendChild(label);
+
         chip.addEventListener("click", (e) => {
           e.stopPropagation();
           applyTheme(theme.id);
@@ -990,6 +1029,26 @@
         event.target !== toggleEl
       ) {
         panelEl.style.display = "none";
+      }
+    });
+
+    // ===================== INIT =====================
+    loadState();
+    loadMemo();
+    render();
+
+    // 時刻表示は常時（分境界で更新）
+    renderNowTime();
+    scheduleNowTime();
+
+    if (state.running) scheduleTick();
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        render();
+        scheduleTick();
+        renderNowTime();
+        scheduleNowTime();
       }
     });
   </script>
