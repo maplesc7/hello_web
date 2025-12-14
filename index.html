@@ -30,6 +30,13 @@
       --btn-border: rgba(255,255,255,0.22);
       --danger: #ff6b6b;
       --ok: #7dffb3;
+
+      --memo-bg: rgba(0, 0, 0, 0.42);
+      --memo-border: rgba(255, 255, 255, 0.24);
+      --memo-glow: color-mix(in srgb, var(--glow) 38%, transparent 62%);
+      --memo-glow2: color-mix(in srgb, var(--glow2) 26%, transparent 74%);
+      --memo-radius: 18px;
+      --memo-h: clamp(170px, 30svh, 290px); /* 上1/3くらいの固定高(可変だが固定枠) */
     }
 
     /* ===================== RESET & BASE ===================== */
@@ -66,15 +73,19 @@
       max-width: 100vw;
       min-height: 100vh;
       min-height: 100svh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
       box-sizing: border-box;
       padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
       background:
         radial-gradient(circle at top, var(--bg2), var(--bg1) 45%),
         radial-gradient(circle at bottom, #000000, var(--bg1));
+
+      /* 上:メモ / 中:時計 / 下:余白(操作UIはfixed) */
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      align-items: start;
+      justify-items: center;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .scene-grid {
@@ -124,6 +135,156 @@
       mix-blend-mode: screen;
     }
 
+    /* ===================== TOP MEMO ===================== */
+    .memo-wrap {
+      position: relative;
+      z-index: 2;
+      width: min(920px, calc(100vw - 28px));
+      margin-top: max(14px, env(safe-area-inset-top, 0px));
+      padding: 12px;
+      border-radius: var(--memo-radius);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--memo-bg) 90%, transparent 10%),
+        color-mix(in srgb, var(--memo-bg) 70%, transparent 30%)
+      );
+      border: 1px solid var(--memo-border);
+      backdrop-filter: blur(18px);
+      box-shadow:
+        0 18px 60px rgba(0, 0, 0, 0.62),
+        0 0 0 1px rgba(255,255,255,0.06) inset,
+        0 0 28px var(--memo-glow),
+        0 0 44px var(--memo-glow2);
+      overflow: hidden;
+    }
+
+    .memo-wrap::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(255,255,255,0.12), transparent 45%),
+        radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--glow) 26%, transparent 74%), transparent 52%),
+        radial-gradient(circle at 90% 120%, color-mix(in srgb, var(--glow2) 24%, transparent 76%), transparent 58%);
+      opacity: 0.9;
+      pointer-events: none;
+      filter: blur(0.2px);
+      mix-blend-mode: screen;
+    }
+
+    .memo-head {
+      position: relative;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      padding: 2px 2px 0;
+      user-select: none;
+    }
+
+    .memo-title {
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      opacity: 0.92;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .memo-title .badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.06);
+      opacity: 0.92;
+    }
+
+    .memo-hint {
+      font-size: 11px;
+      opacity: 0.72;
+      white-space: nowrap;
+    }
+
+    .memo-area {
+      position: relative;
+      width: 100%;
+      height: var(--memo-h);
+      box-sizing: border-box;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.22);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.06) inset,
+        0 14px 40px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+
+    textarea.memo {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border: 0;
+      outline: none;
+      padding: 14px 14px;
+      box-sizing: border-box;
+      color: var(--text);
+      background: transparent;
+      font-size: 14px;
+      line-height: 1.6;
+      letter-spacing: 0.02em;
+
+      /* 「めっちゃ改行」でも中でスクロール */
+      overflow: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    textarea.memo::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+
+    .memo-footer {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+      padding: 0 2px 2px;
+      font-size: 11px;
+      opacity: 0.78;
+      user-select: none;
+    }
+
+    .memo-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .memo-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .memo-mini kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.18);
+      opacity: 0.95;
+    }
+
     /* ===================== CLOCK / TIMER DISPLAY ===================== */
     .clock {
       position: relative;
@@ -137,10 +298,11 @@
         0 0 48px var(--glow2),
         0 0 80px rgba(0, 0, 0, 0.9);
       user-select: none;
-      pointer-events: none;
-      transform: translateY(-6vh);
+      pointer-events: none; /* 表示はタップ対象にしない */
+      transform: translateY(-1vh);
       animation: pulse 6s ease-in-out infinite;
       white-space: nowrap;
+      margin-top: 18px;
     }
 
     .clock small {
@@ -166,7 +328,7 @@
     @media (max-height: 700px) {
       .clock {
         font-size: clamp(96px, 22vw, 210px);
-        transform: translateY(-4vh);
+        transform: translateY(-0.5vh);
       }
     }
 
@@ -181,7 +343,6 @@
       --wire-sub: rgba(0, 204, 255, 0.7);
       --floor-grid-main: rgba(0, 255, 170, 0.78);
       --floor-grid-accent: rgba(0, 204, 255, 0.7);
-
       --panel-bg: rgba(0, 0, 0, 0.45);
     }
 
@@ -432,12 +593,46 @@
         min-width: 58px;
         padding: 8px 10px;
       }
+
+      .memo-hint {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="scene">
+  <div class="scene" id="scene">
     <div class="scene-grid"></div>
+
+    <!-- 上1/3: メモ -->
+    <div class="memo-wrap" id="memoWrap">
+      <div class="memo-head">
+        <div class="memo-title">
+          <span class="badge">MEMO</span>
+          <span>自由メモ</span>
+        </div>
+        <div class="memo-hint">ここを触っても計測は切り替わりません</div>
+      </div>
+
+      <div class="memo-area">
+        <textarea
+          class="memo"
+          id="memo"
+          placeholder="思いついたことを、そのまま。&#10;（内容は端末に保存されます）"
+          spellcheck="false"
+        ></textarea>
+      </div>
+
+      <div class="memo-footer">
+        <div class="memo-meta">
+          <span class="memo-mini"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> で計測切替</span>
+          <span class="memo-mini">保存: 自動</span>
+        </div>
+        <div class="memo-meta">
+          <span id="memoCount" class="memo-mini">0 文字</span>
+        </div>
+      </div>
+    </div>
 
     <!-- 分だけのカウントアップ表示 -->
     <div class="clock" id="clock">
@@ -486,6 +681,8 @@
        - 0分から開始
        - 経過時間は Date.now() ベースで計算してズレを最小化
        - 状態を localStorage に保存（リロードやPWA化でも安心）
+       - メイン画面(ボタン以外)クリック/タップでも Start/Stop 切替
+       - 上部メモは localStorage に自動保存
     ========================================================= */
 
     const minuteValueEl = document.getElementById("minuteValue");
@@ -494,8 +691,14 @@
     const startBtn      = document.getElementById("startBtn");
     const stopBtn       = document.getElementById("stopBtn");
     const resetBtn      = document.getElementById("resetBtn");
+    const sceneEl       = document.getElementById("scene");
+
+    const memoEl        = document.getElementById("memo");
+    const memoWrapEl    = document.getElementById("memoWrap");
+    const memoCountEl   = document.getElementById("memoCount");
 
     const STORAGE_KEY = "minute-vapor-timer:v1";
+    const MEMO_KEY    = "minute-vapor-memo:v1";
 
     let state = {
       running: false,
@@ -567,7 +770,6 @@
     function start() {
       if (state.running) return;
 
-      // 既にelapsedMsがある場合は「再開」
       state.running = true;
       state.startEpochMs = Date.now();
       saveState();
@@ -578,7 +780,6 @@
     function stop() {
       if (!state.running) return;
 
-      // 今までの経過をelapsedMsに確定
       state.elapsedMs = nowElapsedMs();
       state.running = false;
       state.startEpochMs = null;
@@ -589,6 +790,11 @@
         tickHandle = null;
       }
       render();
+    }
+
+    function toggleStartStop() {
+      if (state.running) stop();
+      else start();
     }
 
     function reset() {
@@ -604,15 +810,43 @@
       render();
     }
 
-    startBtn.addEventListener("click", start);
-    stopBtn.addEventListener("click", stop);
-    resetBtn.addEventListener("click", reset);
+    startBtn.addEventListener("click", (e) => { e.stopPropagation(); start(); });
+    stopBtn.addEventListener("click",  (e) => { e.stopPropagation(); stop(); });
+    resetBtn.addEventListener("click", (e) => { e.stopPropagation(); reset(); });
+
+    // ボタン以外のメイン画面クリック/タップで Start/Stop
+    // - controls / theme panel / theme button / memo は除外
+    function isExcludedTarget(target) {
+      const t = target;
+      return (
+        t.closest(".controls") ||
+        t.closest(".theme-panel") ||
+        t.closest(".theme-toggle") ||
+        t.closest(".theme-chip") ||
+        t.closest(".theme-close") ||
+        t.closest(".memo-wrap")
+      );
+    }
+
+    function onScenePointerUp(ev) {
+      if (isExcludedTarget(ev.target)) return;
+      toggleStartStop();
+    }
+
+    sceneEl.addEventListener("pointerup", onScenePointerUp);
+
+    // Ctrl+Enter で計測切替（メモ入力中でも使える）
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        toggleStartStop();
+      }
+    });
 
     // 初期化
     loadState();
     render();
     if (state.running) {
-      // リロード中に経過が伸びるのを正しく反映する
       scheduleTick();
     }
 
@@ -624,15 +858,58 @@
       }
     });
 
-    /* ===================== THEME SWITCH (from your sample) ===================== */
+    /* ===================== MEMO (localStorage) ===================== */
+    let memoSaveHandle = null;
+
+    function setMemoCount() {
+      const n = (memoEl.value || "").length;
+      memoCountEl.textContent = `${n} 文字`;
+    }
+
+    function loadMemo() {
+      try {
+        const s = localStorage.getItem(MEMO_KEY);
+        if (typeof s === "string") memoEl.value = s;
+      } catch (_) {}
+      setMemoCount();
+    }
+
+    function saveMemoNow() {
+      try {
+        localStorage.setItem(MEMO_KEY, memoEl.value || "");
+      } catch (_) {}
+    }
+
+    function scheduleMemoSave() {
+      if (memoSaveHandle) clearTimeout(memoSaveHandle);
+      memoSaveHandle = setTimeout(() => {
+        saveMemoNow();
+        memoSaveHandle = null;
+      }, 250);
+    }
+
+    memoEl.addEventListener("input", () => {
+      setMemoCount();
+      scheduleMemoSave();
+    });
+
+    // フォーカス外れたら確実に保存
+    memoEl.addEventListener("blur", saveMemoNow);
+
+    // メモ領域クリックが計測切替にならないように（pointerupはscene側で除外済みだが保険）
+    memoWrapEl.addEventListener("pointerup", (e) => e.stopPropagation());
+
+    loadMemo();
+
+    /* ===================== THEME SWITCH ===================== */
     const themeDefs = [
-      { id: "default", label: "Vapor Pink", swatch: "linear-gradient(135deg,#ff3ea5,#ffb200)" },
-      { id: "cyber",   label: "Cyber Green", swatch: "linear-gradient(135deg,#00ffaa,#00ccff)" },
-      { id: "sunset",  label: "Sunset Orange", swatch: "linear-gradient(135deg,#ff6b6b,#ffcc66)" },
-      { id: "ocean",   label: "Deep Ocean",   swatch: "linear-gradient(135deg,#00b4ff,#0044ff)" },
-      { id: "violet",  label: "Neon Violet",  swatch: "linear-gradient(135deg,#c471ff,#7f00ff)" },
-      { id: "amber",   label: "Warm Amber",   swatch: "linear-gradient(135deg,#ffb347,#ffcc33)" },
-      { id: "mono",    label: "Soft Mono",    swatch: "linear-gradient(135deg,#f5f5f5,#777777)" }
+      { id: "default", label: "蒸気桃色", swatch: "linear-gradient(135deg,#ff3ea5,#ffb200)" },
+      { id: "cyber",   label: "電脳翠",   swatch: "linear-gradient(135deg,#00ffaa,#00ccff)" },
+      { id: "sunset",  label: "夕焼橙",   swatch: "linear-gradient(135deg,#ff6b6b,#ffcc66)" },
+      { id: "ocean",   label: "深海蒼",   swatch: "linear-gradient(135deg,#00b4ff,#0044ff)" },
+      { id: "violet",  label: "妖紫光",   swatch: "linear-gradient(135deg,#c471ff,#7f00ff)" },
+      { id: "amber",   label: "琥珀灯",   swatch: "linear-gradient(135deg,#ffb347,#ffcc33)" },
+      { id: "mono",    label: "白墨",     swatch: "linear-gradient(135deg,#f5f5f5,#777777)" }
     ];
 
     const rootEl   = document.documentElement;
@@ -681,7 +958,10 @@
 
         chip.appendChild(swatch);
         chip.appendChild(label);
-        chip.addEventListener("click", () => applyTheme(theme.id));
+        chip.addEventListener("click", (e) => {
+          e.stopPropagation();
+          applyTheme(theme.id);
+        });
 
         frag.appendChild(chip);
       });
@@ -692,12 +972,14 @@
     buildThemeList();
     applyTheme(loadTheme());
 
-    toggleEl.addEventListener("click", () => {
+    toggleEl.addEventListener("click", (e) => {
+      e.stopPropagation();
       const showing = panelEl.style.display === "block";
       panelEl.style.display = showing ? "none" : "block";
     });
 
-    closeEl.addEventListener("click", () => {
+    closeEl.addEventListener("click", (e) => {
+      e.stopPropagation();
       panelEl.style.display = "none";
     });
 
