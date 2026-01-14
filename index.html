@@ -33,16 +33,9 @@
       --danger: #ff6b6b;
       --ok: #7dffb3;
 
-      --memo-bg: rgba(0, 0, 0, 0.42);
-      --memo-border: rgba(255, 255, 255, 0.24);
-      --memo-glow: color-mix(in srgb, var(--glow) 38%, transparent 62%);
-      --memo-glow2: color-mix(in srgb, var(--glow2) 26%, transparent 74%);
-      --memo-radius: 18px;
-      --memo-h: clamp(170px, 30svh, 290px);
-
-      /* JSが調整する時計フォント */
-      --minutes-fs: 140px;
-      --time-fs: 96px;
+      /* 時計フォント */
+      --minutes-fs: clamp(100px, 28vw, 180px);
+      --time-fs: clamp(64px, 18vw, 120px);
     }
 
     /* ===================== RESET & BASE ===================== */
@@ -83,10 +76,9 @@
       background:
         radial-gradient(circle at top, var(--bg2), var(--bg1) 45%),
         radial-gradient(circle at bottom, var(--bg3), var(--bg1));
-      display: grid;
-      grid-template-rows: auto 1fr;
-      align-items: start;
-      justify-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -100,192 +92,57 @@
     .scene-grid::before {
       content: "";
       position: absolute;
-      left: -24%;
-      right: -24%;
-      bottom: -18%;
-      height: 65vh;
+      left: -30%;
+      right: -30%;
+      bottom: -25%;
+      height: 75vh;
       background-image:
-        linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.9) 0%,
-          rgba(0, 0, 0, 0.55) 18%,
-          rgba(255, 255, 255, 0.08) 55%,
-          transparent 100%
-        ),
+        radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.15) 0%, transparent 45%),
         repeating-linear-gradient(
-          to right,
+          90deg,
           var(--floor-grid-main) 0,
-          var(--floor-grid-main) 1.2px,
-          transparent 1.2px,
-          transparent 34px
+          var(--floor-grid-main) 1.5px,
+          transparent 1.5px,
+          transparent 42px
         ),
         repeating-linear-gradient(
-          to top,
+          0deg,
           var(--floor-grid-accent) 0,
-          var(--floor-grid-accent) 1.2px,
-          transparent 1.2px,
-          transparent 36px
+          var(--floor-grid-accent) 1.5px,
+          transparent 1.5px,
+          transparent 42px
         );
-      opacity: 0.8;
+      opacity: 0.85;
       transform-origin: bottom center;
-      transform: perspective(900px) rotateX(70deg);
-      filter: blur(0.35px);
+      transform: perspective(750px) rotateX(68deg);
+      filter: blur(0.4px);
       mix-blend-mode: screen;
+      animation: gridFlow 20s linear infinite;
     }
 
-    /* ===================== TOP MEMO ===================== */
-    .memo-wrap {
-      position: relative;
-      z-index: 2;
-      width: min(920px, calc(100vw - 28px));
-      margin-top: max(14px, env(safe-area-inset-top, 0px));
-      padding: 12px;
-      border-radius: var(--memo-radius);
-      background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--memo-bg) 90%, transparent 10%),
-        color-mix(in srgb, var(--memo-bg) 70%, transparent 30%)
-      );
-      border: 1px solid var(--memo-border);
-      backdrop-filter: blur(18px);
-      box-shadow:
-        0 18px 60px rgba(0, 0, 0, 0.62),
-        0 0 0 1px rgba(255,255,255,0.06) inset,
-        0 0 28px var(--memo-glow),
-        0 0 44px var(--memo-glow2);
-      overflow: hidden;
+    @keyframes gridFlow {
+      0% { background-position: 0 0, 0 0, 0 0; }
+      100% { background-position: 0 0, 42px 42px, -42px -42px; }
     }
 
-    .memo-wrap::before {
+    .scene-grid::after {
       content: "";
       position: absolute;
-      inset: -2px;
-      background:
-        radial-gradient(circle at 15% 10%, rgba(255,255,255,0.12), transparent 45%),
-        radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--glow) 26%, transparent 74%), transparent 52%),
-        radial-gradient(circle at 90% 120%, color-mix(in srgb, var(--glow2) 24%, transparent 76%), transparent 58%);
-      opacity: 0.9;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 30%, var(--glow) 0%, transparent 25%),
+        radial-gradient(circle at 80% 50%, var(--glow2) 0%, transparent 30%);
+      opacity: 0.12;
+      animation: glowPulse 8s ease-in-out infinite alternate;
       pointer-events: none;
-      filter: blur(0.2px);
-      mix-blend-mode: screen;
     }
 
-    .memo-head {
-      position: relative;
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 8px;
-      padding: 2px 2px 0;
-      user-select: none;
+    @keyframes glowPulse {
+      0% { opacity: 0.08; filter: blur(60px); }
+      100% { opacity: 0.18; filter: blur(80px); }
     }
 
-    .memo-title {
-      font-size: 10px;
-      letter-spacing: 0.06em;
-      opacity: 0.92;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .memo-title .badge {
-      font-size: 10px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(255,255,255,0.06);
-      opacity: 0.92;
-    }
-
-    .memo-hint {
-      font-size: 10px;
-      opacity: 0.72;
-      white-space: nowrap;
-    }
-
-    .memo-area {
-      position: relative;
-      width: 100%;
-      height: var(--memo-h);
-      box-sizing: border-box;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.22);
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.06) inset,
-        0 14px 40px rgba(0,0,0,0.35);
-      overflow: hidden;
-    }
-
-    textarea.memo {
-      width: 100%;
-      height: 100%;
-      resize: none;
-      border: 0;
-      outline: none;
-      padding: 14px 14px;
-      box-sizing: border-box;
-      color: var(--text);
-      background: transparent;
-      font-size: 12px;
-      line-height: 1.6;
-      letter-spacing: 0.02em;
-      overflow: auto;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    textarea.memo::placeholder {
-      color: rgba(255,255,255,0.5);
-    }
-
-    .memo-footer {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 8px;
-      padding: 0 2px 2px;
-      font-size: 10px;
-      opacity: 0.78;
-      user-select: none;
-    }
-
-    .memo-meta {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      white-space: nowrap;
-    }
-
-    .memo-mini {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.05);
-    }
-
-    .memo-mini kbd {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 7px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.18);
-      opacity: 0.95;
-    }
-
-    @media (max-width: 480px) {
-      .memo-hint { display: none; }
-    }
-
-    /* ===================== MID AREA (clock placement) ===================== */
+    /* ===================== CLOCK AREA ===================== */
     .mid-area {
       position: relative;
       z-index: 1;
@@ -316,6 +173,7 @@
       font-weight: 650;
       letter-spacing: -0.04em;
       white-space: nowrap;
+      margin-bottom: clamp(20px, 4vh, 40px);
     }
 
     .clock .minutes-unit {
@@ -327,11 +185,11 @@
     }
 
     .clock .nowtime {
-      margin-top: 10px;
       font-size: var(--time-fs);
       font-weight: 620;
       letter-spacing: 0.06em;
       opacity: 0.93;
+      margin-top: clamp(20px, 4vh, 40px);
     }
 
     @keyframes pulse {
@@ -339,72 +197,83 @@
       50% { opacity: 0.86; filter: hue-rotate(18deg); }
     }
 
-    /* ===================== THEMES (default is modest) ===================== */
-    [data-theme="cyber"] {
-      --bg1: #00110f;
-      --bg2: #003b36;
-      --bg3: #001f2b;
-      --glow: #00ffaa;
-      --glow2: #00ccff;
-      --text: #eaffff;
-      --floor-grid-main: rgba(0, 255, 170, 0.82);
-      --floor-grid-accent: rgba(0, 204, 255, 0.78);
-      --panel-bg: rgba(0, 0, 0, 0.45);
+    /* ===================== THEMES ===================== */
+    [data-theme="midnight"] {
+      --bg1: #0a0a1e;
+      --bg2: #1a1a3e;
+      --bg3: #000014;
+      --glow: #6b7dff;
+      --glow2: #b794f6;
+      --text: #e8e8ff;
+      --floor-grid-main: rgba(107, 125, 255, 0.85);
+      --floor-grid-accent: rgba(183, 148, 246, 0.75);
+      --panel-bg: rgba(10, 10, 30, 0.6);
     }
 
-    [data-theme="sunset"] {
-      --bg1: #1a0d0d;
-      --bg2: #4d1a1a;
-      --bg3: #2b001a;
-      --glow: #ff4d6d;
-      --glow2: #ffd166;
-      --text: #ffe6e6;
-      --floor-grid-main: rgba(255, 77, 109, 0.84);
-      --floor-grid-accent: rgba(255, 209, 102, 0.78);
+    [data-theme="aurora"] {
+      --bg1: #001a14;
+      --bg2: #002818;
+      --bg3: #000a08;
+      --glow: #10f5c4;
+      --glow2: #ff6ec7;
+      --text: #e0fff8;
+      --floor-grid-main: rgba(16, 245, 196, 0.88);
+      --floor-grid-accent: rgba(255, 110, 199, 0.82);
     }
 
-    [data-theme="ocean"] {
-      --bg1: #020817;
-      --bg2: #012a4a;
-      --bg3: #001b3a;
-      --glow: #00b4ff;
-      --glow2: #7c3aed;
-      --text: #e0f2fe;
-      --floor-grid-main: rgba(56, 189, 248, 0.86);
-      --floor-grid-accent: rgba(124, 58, 237, 0.72);
+    [data-theme="coral"] {
+      --bg1: #1a1012;
+      --bg2: #2e1820;
+      --bg3: #0f0508;
+      --glow: #ff7f6e;
+      --glow2: #4ecdc4;
+      --text: #ffe8e5;
+      --floor-grid-main: rgba(255, 127, 110, 0.86);
+      --floor-grid-accent: rgba(78, 205, 196, 0.78);
     }
 
-    [data-theme="violet"] {
-      --bg1: #120021;
-      --bg2: #2a0a4a;
-      --bg3: #1a0033;
-      --glow: #c471ff;
-      --glow2: #00e5ff;
-      --text: #f5e9ff;
-      --floor-grid-main: rgba(196, 113, 255, 0.86);
-      --floor-grid-accent: rgba(0, 229, 255, 0.66);
+    [data-theme="lavender"] {
+      --bg1: #14111a;
+      --bg2: #2d2040;
+      --bg3: #0a0712;
+      --glow: #b08bf2;
+      --glow2: #7ec8e3;
+      --text: #f0ebff;
+      --floor-grid-main: rgba(176, 139, 242, 0.84);
+      --floor-grid-accent: rgba(126, 200, 227, 0.76);
     }
 
-    [data-theme="amber"] {
-      --bg1: #1b1204;
-      --bg2: #4a2600;
-      --bg3: #220a00;
-      --glow: #ffb347;
-      --glow2: #ff3d00;
-      --text: #fff4dd;
-      --floor-grid-main: rgba(255, 179, 71, 0.88);
-      --floor-grid-accent: rgba(255, 61, 0, 0.62);
+    [data-theme="emerald"] {
+      --bg1: #0f1a0f;
+      --bg2: #1a3020;
+      --bg3: #050a05;
+      --glow: #52c893;
+      --glow2: #f4c430;
+      --text: #e8ffe8;
+      --floor-grid-main: rgba(82, 200, 147, 0.88);
+      --floor-grid-accent: rgba(244, 196, 48, 0.74);
     }
 
-    [data-theme="mono"] {
-      --bg1: #050506;
-      --bg2: #141414;
-      --bg3: #000000;
-      --glow: #f5f5f5;
-      --glow2: #9e9e9e;
-      --text: #f5f5f5;
-      --floor-grid-main: rgba(245, 245, 245, 0.7);
-      --floor-grid-accent: rgba(158, 158, 158, 0.65);
+    [data-theme="rosegold"] {
+      --bg1: #1a1214;
+      --bg2: #3a2028;
+      --bg3: #0f0508;
+      --glow: #f8b4c0;
+      --glow2: #eab676;
+      --text: #fff0f0;
+      --floor-grid-main: rgba(248, 180, 192, 0.86);
+      --floor-grid-accent: rgba(234, 182, 118, 0.78);
+    }
+
+    [data-theme="arctic"] {
+      --bg1: #0d1216;
+      --bg2: #18252e;
+      --bg3: #050a0f;
+      --glow: #c0f3ff;
+      --glow2: #a7cfdf;
+      --text: #f0f8ff;
+      --floor-grid-main: rgba(192, 243, 255, 0.82);
+      --floor-grid-accent: rgba(167, 207, 223, 0.72);
     }
 
     /* ===================== THEME PANEL UI ===================== */
@@ -595,38 +464,8 @@
   <div class="scene" id="scene">
     <div class="scene-grid"></div>
 
-    <!-- 上: メモ -->
-    <div class="memo-wrap" id="memoWrap">
-      <div class="memo-head">
-        <div class="memo-title">
-          <span class="badge">MEMO</span>
-          <span>自由メモ</span>
-        </div>
-        <div class="memo-hint">ここを触っても計測は切り替わりません</div>
-      </div>
-
-      <div class="memo-area">
-        <textarea
-          class="memo"
-          id="memo"
-          placeholder="思いついたことを、そのまま。&#10;（内容は端末に保存されます）"
-          spellcheck="false"
-        ></textarea>
-      </div>
-
-      <div class="memo-footer">
-        <div class="memo-meta">
-          <span class="memo-mini"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> で計測切替</span>
-          <span class="memo-mini">保存: 自動</span>
-        </div>
-        <div class="memo-meta">
-          <span id="memoCount" class="memo-mini">0 文字</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 中: 時計（JSで「メモ下端〜下UI」間の 80% くらい使うように調整） -->
-    <div class="mid-area" id="midArea" aria-hidden="false">
+    <!-- 時計エリア -->
+    <div class="clock-area" id="clockArea" aria-hidden="false">
       <div class="clock" id="clock" aria-label="経過分と現在時刻">
         <div class="minutes-line">
           <span id="minuteValue">0</span><span class="minutes-unit">分</span>
@@ -659,9 +498,9 @@
 
   <script>
     /* =========================================================
-       - メモ下端〜下UI(controls)上端の領域を計測し、
-         その 80% くらいを文字(分+時刻)が占めるように自動調整
+       - シンプルな分単位タイマー
        - 現在時刻(HH:MM)は常時表示（分境界で更新）
+       - 状態は保存せず、閉じたらリセット
     ========================================================= */
 
     const minuteValueEl = document.getElementById("minuteValue");
@@ -674,20 +513,13 @@
     const resetBtn      = document.getElementById("resetBtn");
 
     const sceneEl       = document.getElementById("scene");
-    const memoEl        = document.getElementById("memo");
-    const memoWrapEl    = document.getElementById("memoWrap");
-    const memoCountEl   = document.getElementById("memoCount");
-    const midAreaEl     = document.getElementById("midArea");
-    const controlsEl    = document.getElementById("controls");
+    const clockAreaEl   = document.getElementById("clockArea");
 
-    const STORAGE_KEY = "minute-vapor-timer:v1";
-    const MEMO_KEY    = "minute-vapor-memo:v1";
     const THEME_KEY   = "minute-vapor-theme:v1";
 
     let state = { running: false, startEpochMs: null, elapsedMs: 0 };
     let tickHandle = null;
     let nowHandle  = null;
-    let memoSaveHandle = null;
 
     function pad2(n){ return String(n).padStart(2,"0"); }
     function formatHHMM(d){ return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; }
@@ -704,22 +536,6 @@
         scheduleNowTime();
       }, wait);
     }
-
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (
-          typeof parsed === "object" && parsed &&
-          typeof parsed.running === "boolean" &&
-          (parsed.startEpochMs === null || Number.isFinite(parsed.startEpochMs)) &&
-          Number.isFinite(parsed.elapsedMs)
-        ) state = parsed;
-      } catch (_) {}
-    }
-
-    function saveState(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {} }
 
     function nowElapsedMs(){
       if (!state.running) return state.elapsedMs;
@@ -759,7 +575,6 @@
       if (state.running) return;
       state.running = true;
       state.startEpochMs = Date.now();
-      saveState();
       render();
       scheduleTick();
     }
@@ -769,7 +584,6 @@
       state.elapsedMs = nowElapsedMs();
       state.running = false;
       state.startEpochMs = null;
-      saveState();
       if (tickHandle) { clearTimeout(tickHandle); tickHandle = null; }
       render();
     }
@@ -780,7 +594,6 @@
       state.running = false;
       state.startEpochMs = null;
       state.elapsedMs = 0;
-      saveState();
       if (tickHandle) { clearTimeout(tickHandle); tickHandle = null; }
       render();
     }
@@ -797,8 +610,7 @@
         t.closest(".theme-panel") ||
         t.closest(".theme-toggle") ||
         t.closest(".theme-chip") ||
-        t.closest(".theme-close") ||
-        t.closest(".memo-wrap")
+        t.closest(".theme-close")
       );
     }
 
@@ -814,95 +626,16 @@
       }
     });
 
-    // ===================== MEMO =====================
-    function setMemoCount(){
-      const n = (memoEl.value || "").length;
-      memoCountEl.textContent = `${n} 文字`;
-    }
-
-    function loadMemo(){
-      try {
-        const s = localStorage.getItem(MEMO_KEY);
-        if (typeof s === "string") memoEl.value = s;
-      } catch (_) {}
-      setMemoCount();
-    }
-
-    function saveMemoNow(){ try { localStorage.setItem(MEMO_KEY, memoEl.value || ""); } catch (_) {} }
-
-    function scheduleMemoSave(){
-      if (memoSaveHandle) clearTimeout(memoSaveHandle);
-      memoSaveHandle = setTimeout(() => {
-        saveMemoNow();
-        memoSaveHandle = null;
-      }, 250);
-    }
-
-    memoEl.addEventListener("input", ()=>{ setMemoCount(); scheduleMemoSave(); });
-    memoEl.addEventListener("blur", saveMemoNow);
-    memoWrapEl.addEventListener("pointerup", (e)=>e.stopPropagation());
-
-    // ===================== Clock sizing (use ~80% of the free band) =====================
-    function updateClockSizing(){
-      // メモ下端〜controls上端の「帯」を取る
-      const memoRect = memoWrapEl.getBoundingClientRect();
-      const ctrlRect = controlsEl.getBoundingClientRect();
-
-      // 少しだけ余白（上下）
-      const pad = 14;
-      let available = ctrlRect.top - memoRect.bottom - pad * 2;
-
-      // もし極端に狭い時の保険
-      available = Math.max(120, Math.floor(available));
-
-      // mid-area の高さをこの帯に合わせる
-      midAreaEl.style.height = `${available}px`;
-
-      // 80%くらいを文字が占める想定でフォントを決める
-      const target = available * 0.80;
-
-      // 分表示 + 時刻 + 間隔 をざっくり見積もる:
-      // blockHeight ≈ minutesFs*1.00 + timeFs*1.00 + gap(10px)
-      // timeFs は minutesFs の少し小さめ（0.72）
-      // => target ≈ m + 0.72m + 10 = 1.72m + 10
-      let minutesFs = (target - 10) / 1.72;
-
-      // 横幅制約（はみ出し防止）
-      const vw = window.innerWidth;
-      minutesFs = Math.min(minutesFs, vw * 0.60); // 横方向も大きくしすぎない
-
-      // 上限/下限
-      minutesFs = Math.max(78, Math.min(minutesFs, 260));
-
-      const timeFs = Math.max(44, Math.min(minutesFs * 0.72, 220));
-
-      document.documentElement.style.setProperty("--minutes-fs", `${Math.round(minutesFs)}px`);
-      document.documentElement.style.setProperty("--time-fs", `${Math.round(timeFs)}px`);
-    }
-
-    // 連続リサイズ対策で軽く間引く
-    let resizeRaf = null;
-    function scheduleUpdateClockSizing(){
-      if (resizeRaf) cancelAnimationFrame(resizeRaf);
-      resizeRaf = requestAnimationFrame(() => {
-        updateClockSizing();
-        resizeRaf = null;
-      });
-    }
-
-    window.addEventListener("resize", scheduleUpdateClockSizing);
-    window.addEventListener("orientationchange", scheduleUpdateClockSizing);
-
     // ===================== THEME SWITCH =====================
-    // デフォルトだけ控えめ、他は大胆グラデ
     const themeDefs = [
-      { id: "default", label: "蒸気（標準）", swatch: "linear-gradient(135deg,#23233b,#0e0e1a)" },
-      { id: "cyber",   label: "サイバー（緑×青）", swatch: "linear-gradient(135deg,#00ffaa 0%,#00ccff 45%,#0047ff 100%)" },
-      { id: "sunset",  label: "サンセット（紅×金）", swatch: "linear-gradient(135deg,#ff2d55 0%,#ff7a18 45%,#ffd166 100%)" },
-      { id: "ocean",   label: "オーシャン（青×紫）", swatch: "linear-gradient(135deg,#00b4ff 0%,#0044ff 45%,#7c3aed 100%)" },
-      { id: "violet",  label: "バイオレット（紫×シアン）", swatch: "linear-gradient(135deg,#c471ff 0%,#7f00ff 45%,#00e5ff 100%)" },
-      { id: "amber",   label: "アンバー（琥珀×紅）", swatch: "linear-gradient(135deg,#ffb347 0%,#ff6a00 45%,#ff3d00 100%)" },
-      { id: "mono",    label: "モノクロ（白×黒）", swatch: "linear-gradient(135deg,#f5f5f5 0%,#8a8a8a 50%,#050506 100%)" }
+      { id: "default",   label: "ミッドナイト", swatch: "linear-gradient(135deg,#6b7dff 0%,#b794f6 100%)" },
+      { id: "midnight",  label: "深夜の青紫", swatch: "linear-gradient(135deg,#6b7dff 0%,#b794f6 100%)" },
+      { id: "aurora",    label: "オーロラ", swatch: "linear-gradient(135deg,#10f5c4 0%,#ff6ec7 100%)" },
+      { id: "coral",     label: "コーラル", swatch: "linear-gradient(135deg,#ff7f6e 0%,#4ecdc4 100%)" },
+      { id: "lavender",  label: "ラベンダー", swatch: "linear-gradient(135deg,#b08bf2 0%,#7ec8e3 100%)" },
+      { id: "emerald",   label: "エメラルド", swatch: "linear-gradient(135deg,#52c893 0%,#f4c430 100%)" },
+      { id: "rosegold",  label: "ローズゴールド", swatch: "linear-gradient(135deg,#f8b4c0 0%,#eab676 100%)" },
+      { id: "arctic",    label: "アークティック", swatch: "linear-gradient(135deg,#c0f3ff 0%,#a7cfdf 100%)" }
     ];
 
     const rootEl   = document.documentElement;
@@ -950,8 +683,6 @@
         chip.addEventListener("click", (e)=>{
           e.stopPropagation();
           applyTheme(theme.id);
-          // 見た目変わっても帯は同じだが、念のため
-          scheduleUpdateClockSizing();
         });
 
         frag.appendChild(chip);
@@ -985,17 +716,10 @@
     });
 
     // ===================== INIT =====================
-    loadState();
-    loadMemo();
     render();
 
     renderNowTime();
     scheduleNowTime();
-
-    // 初回レイアウト（フォントサイズ含む）
-    scheduleUpdateClockSizing();
-
-    if (state.running) scheduleTick();
 
     document.addEventListener("visibilitychange", ()=>{
       if (!document.hidden) {
@@ -1003,13 +727,8 @@
         scheduleTick();
         renderNowTime();
         scheduleNowTime();
-        scheduleUpdateClockSizing();
       }
     });
-
-    // メモの高さが変わりうる（モバイルのアドレスバー等）ので少し遅延で再計算
-    setTimeout(scheduleUpdateClockSizing, 200);
-    setTimeout(scheduleUpdateClockSizing, 600);
   </script>
 </body>
 </html>
