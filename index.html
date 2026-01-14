@@ -34,8 +34,8 @@
       --ok: #7dffb3;
 
       /* 時計フォント */
-      --minutes-fs: clamp(100px, 28vw, 180px);
-      --time-fs: clamp(64px, 18vw, 120px);
+      --minutes-fs: clamp(200px, 56vw, 360px);
+      --time-fs: clamp(128px, 36vw, 240px);
     }
 
     /* ===================== RESET & BASE ===================== */
@@ -58,9 +58,7 @@
       justify-content: center;
       box-sizing: border-box;
       padding-bottom: env(safe-area-inset-bottom, 0px);
-      background:
-        radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 55%),
-        radial-gradient(circle at bottom, rgba(0, 0, 0, 0.9), var(--bg1));
+      background: var(--bg1);
     }
 
     /* ===================== SCENE & FLOOR GRID ===================== */
@@ -73,13 +71,20 @@
       overflow: hidden;
       box-sizing: border-box;
       padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
-      background:
-        radial-gradient(circle at top, var(--bg2), var(--bg1) 45%),
-        radial-gradient(circle at bottom, var(--bg3), var(--bg1));
+      background: var(--bg1);
       display: flex;
       align-items: center;
       justify-content: center;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    .scene-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
     }
 
     .scene-grid {
@@ -112,7 +117,7 @@
           transparent 1.5px,
           transparent 42px
         );
-      opacity: 0.85;
+      opacity: 0.25;
       transform-origin: bottom center;
       transform: perspective(750px) rotateX(68deg);
       filter: blur(0.4px);
@@ -461,7 +466,17 @@
   </style>
 </head>
 <body>
+  <!-- Three.js (ES Module版) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+      }
+    }
+  </script>
+
   <div class="scene" id="scene">
+    <canvas class="scene-canvas" id="sceneCanvas"></canvas>
     <div class="scene-grid"></div>
 
     <!-- 時計エリア -->
@@ -495,6 +510,176 @@
       <div class="theme-list" id="themeList"></div>
     </div>
   </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    // ===================== THREE.JS GRADIENT SCENE =====================
+    const canvas = document.getElementById("sceneCanvas");
+    let renderer, bgScene, bgCam, bgMat, terrainScene, terrainCam, wireGeom, linesMain, linesGlow;
+
+    const themeColors = {
+      default:  { top: "#eb971a", mid: "#76167f", bot: "#0f0862", deep: "#050211", wire: 0xFFA560, glow: 0x6B8CAE },
+      midnight: { top: "#b794f6", mid: "#6b7dff", bot: "#0a0a1e", deep: "#000014", wire: 0x9BA8FF, glow: 0xC5A3F8 },
+      aurora:   { top: "#ff6ec7", mid: "#10f5c4", bot: "#001a14", deep: "#000a08", wire: 0x15FFC8, glow: 0xFF7BCE },
+      coral:    { top: "#4ecdc4", mid: "#ff7f6e", bot: "#1a1012", deep: "#0f0508", wire: 0xFF8B7A, glow: 0x58D9CF },
+      lavender: { top: "#7ec8e3", mid: "#b08bf2", bot: "#14111a", deep: "#0a0712", wire: 0xBB96F5, glow: 0x88CFEA },
+      emerald:  { top: "#f4c430", mid: "#52c893", bot: "#0f1a0f", deep: "#050a05", wire: 0x5AD09D, glow: 0xF6CA3C },
+      rosegold: { top: "#eab676", mid: "#f8b4c0", bot: "#1a1214", deep: "#0f0508", wire: 0xFFBECA, glow: 0xF1BE80 },
+      arctic:   { top: "#a7cfdf", mid: "#c0f3ff", bot: "#0d1216", deep: "#050a0f", wire: 0xCAF7FF, glow: 0xB1D5E5 }
+    };
+
+    function initThreeJS() {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+      renderer.autoClear = false;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      // Background gradient
+      bgScene = new THREE.Scene();
+      bgCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+      bgMat = new THREE.ShaderMaterial({
+        uniforms: {
+          cTop:  { value: new THREE.Color("#eb971a") },
+          cMid:  { value: new THREE.Color("#76167f") },
+          cBot:  { value: new THREE.Color("#0f0862") },
+          cDeep: { value: new THREE.Color("#050211") }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main(){
+            vUv = uv;
+            gl_Position = vec4(position.xy, 0.0, 1.0);
+          }
+        `,
+        fragmentShader: `
+          precision highp float;
+          varying vec2 vUv;
+          uniform vec3 cTop;
+          uniform vec3 cMid;
+          uniform vec3 cBot;
+          uniform vec3 cDeep;
+
+          float sCurve(float x){
+            return x*x*(3.0 - 2.0*x);
+          }
+
+          void main(){
+            float y = clamp(vUv.y, 0.0, 1.0);
+            float t1 = sCurve(clamp((y - 0.00) / 0.48, 0.0, 1.0));
+            vec3 cA = mix(cBot, cMid, t1);
+            float t2 = sCurve(clamp((y - 0.38) / 0.62, 0.0, 1.0));
+            vec3 cB = mix(cMid, cTop, t2);
+            vec3 col = mix(cA, cB, clamp((y - 0.28) / 0.72, 0.0, 1.0));
+            col = mix(col, cDeep, sCurve(clamp((0.12 - y) / 0.12, 0.0, 1.0)) * 0.70);
+            vec2 p = vUv * 2.0 - 1.0;
+            float v = 1.0 - smoothstep(0.40, 1.45, length(p));
+            col *= (0.72 + 0.28 * v);
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `,
+        depthTest: false,
+        depthWrite: false
+      });
+
+      const bgQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat);
+      bgScene.add(bgQuad);
+
+      // Terrain
+      terrainScene = new THREE.Scene();
+      terrainScene.fog = new THREE.Fog(new THREE.Color("#0f0862"), 45, 180);
+
+      terrainCam = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 600);
+      terrainCam.position.set(0, 12, 28);
+      terrainCam.lookAt(0, 8, -50);
+
+      createTerrain();
+      resizeRenderer();
+      renderScene();
+    }
+
+    function createTerrain() {
+      const WIDTH = 280, DEPTH = 200, SEGX = 280, SEGZ = 200;
+      const geom = new THREE.PlaneGeometry(WIDTH, DEPTH, SEGX, SEGZ);
+      geom.rotateX(-Math.PI / 2);
+      geom.translate(0, 0, -DEPTH * 0.35);
+
+      const pos = geom.attributes.position;
+      const v = new THREE.Vector3();
+
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+        const x = v.x, z = v.z;
+        const distFactor = Math.max(0, Math.min(1, (-z) / (DEPTH * 0.65)));
+        const hill1 = Math.sin(x * 0.018) * 18.0;
+        const hill2 = Math.cos(x * 0.032 + z * 0.012) * 9.0;
+        const hill3 = Math.sin(x * 0.025 - z * 0.008) * 6.0;
+        const depthWave = Math.sin(z * 0.028) * 4.0 * (1.0 - distFactor * 0.6);
+        let h = (hill1 + hill2 + hill3) * (0.7 + distFactor * 0.5) + depthWave;
+        h += (2.0 - distFactor * 2.0);
+        h *= (0.85 + distFactor * 0.35);
+        v.y = h;
+        pos.setXYZ(i, v.x, v.y, v.z);
+      }
+      pos.needsUpdate = true;
+
+      wireGeom = new THREE.WireframeGeometry(geom);
+
+      const matMain = new THREE.LineBasicMaterial({
+        color: 0xFFA560,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending
+      });
+
+      const matGlow = new THREE.LineBasicMaterial({
+        color: 0x6B8CAE,
+        transparent: true,
+        opacity: 0.28,
+        blending: THREE.AdditiveBlending
+      });
+
+      linesMain = new THREE.LineSegments(wireGeom, matMain);
+      linesGlow = new THREE.LineSegments(wireGeom, matGlow);
+      linesGlow.scale.set(1.0006, 1.0006, 1.0006);
+
+      terrainScene.add(linesGlow);
+      terrainScene.add(linesMain);
+    }
+
+    function updateThemeColors(themeId) {
+      const colors = themeColors[themeId] || themeColors.default;
+      if (bgMat) {
+        bgMat.uniforms.cTop.value.set(colors.top);
+        bgMat.uniforms.cMid.value.set(colors.mid);
+        bgMat.uniforms.cBot.value.set(colors.bot);
+        bgMat.uniforms.cDeep.value.set(colors.deep);
+      }
+      if (linesMain) linesMain.material.color.setHex(colors.wire);
+      if (linesGlow) linesGlow.material.color.setHex(colors.glow);
+      if (terrainScene && terrainScene.fog) terrainScene.fog.color.set(colors.bot);
+      renderScene();
+    }
+
+    function resizeRenderer() {
+      const w = window.innerWidth, h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      terrainCam.aspect = w / h;
+      terrainCam.updateProjectionMatrix();
+      renderScene();
+    }
+
+    function renderScene() {
+      if (!renderer) return;
+      renderer.clear(true, true, true);
+      renderer.render(bgScene, bgCam);
+      renderer.render(terrainScene, terrainCam);
+    }
+
+    window.addEventListener("resize", resizeRenderer);
+
+    // ===================== ORIGINAL TIMER LOGIC =====================
+  </script>
 
   <script>
     /* =========================================================
@@ -652,6 +837,11 @@
       listEl.querySelectorAll(".theme-chip").forEach(chip => {
         chip.classList.toggle("active", chip.dataset.themeId === id);
       });
+
+      // Update Three.js colors
+      if (typeof updateThemeColors !== 'undefined') {
+        updateThemeColors(id);
+      }
     }
 
     function loadTheme(){
@@ -716,6 +906,8 @@
     });
 
     // ===================== INIT =====================
+    initThreeJS();
+    
     render();
 
     renderNowTime();
