@@ -1,926 +1,840 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
-  />
-  <title>Minute Vapor Timer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MONOLITH TIMER</title>
   <style>
-    /* ===================== VARIABLES ===================== */
     :root {
-      --bg1: #0e0e1a;
-      --bg2: #1a1a2e;
-      --bg3: #000000;
-
-      --glow: #ff45ff;
-      --glow2: #45e6ff;
-      --text: #ffffff;
-
-      --wire-main: rgba(255, 255, 255, 0.9);
-      --wire-sub: rgba(255, 255, 255, 0.5);
-      --floor-grid-main: rgba(255, 69, 255, 0.7);
-      --floor-grid-accent: rgba(69, 230, 255, 0.65);
-
-      --panel-bg: rgba(0, 0, 0, 0.55);
-      --panel-border: rgba(255, 255, 255, 0.28);
-      --panel-blur: 14px;
-
-      --btn-bg: rgba(255,255,255,0.06);
-      --btn-bg-hover: rgba(255,255,255,0.12);
-      --btn-border: rgba(255,255,255,0.22);
-      --danger: #ff6b6b;
-      --ok: #7dffb3;
-
-      /* 時計フォント */
-      --minutes-fs: clamp(200px, 56vw, 360px);
-      --time-fs: clamp(128px, 36vw, 240px);
+      color-scheme: dark;
+      --bg: #090909;
+      --bg-2: #121212;
+      --panel: rgba(22, 22, 22, 0.72);
+      --line: rgba(255, 255, 255, 0.09);
+      --line-strong: rgba(255, 255, 255, 0.18);
+      --text: #d6d6d6;
+      --muted: #8c8c8c;
+      --accent: #b8b8b8;
+      --accent-soft: rgba(214, 214, 214, 0.14);
+      --ink: #0a0c10;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
     }
 
-    /* ===================== RESET & BASE ===================== */
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #efefef;
+      --bg-2: #fafafa;
+      --panel: rgba(255, 255, 255, 0.78);
+      --line: rgba(20, 20, 20, 0.1);
+      --line-strong: rgba(20, 20, 20, 0.2);
+      --text: #1f1f1f;
+      --muted: #626262;
+      --accent: #3a3a3a;
+      --accent-soft: rgba(44, 44, 44, 0.12);
+      --ink: #f7faff;
+      --shadow: 0 24px 58px rgba(0, 0, 0, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
     html, body {
       margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100%;
+      font-family: "Bahnschrift", "Segoe UI", "Noto Sans JP", sans-serif;
       color: var(--text);
-      background: var(--bg1);
-      -webkit-text-size-adjust: 100%;
+      background:
+        radial-gradient(120vw 90vh at 50% -10%, rgba(255, 255, 255, 0.08), transparent 58%),
+        radial-gradient(90vw 70vh at 100% 0%, rgba(255, 255, 255, 0.04), transparent 62%),
+        linear-gradient(180deg, var(--bg), var(--bg-2));
       overflow-x: hidden;
     }
 
     body {
-      min-height: 100vh;
-      min-height: 100svh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-      background: var(--bg1);
+      display: grid;
+      place-items: start center;
+      min-height: 100dvh;
+      padding: clamp(12px, 2.2vw, 24px);
     }
 
-    /* ===================== SCENE & FLOOR GRID ===================== */
-    .scene {
+    .app {
+      width: min(920px, 100%);
+      max-height: calc(100svh - 24px);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 38%, rgba(255, 255, 255, 0.08)),
+        var(--panel);
+      backdrop-filter: blur(16px) saturate(115%);
+      -webkit-backdrop-filter: blur(16px) saturate(115%);
+      box-shadow: var(--shadow);
+      padding: clamp(12px, 2.5vw, 22px);
+      display: grid;
+      gap: 12px;
+      overflow: auto;
       position: relative;
-      width: 100%;
-      max-width: 100vw;
-      min-height: 100vh;
-      min-height: 100svh;
+    }
+
+    .app::before,
+    .app::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      inset: 6px;
+      opacity: 0.7;
+    }
+
+    .app::after {
+      inset: 12px;
+      border-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .stage {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: clamp(12px, 2.4vw, 18px);
+      display: grid;
+      gap: 10px;
+      position: relative;
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 48%, transparent 100%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
       overflow: hidden;
-      box-sizing: border-box;
-      padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
-      background: var(--bg1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    .scene-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .scene-grid {
+    .wire-grid {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 0;
-    }
-
-    .scene-grid::before {
-      content: "";
-      position: absolute;
-      left: -30%;
-      right: -30%;
-      bottom: -25%;
-      height: 75vh;
+      border-radius: inherit;
       background-image:
-        radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.15) 0%, transparent 45%),
-        repeating-linear-gradient(
-          90deg,
-          var(--floor-grid-main) 0,
-          var(--floor-grid-main) 1.5px,
-          transparent 1.5px,
-          transparent 42px
-        ),
-        repeating-linear-gradient(
-          0deg,
-          var(--floor-grid-accent) 0,
-          var(--floor-grid-accent) 1.5px,
-          transparent 1.5px,
-          transparent 42px
-        );
-      opacity: 0.25;
-      transform-origin: bottom center;
-      transform: perspective(750px) rotateX(68deg);
-      filter: blur(0.4px);
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: radial-gradient(circle at 50% 35%, black 45%, transparent 85%);
+      opacity: 0.5;
+    }
+
+    .aurora-flare {
+      position: absolute;
+      top: 14%;
+      left: 50%;
+      width: min(64vw, 520px);
+      height: min(48vw, 380px);
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle,
+        rgba(255, 255, 255, 0.14) 0%,
+        rgba(255, 255, 255, 0.08) 28%,
+        rgba(255, 255, 255, 0.03) 45%,
+        transparent 70%);
+      filter: blur(38px);
+      opacity: 0.56;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .aurora-rays {
+      position: absolute;
+      left: 50%;
+      bottom: 36%;
+      width: 140%;
+      height: 80%;
+      transform: translateX(-50%);
+      background: conic-gradient(from 0deg at 50% 100%,
+        transparent 0deg,
+        rgba(255, 255, 255, 0.035) 35deg,
+        transparent 48deg,
+        rgba(255, 255, 255, 0.02) 85deg,
+        transparent 104deg,
+        rgba(255, 255, 255, 0.024) 125deg,
+        transparent 148deg,
+        rgba(255, 255, 255, 0.026) 215deg,
+        transparent 226deg,
+        rgba(255, 255, 255, 0.02) 265deg,
+        transparent 278deg);
       mix-blend-mode: screen;
-      animation: gridFlow 20s linear infinite;
+      opacity: 0.34;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    @keyframes gridFlow {
-      0% { background-position: 0 0, 0 0, 0 0; }
-      100% { background-position: 0 0, 42px 42px, -42px -42px; }
-    }
-
-    .scene-grid::after {
-      content: "";
+    .particles {
       position: absolute;
       inset: 0;
-      background-image:
-        radial-gradient(circle at 20% 30%, var(--glow) 0%, transparent 25%),
-        radial-gradient(circle at 80% 50%, var(--glow2) 0%, transparent 30%);
-      opacity: 0.12;
-      animation: glowPulse 8s ease-in-out infinite alternate;
       pointer-events: none;
+      z-index: 0;
     }
 
-    @keyframes glowPulse {
-      0% { opacity: 0.08; filter: blur(60px); }
-      100% { opacity: 0.18; filter: blur(80px); }
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+      opacity: 0.38;
     }
 
-    /* ===================== CLOCK AREA ===================== */
-    .mid-area {
+    .particle:nth-child(1) { left: 20%; top: 28%; }
+    .particle:nth-child(2) { left: 73%; top: 24%; }
+    .particle:nth-child(3) { left: 52%; top: 42%; }
+
+    [data-theme="light"] .wire-grid {
+      background-image:
+        linear-gradient(to right, rgba(41, 62, 90, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(41, 62, 90, 0.06) 1px, transparent 1px);
+    }
+
+    .dial-shell {
+      display: grid;
+      place-items: center;
+      margin-top: 2px;
       position: relative;
       z-index: 1;
-      width: 100%;
-      height: 1px;             /* JSが実高さを入れる */
-      display: flex;
-      align-items: center;      /* ど真ん中 */
-      justify-content: center;
-      box-sizing: border-box;
-      padding: 0 10px;          /* 横だけ少し */
     }
 
-    /* ===================== CLOCK / TIMER DISPLAY ===================== */
-    .clock {
-      user-select: none;
+    .dial {
+      width: min(64vw, 360px);
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      position: relative;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.02), transparent 62%);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 0 24px rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .seg-ring {
+      position: absolute;
+      inset: 0;
       pointer-events: none;
-      text-align: center;
-      text-shadow:
-        0 0 26px var(--glow),
-        0 0 54px var(--glow2),
-        0 0 84px rgba(0, 0, 0, 0.9);
-      animation: pulse 6s ease-in-out infinite;
-      line-height: 1.0;
     }
 
-    .clock .minutes-line {
-      font-size: var(--minutes-fs);
-      font-weight: 650;
-      letter-spacing: -0.04em;
-      white-space: nowrap;
-      margin-bottom: clamp(20px, 4vh, 40px);
+    .seg {
+      position: absolute;
+      inset: 0;
+      transform: rotate(var(--deg));
     }
 
-    .clock .minutes-unit {
-      font-size: 0.28em;
-      font-weight: 550;
-      opacity: 0.92;
-      margin-left: 0.10em;
-      letter-spacing: 0;
-    }
-
-    .clock .nowtime {
-      font-size: var(--time-fs);
-      font-weight: 620;
-      letter-spacing: 0.06em;
-      opacity: 0.93;
-      margin-top: clamp(20px, 4vh, 40px);
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; filter: hue-rotate(0deg); }
-      50% { opacity: 0.86; filter: hue-rotate(18deg); }
-    }
-
-    /* ===================== THEMES ===================== */
-    [data-theme="midnight"] {
-      --bg1: #0a0a1e;
-      --bg2: #1a1a3e;
-      --bg3: #000014;
-      --glow: #6b7dff;
-      --glow2: #b794f6;
-      --text: #e8e8ff;
-      --floor-grid-main: rgba(107, 125, 255, 0.85);
-      --floor-grid-accent: rgba(183, 148, 246, 0.75);
-      --panel-bg: rgba(10, 10, 30, 0.6);
-    }
-
-    [data-theme="aurora"] {
-      --bg1: #001a14;
-      --bg2: #002818;
-      --bg3: #000a08;
-      --glow: #10f5c4;
-      --glow2: #ff6ec7;
-      --text: #e0fff8;
-      --floor-grid-main: rgba(16, 245, 196, 0.88);
-      --floor-grid-accent: rgba(255, 110, 199, 0.82);
-    }
-
-    [data-theme="coral"] {
-      --bg1: #1a1012;
-      --bg2: #2e1820;
-      --bg3: #0f0508;
-      --glow: #ff7f6e;
-      --glow2: #4ecdc4;
-      --text: #ffe8e5;
-      --floor-grid-main: rgba(255, 127, 110, 0.86);
-      --floor-grid-accent: rgba(78, 205, 196, 0.78);
-    }
-
-    [data-theme="lavender"] {
-      --bg1: #14111a;
-      --bg2: #2d2040;
-      --bg3: #0a0712;
-      --glow: #b08bf2;
-      --glow2: #7ec8e3;
-      --text: #f0ebff;
-      --floor-grid-main: rgba(176, 139, 242, 0.84);
-      --floor-grid-accent: rgba(126, 200, 227, 0.76);
-    }
-
-    [data-theme="emerald"] {
-      --bg1: #0f1a0f;
-      --bg2: #1a3020;
-      --bg3: #050a05;
-      --glow: #52c893;
-      --glow2: #f4c430;
-      --text: #e8ffe8;
-      --floor-grid-main: rgba(82, 200, 147, 0.88);
-      --floor-grid-accent: rgba(244, 196, 48, 0.74);
-    }
-
-    [data-theme="rosegold"] {
-      --bg1: #1a1214;
-      --bg2: #3a2028;
-      --bg3: #0f0508;
-      --glow: #f8b4c0;
-      --glow2: #eab676;
-      --text: #fff0f0;
-      --floor-grid-main: rgba(248, 180, 192, 0.86);
-      --floor-grid-accent: rgba(234, 182, 118, 0.78);
-    }
-
-    [data-theme="arctic"] {
-      --bg1: #0d1216;
-      --bg2: #18252e;
-      --bg3: #050a0f;
-      --glow: #c0f3ff;
-      --glow2: #a7cfdf;
-      --text: #f0f8ff;
-      --floor-grid-main: rgba(192, 243, 255, 0.82);
-      --floor-grid-accent: rgba(167, 207, 223, 0.72);
-    }
-
-    /* ===================== THEME PANEL UI ===================== */
-    .theme-toggle {
-      position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
-      right: 16px;
-      width: 44px;
-      height: 44px;
+    .seg::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 7px;
+      width: 2px;
+      height: 10px;
+      transform: translateX(-50%);
       border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      backdrop-filter: blur(var(--panel-blur));
-      color: #fff;
-      font-size: 18px;
-      cursor: pointer;
-      z-index: 10;
-      -webkit-tap-highlight-color: transparent;
+      background: rgba(255, 255, 255, 0.12);
+      opacity: 0.3;
     }
 
-    .theme-panel {
-      position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
-      right: 16px;
-      width: 246px;
-      max-width: calc(100vw - 32px);
-      background: rgba(6, 10, 30, 0.96);
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-      padding: 10px 12px 12px;
-      backdrop-filter: blur(20px);
-      z-index: 11;
-      display: none;
+    .seg.on::before {
+      background: var(--accent);
+      opacity: 0.95;
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.24);
     }
 
-    .theme-panel-header {
+    .dial::before,
+    .dial::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+    }
+
+    .dial::before {
+      inset: 8%;
+    }
+
+    .dial::after {
+      inset: 16%;
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .dial-brand {
+      position: absolute;
+      top: 30%;
+      margin: 0;
+      font-size: clamp(0.52rem, 1.4vw, 0.74rem);
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 800;
+      z-index: 1;
+    }
+
+    .time {
+      margin: 0;
+      transform: translateY(8px);
+      z-index: 1;
+      font-size: clamp(2.45rem, 11vw, 5.4rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    .meta {
+      position: relative;
+      z-index: 1;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 12px;
-      opacity: 0.9;
-    }
-
-    .theme-close {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      padding: 0 4px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .theme-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .theme-chip {
-      flex: 0 0 calc(50% - 3px);
-      display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      background: rgba(255, 255, 255, 0.03);
-      font-size: 11px;
-      color: #fff;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .theme-chip-swatch {
-      width: 14px;
-      height: 14px;
-      border-radius: 999px;
-      flex-shrink: 0;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-    }
-
-    .theme-chip.active {
-      border-color: #ffffff;
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    /* ===================== TIMER CONTROLS ===================== */
-    .controls {
-      position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
-      left: 14px;
-      display: flex;
+    .state {
+      display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 10px;
-      border-radius: 14px;
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      backdrop-filter: blur(var(--panel-blur));
-      z-index: 10;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.55);
-      -webkit-tap-highlight-color: transparent;
+      font-size: 0.76rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 800;
     }
 
-    .ctrl-btn {
-      appearance: none;
-      border: 1px solid var(--btn-border);
-      background: var(--btn-bg);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 650;
-      letter-spacing: 0.02em;
-      cursor: pointer;
-      transition: background .15s ease, border-color .15s ease, transform .08s ease;
-      min-width: 62px;
-      text-align: center;
-    }
-
-    .ctrl-btn:hover { background: var(--btn-bg-hover); }
-    .ctrl-btn:active { transform: translateY(1px) scale(0.98); }
-
-    .ctrl-btn.primary {
-      border-color: rgba(255,255,255,0.5);
-      background: rgba(255,255,255,0.12);
-    }
-
-    .ctrl-btn.stop {
-      border-color: color-mix(in srgb, var(--danger) 60%, white 0%);
-      color: #fff;
-    }
-
-    .ctrl-btn.reset {
-      border-color: rgba(255,255,255,0.18);
-      opacity: 0.85;
-    }
-
-    .status-dot {
+    .state::before {
+      content: "";
       width: 8px;
       height: 8px;
+      border-radius: 50%;
+      background: #7b8390;
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+
+    .state[data-status="running"]::before { background: #bac2ce; }
+    .state[data-status="paused"]::before { background: #939dab; }
+    .state[data-status="finished"]::before { background: #d3d9e2; }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-size: 1.04rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: border-color 120ms ease, transform 120ms ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    }
+
+    .icon-btn:hover { border-color: var(--accent); }
+    .icon-btn:active { transform: translateY(1px); }
+
+    .inputs {
+      position: relative;
+      z-index: 1;
+      width: min(440px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .input-wrap { display: grid; gap: 6px; }
+
+    .input-wrap label {
+      color: var(--muted);
+      font-size: 0.74rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      padding: 10px;
+      text-align: center;
+      font-size: clamp(1.05rem, 3.8vw, 1.5rem);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .action-row {
+      position: relative;
+      z-index: 1;
+      width: min(620px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 10px;
+    }
+
+    .controls {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(110px, 1fr));
+      gap: 10px;
+    }
+
+    .control {
+      min-height: 54px;
+      border-radius: 12px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      font-size: 1.18rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
+    }
+
+    .control:hover {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .control:active { transform: translateY(1px); }
+
+    .control.primary {
+      background: linear-gradient(180deg, rgba(210, 210, 210, 0.28), rgba(148, 148, 148, 0.2));
+      border-color: rgba(255, 255, 255, 0.26);
+      color: #e2e2e2;
+    }
+
+    .theme-dock {
+      width: fit-content;
+      padding: 3px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.35);
-      box-shadow: 0 0 8px rgba(255,255,255,0.35);
-      margin-right: 2px;
+      border: 1px solid var(--line-strong);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
     }
 
-    .status-dot.running {
-      background: var(--ok);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--ok) 70%, white 0%);
+    .theme {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      min-width: 140px;
+      padding: 9px 12px;
+      font-size: 0.86rem;
+      font-weight: 700;
     }
 
-    .status-text {
-      font-size: 10px;
-      opacity: 0.85;
-      margin-right: 6px;
-      user-select: none;
-      white-space: nowrap;
+    .hint {
+      position: relative;
+      z-index: 1;
+      margin: 2px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
     }
 
-    @media (max-width: 480px) {
-      .theme-panel {
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
-        right: 12px;
-        left: 12px;
-        margin: 0 auto;
-      }
-      .theme-toggle { right: 12px; }
-      .controls {
-        left: 10px;
-        right: 70px;
-        justify-content: space-between;
-      }
-      .ctrl-btn {
-        min-width: 58px;
-        padding: 8px 10px;
-      }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%) translateY(16px);
+      opacity: 0;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: rgba(18, 18, 18, 0.88);
+      color: var(--text);
+      padding: 9px 12px;
+      max-width: min(92vw, 580px);
+      font-size: 0.88rem;
+      pointer-events: none;
+      z-index: 99;
+      transition: opacity 160ms ease, transform 160ms ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .theme:focus-visible,
+    .icon-btn:focus-visible,
+    .input-wrap input:focus-visible,
+    .control:focus-visible {
+      outline: 2px solid rgba(157, 167, 182, 0.7);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 520px) {
+      .dial { width: min(74vw, 336px); }
+      .action-row { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr; }
+      .theme-dock { justify-self: stretch; }
+      .theme { width: 100%; }
+      .app { max-height: calc(100svh - 16px); }
+      .aurora-rays { opacity: 0.28; }
+      .aurora-flare { opacity: 0.5; }
     }
   </style>
 </head>
 <body>
-  <!-- Three.js (ES Module版) -->
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
-      }
-    }
-  </script>
+  <main class="app">
+    <section class="stage" aria-live="polite">
+      <div class="aurora-flare" aria-hidden="true"></div>
+      <div class="aurora-rays" aria-hidden="true"></div>
+      <div class="particles" aria-hidden="true">
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+      </div>
+      <div class="wire-grid" aria-hidden="true"></div>
 
-  <div class="scene" id="scene">
-    <canvas class="scene-canvas" id="sceneCanvas"></canvas>
-    <div class="scene-grid"></div>
-
-    <!-- 時計エリア -->
-    <div class="clock-area" id="clockArea" aria-hidden="false">
-      <div class="clock" id="clock" aria-label="経過分と現在時刻">
-        <div class="minutes-line">
-          <span id="minuteValue">0</span><span class="minutes-unit">分</span>
+      <div class="dial-shell">
+        <div id="dial" class="dial" style="--p: 0;">
+          <div id="segRing" class="seg-ring" aria-hidden="true"></div>
+          <p class="dial-brand">Monolith Timer</p>
+          <p id="timeText" class="time">05:00</p>
         </div>
-        <div class="nowtime" id="timeNow">--:--</div>
       </div>
-    </div>
 
-    <!-- 下: 操作UI -->
-    <div class="controls" id="controls" role="group" aria-label="タイマー操作">
-      <span class="status-dot" id="statusDot" aria-hidden="true"></span>
-      <span class="status-text" id="statusText">停止中</span>
-
-      <button class="ctrl-btn primary" id="startBtn" type="button">スタート</button>
-      <button class="ctrl-btn stop" id="stopBtn" type="button" disabled>ストップ</button>
-      <button class="ctrl-btn reset" id="resetBtn" type="button">リセット</button>
-    </div>
-
-    <!-- テーマ -->
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="テーマ切り替え">🎨</button>
-
-    <div class="theme-panel" id="themePanel">
-      <div class="theme-panel-header">
-        <span>テーマ選択</span>
-        <button type="button" class="theme-close" id="themeClose">×</button>
+      <div class="meta">
+        <span id="statusText" class="state" data-status="stopped">stopped</span>
+        <button id="notifyBtn" class="icon-btn" type="button" title="Enable notifications" aria-label="Enable notifications">🔔</button>
       </div>
-      <div class="theme-list" id="themeList"></div>
-    </div>
-  </div>
 
-  <script type="module">
-    import * as THREE from 'three';
+      <div class="inputs">
+        <div class="input-wrap">
+          <label for="minutesInput">MIN</label>
+          <input id="minutesInput" type="number" min="0" max="99" step="1" inputmode="numeric" value="5">
+        </div>
+        <div class="input-wrap">
+          <label for="secondsInput">SEC</label>
+          <input id="secondsInput" type="number" min="0" max="59" step="1" inputmode="numeric" value="0">
+        </div>
+      </div>
 
-    // ===================== THREE.JS GRADIENT SCENE =====================
-    const canvas = document.getElementById("sceneCanvas");
-    let renderer, bgScene, bgCam, bgMat, terrainScene, terrainCam, wireGeom, linesMain, linesGlow;
+      <div class="action-row">
+        <div id="controls" class="controls"></div>
+        <div class="theme-dock">
+          <select id="themeSelect" class="theme" aria-label="Theme">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+            <option value="device">Device</option>
+          </select>
+        </div>
+      </div>
 
-    const themeColors = {
-      default:  { top: "#eb971a", mid: "#76167f", bot: "#0f0862", deep: "#050211", wire: 0xFFA560, glow: 0x6B8CAE },
-      midnight: { top: "#b794f6", mid: "#6b7dff", bot: "#0a0a1e", deep: "#000014", wire: 0x9BA8FF, glow: 0xC5A3F8 },
-      aurora:   { top: "#ff6ec7", mid: "#10f5c4", bot: "#001a14", deep: "#000a08", wire: 0x15FFC8, glow: 0xFF7BCE },
-      coral:    { top: "#4ecdc4", mid: "#ff7f6e", bot: "#1a1012", deep: "#0f0508", wire: 0xFF8B7A, glow: 0x58D9CF },
-      lavender: { top: "#7ec8e3", mid: "#b08bf2", bot: "#14111a", deep: "#0a0712", wire: 0xBB96F5, glow: 0x88CFEA },
-      emerald:  { top: "#f4c430", mid: "#52c893", bot: "#0f1a0f", deep: "#050a05", wire: 0x5AD09D, glow: 0xF6CA3C },
-      rosegold: { top: "#eab676", mid: "#f8b4c0", bot: "#1a1214", deep: "#0f0508", wire: 0xFFBECA, glow: 0xF1BE80 },
-      arctic:   { top: "#a7cfdf", mid: "#c0f3ff", bot: "#0d1216", deep: "#050a0f", wire: 0xCAF7FF, glow: 0xB1D5E5 }
-    };
+      <p id="hint" class="hint">▶ start / ⏸ pause / ■ end / ▶ resume</p>
+    </section>
+  </main>
 
-    function initThreeJS() {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-      renderer.autoClear = false;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-
-      // Background gradient
-      bgScene = new THREE.Scene();
-      bgCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-      bgMat = new THREE.ShaderMaterial({
-        uniforms: {
-          cTop:  { value: new THREE.Color("#eb971a") },
-          cMid:  { value: new THREE.Color("#76167f") },
-          cBot:  { value: new THREE.Color("#0f0862") },
-          cDeep: { value: new THREE.Color("#050211") }
-        },
-        vertexShader: `
-          varying vec2 vUv;
-          void main(){
-            vUv = uv;
-            gl_Position = vec4(position.xy, 0.0, 1.0);
-          }
-        `,
-        fragmentShader: `
-          precision highp float;
-          varying vec2 vUv;
-          uniform vec3 cTop;
-          uniform vec3 cMid;
-          uniform vec3 cBot;
-          uniform vec3 cDeep;
-
-          float sCurve(float x){
-            return x*x*(3.0 - 2.0*x);
-          }
-
-          void main(){
-            float y = clamp(vUv.y, 0.0, 1.0);
-            float t1 = sCurve(clamp((y - 0.00) / 0.48, 0.0, 1.0));
-            vec3 cA = mix(cBot, cMid, t1);
-            float t2 = sCurve(clamp((y - 0.38) / 0.62, 0.0, 1.0));
-            vec3 cB = mix(cMid, cTop, t2);
-            vec3 col = mix(cA, cB, clamp((y - 0.28) / 0.72, 0.0, 1.0));
-            col = mix(col, cDeep, sCurve(clamp((0.12 - y) / 0.12, 0.0, 1.0)) * 0.70);
-            vec2 p = vUv * 2.0 - 1.0;
-            float v = 1.0 - smoothstep(0.40, 1.45, length(p));
-            col *= (0.72 + 0.28 * v);
-            gl_FragColor = vec4(col, 1.0);
-          }
-        `,
-        depthTest: false,
-        depthWrite: false
-      });
-
-      const bgQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat);
-      bgScene.add(bgQuad);
-
-      // Terrain
-      terrainScene = new THREE.Scene();
-      terrainScene.fog = new THREE.Fog(new THREE.Color("#0f0862"), 45, 180);
-
-      terrainCam = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 600);
-      terrainCam.position.set(0, 12, 28);
-      terrainCam.lookAt(0, 8, -50);
-
-      createTerrain();
-      resizeRenderer();
-      renderScene();
-    }
-
-    function createTerrain() {
-      const WIDTH = 280, DEPTH = 200, SEGX = 280, SEGZ = 200;
-      const geom = new THREE.PlaneGeometry(WIDTH, DEPTH, SEGX, SEGZ);
-      geom.rotateX(-Math.PI / 2);
-      geom.translate(0, 0, -DEPTH * 0.35);
-
-      const pos = geom.attributes.position;
-      const v = new THREE.Vector3();
-
-      for (let i = 0; i < pos.count; i++) {
-        v.fromBufferAttribute(pos, i);
-        const x = v.x, z = v.z;
-        const distFactor = Math.max(0, Math.min(1, (-z) / (DEPTH * 0.65)));
-        const hill1 = Math.sin(x * 0.018) * 18.0;
-        const hill2 = Math.cos(x * 0.032 + z * 0.012) * 9.0;
-        const hill3 = Math.sin(x * 0.025 - z * 0.008) * 6.0;
-        const depthWave = Math.sin(z * 0.028) * 4.0 * (1.0 - distFactor * 0.6);
-        let h = (hill1 + hill2 + hill3) * (0.7 + distFactor * 0.5) + depthWave;
-        h += (2.0 - distFactor * 2.0);
-        h *= (0.85 + distFactor * 0.35);
-        v.y = h;
-        pos.setXYZ(i, v.x, v.y, v.z);
-      }
-      pos.needsUpdate = true;
-
-      wireGeom = new THREE.WireframeGeometry(geom);
-
-      const matMain = new THREE.LineBasicMaterial({
-        color: 0xFFA560,
-        transparent: true,
-        opacity: 0.75,
-        blending: THREE.AdditiveBlending
-      });
-
-      const matGlow = new THREE.LineBasicMaterial({
-        color: 0x6B8CAE,
-        transparent: true,
-        opacity: 0.28,
-        blending: THREE.AdditiveBlending
-      });
-
-      linesMain = new THREE.LineSegments(wireGeom, matMain);
-      linesGlow = new THREE.LineSegments(wireGeom, matGlow);
-      linesGlow.scale.set(1.0006, 1.0006, 1.0006);
-
-      terrainScene.add(linesGlow);
-      terrainScene.add(linesMain);
-    }
-
-    function updateThemeColors(themeId) {
-      const colors = themeColors[themeId] || themeColors.default;
-      if (bgMat) {
-        bgMat.uniforms.cTop.value.set(colors.top);
-        bgMat.uniforms.cMid.value.set(colors.mid);
-        bgMat.uniforms.cBot.value.set(colors.bot);
-        bgMat.uniforms.cDeep.value.set(colors.deep);
-      }
-      if (linesMain) linesMain.material.color.setHex(colors.wire);
-      if (linesGlow) linesGlow.material.color.setHex(colors.glow);
-      if (terrainScene && terrainScene.fog) terrainScene.fog.color.set(colors.bot);
-      renderScene();
-    }
-
-    function resizeRenderer() {
-      const w = window.innerWidth, h = window.innerHeight;
-      renderer.setSize(w, h, false);
-      terrainCam.aspect = w / h;
-      terrainCam.updateProjectionMatrix();
-      renderScene();
-    }
-
-    function renderScene() {
-      if (!renderer) return;
-      renderer.clear(true, true, true);
-      renderer.render(bgScene, bgCam);
-      renderer.render(terrainScene, terrainCam);
-    }
-
-    window.addEventListener("resize", resizeRenderer);
-
-    // ===================== ORIGINAL TIMER LOGIC =====================
-  </script>
+  <div id="toast" class="toast" role="status" aria-live="assertive"></div>
 
   <script>
-    /* =========================================================
-       - シンプルな分単位タイマー
-       - 現在時刻(HH:MM)は常時表示（分境界で更新）
-       - 状態は保存せず、閉じたらリセット
-    ========================================================= */
+    (() => {
+      const STATUS = { STOPPED: "stopped", RUNNING: "running", PAUSED: "paused", FINISHED: "finished" };
+      const ICON = { START: "▶", PAUSE: "⏸", END: "■", RESUME: "▶", RESTART: "▶" };
 
-    const minuteValueEl = document.getElementById("minuteValue");
-    const timeNowEl     = document.getElementById("timeNow");
+      const el = {
+        themeSelect: document.getElementById("themeSelect"),
+        statusText: document.getElementById("statusText"),
+        notifyBtn: document.getElementById("notifyBtn"),
+        minutesInput: document.getElementById("minutesInput"),
+        secondsInput: document.getElementById("secondsInput"),
+        timeText: document.getElementById("timeText"),
+        controls: document.getElementById("controls"),
+        segRing: document.getElementById("segRing"),
+        toast: document.getElementById("toast")
+      };
 
-    const statusDotEl   = document.getElementById("statusDot");
-    const statusTextEl  = document.getElementById("statusText");
-    const startBtn      = document.getElementById("startBtn");
-    const stopBtn       = document.getElementById("stopBtn");
-    const resetBtn      = document.getElementById("resetBtn");
+      const state = {
+        status: STATUS.STOPPED,
+        durationSec: 300,
+        remainingSec: 300,
+        intervalId: null,
+        endAtMs: 0,
+        toastTimer: null
+      };
 
-    const sceneEl       = document.getElementById("scene");
-    const clockAreaEl   = document.getElementById("clockArea");
+      const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+      const two = (n) => String(n).padStart(2, "0");
+      const fmt = (sec) => `${two(Math.floor(sec / 60))}:${two(sec % 60)}`;
+      const SEG_COUNT = 60;
+      let segNodes = [];
 
-    const THEME_KEY   = "minute-vapor-theme:v1";
-
-    let state = { running: false, startEpochMs: null, elapsedMs: 0 };
-    let tickHandle = null;
-    let nowHandle  = null;
-
-    function pad2(n){ return String(n).padStart(2,"0"); }
-    function formatHHMM(d){ return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; }
-
-    function renderNowTime(){ timeNowEl.textContent = formatHHMM(new Date()); }
-
-    function scheduleNowTime(){
-      if (nowHandle) { clearTimeout(nowHandle); nowHandle = null; }
-      const now = new Date();
-      const ms = now.getSeconds() * 1000 + now.getMilliseconds();
-      const wait = Math.max(250, 60000 - ms);
-      nowHandle = setTimeout(() => {
-        renderNowTime();
-        scheduleNowTime();
-      }, wait);
-    }
-
-    function nowElapsedMs(){
-      if (!state.running) return state.elapsedMs;
-      if (!state.startEpochMs) return state.elapsedMs;
-      const delta = Date.now() - state.startEpochMs;
-      return Math.max(0, state.elapsedMs + delta);
-    }
-
-    function render(){
-      const ms = nowElapsedMs();
-      const minutes = Math.floor(ms / 60000);
-      minuteValueEl.textContent = String(minutes);
-
-      statusDotEl.classList.toggle("running", state.running);
-      statusTextEl.textContent = state.running ? "計測中" : "停止中";
-
-      startBtn.disabled = state.running;
-      stopBtn.disabled  = !state.running;
-
-      renderNowTime();
-    }
-
-    function scheduleTick(){
-      if (tickHandle) { clearTimeout(tickHandle); tickHandle = null; }
-      if (!state.running) return;
-
-      const ms = nowElapsedMs();
-      const remainder = ms % 60000;
-      const wait = Math.max(250, 60000 - remainder);
-      tickHandle = setTimeout(() => {
-        render();
-        scheduleTick();
-      }, wait);
-    }
-
-    function start(){
-      if (state.running) return;
-      state.running = true;
-      state.startEpochMs = Date.now();
-      render();
-      scheduleTick();
-    }
-
-    function stop(){
-      if (!state.running) return;
-      state.elapsedMs = nowElapsedMs();
-      state.running = false;
-      state.startEpochMs = null;
-      if (tickHandle) { clearTimeout(tickHandle); tickHandle = null; }
-      render();
-    }
-
-    function toggleStartStop(){ state.running ? stop() : start(); }
-
-    function reset(){
-      state.running = false;
-      state.startEpochMs = null;
-      state.elapsedMs = 0;
-      if (tickHandle) { clearTimeout(tickHandle); tickHandle = null; }
-      render();
-    }
-
-    startBtn.addEventListener("click", (e)=>{ e.stopPropagation(); start(); });
-    stopBtn.addEventListener("click",  (e)=>{ e.stopPropagation(); stop(); });
-    resetBtn.addEventListener("click", (e)=>{ e.stopPropagation(); reset(); });
-
-    // ===================== Click/Tap on main area toggles Start/Stop =====================
-    function isExcludedTarget(target){
-      const t = target;
-      return (
-        t.closest(".controls") ||
-        t.closest(".theme-panel") ||
-        t.closest(".theme-toggle") ||
-        t.closest(".theme-chip") ||
-        t.closest(".theme-close")
-      );
-    }
-
-    sceneEl.addEventListener("pointerup", (ev)=>{
-      if (isExcludedTarget(ev.target)) return;
-      toggleStartStop();
-    });
-
-    document.addEventListener("keydown", (e)=>{
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        e.preventDefault();
-        toggleStartStop();
+      function setupSegments() {
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < SEG_COUNT; i++) {
+          const s = document.createElement("span");
+          s.className = "seg";
+          s.style.setProperty("--deg", `${(360 / SEG_COUNT) * i}deg`);
+          frag.appendChild(s);
+          segNodes.push(s);
+        }
+        el.segRing.innerHTML = "";
+        el.segRing.appendChild(frag);
       }
-    });
 
-    // ===================== THEME SWITCH =====================
-    const themeDefs = [
-      { id: "default",   label: "ミッドナイト", swatch: "linear-gradient(135deg,#6b7dff 0%,#b794f6 100%)" },
-      { id: "midnight",  label: "深夜の青紫", swatch: "linear-gradient(135deg,#6b7dff 0%,#b794f6 100%)" },
-      { id: "aurora",    label: "オーロラ", swatch: "linear-gradient(135deg,#10f5c4 0%,#ff6ec7 100%)" },
-      { id: "coral",     label: "コーラル", swatch: "linear-gradient(135deg,#ff7f6e 0%,#4ecdc4 100%)" },
-      { id: "lavender",  label: "ラベンダー", swatch: "linear-gradient(135deg,#b08bf2 0%,#7ec8e3 100%)" },
-      { id: "emerald",   label: "エメラルド", swatch: "linear-gradient(135deg,#52c893 0%,#f4c430 100%)" },
-      { id: "rosegold",  label: "ローズゴールド", swatch: "linear-gradient(135deg,#f8b4c0 0%,#eab676 100%)" },
-      { id: "arctic",    label: "アークティック", swatch: "linear-gradient(135deg,#c0f3ff 0%,#a7cfdf 100%)" }
-    ];
-
-    const rootEl   = document.documentElement;
-    const panelEl  = document.getElementById("themePanel");
-    const toggleEl = document.getElementById("themeToggle");
-    const closeEl  = document.getElementById("themeClose");
-    const listEl   = document.getElementById("themeList");
-
-    function applyTheme(id){
-      if (id === "default") rootEl.removeAttribute("data-theme");
-      else rootEl.setAttribute("data-theme", id);
-      try { localStorage.setItem(THEME_KEY, id); } catch (_) {}
-
-      listEl.querySelectorAll(".theme-chip").forEach(chip => {
-        chip.classList.toggle("active", chip.dataset.themeId === id);
-      });
-
-      // Update Three.js colors
-      if (typeof updateThemeColors !== 'undefined') {
-        updateThemeColors(id);
+      function parseInputs() {
+        const min = clamp(parseInt(el.minutesInput.value || "0", 10) || 0, 0, 99);
+        const sec = clamp(parseInt(el.secondsInput.value || "0", 10) || 0, 0, 59);
+        el.minutesInput.value = String(min);
+        el.secondsInput.value = String(sec);
+        return min * 60 + sec;
       }
-    }
 
-    function loadTheme(){
-      try {
-        const id = localStorage.getItem(THEME_KEY);
-        if (id) return id;
-      } catch (_) {}
-      return "default";
-    }
+      function syncInputs(totalSec) {
+        const safe = Math.max(0, totalSec | 0);
+        el.minutesInput.value = String(Math.floor(safe / 60));
+        el.secondsInput.value = String(safe % 60);
+      }
 
-    function buildThemeList(){
-      const frag = document.createDocumentFragment();
-      themeDefs.forEach(theme => {
-        const chip = document.createElement("button");
-        chip.type = "button";
-        chip.className = "theme-chip";
-        chip.dataset.themeId = theme.id;
+      function setProgress() {
+        let p = 0;
+        if (state.status === STATUS.FINISHED) {
+          p = 100;
+        } else if ((state.status === STATUS.RUNNING || state.status === STATUS.PAUSED) && state.durationSec > 0) {
+          p = ((state.durationSec - state.remainingSec) / state.durationSec) * 100;
+        } else {
+          p = 0;
+        }
+        const ratio = clamp(p, 0, 100) / 100;
+        const onCount = Math.round(ratio * SEG_COUNT);
+        for (let i = 0; i < SEG_COUNT; i++) {
+          segNodes[i].classList.toggle("on", i < onCount);
+        }
+      }
 
-        const swatch = document.createElement("span");
-        swatch.className = "theme-chip-swatch";
-        swatch.style.background = theme.swatch;
+      function renderTime() {
+        el.timeText.textContent = fmt(Math.max(0, state.remainingSec));
+        setProgress();
+      }
 
-        const label = document.createElement("span");
-        label.textContent = theme.label;
+      function showToast(msg) {
+        if (state.toastTimer) clearTimeout(state.toastTimer);
+        el.toast.textContent = msg;
+        el.toast.classList.add("show");
+        state.toastTimer = setTimeout(() => el.toast.classList.remove("show"), 2400);
+      }
 
-        chip.appendChild(swatch);
-        chip.appendChild(label);
+      function stopTicker() {
+        if (state.intervalId) {
+          clearInterval(state.intervalId);
+          state.intervalId = null;
+        }
+      }
 
-        chip.addEventListener("click", (e)=>{
-          e.stopPropagation();
-          applyTheme(theme.id);
+      function setStatus(status) {
+        state.status = status;
+        el.statusText.dataset.status = status;
+        el.statusText.textContent = status;
+        const editable = status === STATUS.STOPPED || status === STATUS.FINISHED;
+        el.minutesInput.disabled = !editable;
+        el.secondsInput.disabled = !editable;
+        renderControls();
+      }
+
+      function tick() {
+        const left = Math.ceil((state.endAtMs - Date.now()) / 1000);
+        state.remainingSec = Math.max(0, left);
+        renderTime();
+        if (state.remainingSec <= 0) handleFinish();
+      }
+
+      function startWith(seconds) {
+        const safe = Math.max(1, seconds | 0);
+        stopTicker();
+        state.durationSec = safe;
+        state.remainingSec = safe;
+        state.endAtMs = Date.now() + safe * 1000;
+        renderTime();
+        setStatus(STATUS.RUNNING);
+        state.intervalId = setInterval(tick, 200);
+      }
+
+      function handleFinish() {
+        stopTicker();
+        state.remainingSec = 0;
+        renderTime();
+        setStatus(STATUS.FINISHED);
+        notifyDone();
+      }
+
+      function startFromInputs() {
+        const sec = parseInputs();
+        if (sec <= 0) {
+          showToast("set 1 sec or more");
+          return;
+        }
+        startWith(sec);
+      }
+
+      function pauseTimer() {
+        if (state.status !== STATUS.RUNNING) return;
+        tick();
+        stopTicker();
+        setStatus(STATUS.PAUSED);
+      }
+
+      function resumeTimer() {
+        if (state.status !== STATUS.PAUSED) return;
+        state.endAtMs = Date.now() + state.remainingSec * 1000;
+        setStatus(STATUS.RUNNING);
+        state.intervalId = setInterval(tick, 200);
+      }
+
+      function endToStopped() {
+        stopTicker();
+        state.remainingSec = state.durationSec;
+        syncInputs(state.durationSec);
+        renderTime();
+        setStatus(STATUS.STOPPED);
+      }
+
+      function restartFromInputs() {
+        startFromInputs();
+      }
+
+      function canUseSystemNotification() {
+        if (!window.isSecureContext) return { ok: false, reason: "Notifications need HTTPS or localhost" };
+        if (!("Notification" in window)) return { ok: false, reason: "Notification API not supported" };
+        return { ok: true, reason: "" };
+      }
+
+      function updateNotifyButtonState() {
+        const support = canUseSystemNotification();
+        if (!support.ok) {
+          el.notifyBtn.title = support.reason;
+          return;
+        }
+        if (Notification.permission === "granted") el.notifyBtn.title = "Notifications: On";
+        else if (Notification.permission === "denied") el.notifyBtn.title = "Notifications: Blocked";
+        else el.notifyBtn.title = "Allow notifications";
+      }
+
+      function requestNotifyPermission() {
+        const support = canUseSystemNotification();
+        if (!support.ok) {
+          showToast(`${support.reason} (fallback toast)`);
+          updateNotifyButtonState();
+          return;
+        }
+
+        if (Notification.permission === "granted") {
+          showToast("notifications already enabled");
+          updateNotifyButtonState();
+          return;
+        }
+
+        Notification.requestPermission().then((p) => {
+          if (p === "granted") {
+            showToast("notifications enabled");
+            try {
+              const preview = new Notification("Monolith Timer", { body: "test notification" });
+              setTimeout(() => preview.close(), 1800);
+            } catch (_) {}
+          } else if (p === "denied") {
+            showToast("notifications blocked (toast fallback)");
+          } else {
+            showToast("notifications not granted (toast fallback)");
+          }
+          updateNotifyButtonState();
+        }).catch(() => {
+          showToast("notification request failed");
+          updateNotifyButtonState();
+        });
+      }
+
+      function notifyDone() {
+        const support = canUseSystemNotification();
+        if (support.ok && Notification.permission === "granted") {
+          try {
+            new Notification("Monolith Timer", { body: "timer finished" });
+          } catch (_) {}
+        }
+        showToast("timer finished");
+      }
+
+      function mkControl(icon, ariaLabel, onClick, primary = false) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = `control${primary ? " primary" : ""}`;
+        b.textContent = icon;
+        b.title = ariaLabel;
+        b.setAttribute("aria-label", ariaLabel);
+        b.addEventListener("click", onClick);
+        return b;
+      }
+
+      function renderControls() {
+        el.controls.innerHTML = "";
+        if (state.status === STATUS.STOPPED) {
+          el.controls.append(mkControl(ICON.START, "start", startFromInputs, true));
+        } else if (state.status === STATUS.RUNNING) {
+          el.controls.append(mkControl(ICON.PAUSE, "pause", pauseTimer));
+          el.controls.append(mkControl(ICON.END, "end", endToStopped));
+        } else if (state.status === STATUS.PAUSED) {
+          el.controls.append(mkControl(ICON.RESUME, "resume", resumeTimer, true));
+          el.controls.append(mkControl(ICON.END, "end", endToStopped));
+        } else if (state.status === STATUS.FINISHED) {
+          el.controls.append(mkControl(ICON.RESTART, "resume", restartFromInputs, true));
+        }
+      }
+
+      function applyTheme(mode) {
+        if (mode === "device") {
+          const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        } else {
+          document.documentElement.setAttribute("data-theme", mode);
+        }
+      }
+
+      function initTheme() {
+        const saved = localStorage.getItem("monolith_theme") || "dark";
+        el.themeSelect.value = saved;
+        applyTheme(saved);
+      }
+
+      function onInputChange() {
+        const sec = parseInputs();
+        state.durationSec = sec;
+        state.remainingSec = sec;
+        renderTime();
+      }
+
+      function init() {
+        syncInputs(300);
+        setupSegments();
+        renderTime();
+        setStatus(STATUS.STOPPED);
+        initTheme();
+        updateNotifyButtonState();
+
+        el.themeSelect.addEventListener("change", (e) => {
+          const mode = e.target.value;
+          localStorage.setItem("monolith_theme", mode);
+          applyTheme(mode);
         });
 
-        frag.appendChild(chip);
-      });
-      listEl.innerHTML = "";
-      listEl.appendChild(frag);
-    }
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+          if (el.themeSelect.value === "device") applyTheme("device");
+        });
 
-    buildThemeList();
-    applyTheme(loadTheme());
-
-    toggleEl.addEventListener("click", (e)=>{
-      e.stopPropagation();
-      const showing = panelEl.style.display === "block";
-      panelEl.style.display = showing ? "none" : "block";
-    });
-
-    closeEl.addEventListener("click", (e)=>{
-      e.stopPropagation();
-      panelEl.style.display = "none";
-    });
-
-    document.addEventListener("click", (event)=>{
-      if (
-        panelEl.style.display === "block" &&
-        !panelEl.contains(event.target) &&
-        event.target !== toggleEl
-      ) {
-        panelEl.style.display = "none";
+        el.minutesInput.addEventListener("change", onInputChange);
+        el.secondsInput.addEventListener("change", onInputChange);
+        el.notifyBtn.addEventListener("click", requestNotifyPermission);
       }
-    });
 
-    // ===================== INIT =====================
-    initThreeJS();
-    
-    render();
-
-    renderNowTime();
-    scheduleNowTime();
-
-    document.addEventListener("visibilitychange", ()=>{
-      if (!document.hidden) {
-        render();
-        scheduleTick();
-        renderNowTime();
-        scheduleNowTime();
-      }
-    });
+      init();
+    })();
   </script>
 </body>
 </html>
