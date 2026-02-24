@@ -174,6 +174,9 @@ Store row state in dataset:
 - Keydown on `.title`:
   - `Enter`: create next row (indent inheritance)
   - `Alt+C`: toggle done/undone
+  - `ArrowUp` / `ArrowDown`: move caret to previous/next row while keeping position as much as possible
+  - `ArrowLeft` at start: move caret to end of previous row title (if exists)
+  - `ArrowRight` at end: move caret to start of next row title (if exists)
   - `Tab` / `Shift+Tab`: indent adjust
   - `Backspace` on empty title: delete row and move caret
 - `全出力` click: export + copy + clear task rows + create first row
