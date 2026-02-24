@@ -18,6 +18,12 @@ Priority:
 - No external libraries
 - No external CSS/JS
 - Desktop browser first
+- Document title must be `Task Flow Log`
+- Favicon must be inline (`data:image/svg+xml`) and use a `✅`-like motif:
+  - rounded square container
+  - clear checkmark stroke
+  - Aurora Glass-inspired colors
+  - minimal outer whitespace for small-size clarity
 
 ## 3. Persistence Rule
 - UI settings are persisted in `localStorage`
