@@ -1,840 +1,196 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MONOLITH TIMER</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hello World</title>
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #090909;
-      --bg-2: #121212;
-      --panel: rgba(22, 22, 22, 0.72);
-      --line: rgba(255, 255, 255, 0.09);
-      --line-strong: rgba(255, 255, 255, 0.18);
-      --text: #d6d6d6;
-      --muted: #8c8c8c;
-      --accent: #b8b8b8;
-      --accent-soft: rgba(214, 214, 214, 0.14);
-      --ink: #0a0c10;
-      --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+      --bg-1: #f9f7f1;
+      --bg-2: #d9e8ff;
+      --bg-3: #ffcdb8;
+      --text: #111319;
+      --muted: #5a6070;
+      --glass: rgba(255, 255, 255, 0.58);
+      --border: rgba(255, 255, 255, 0.8);
+      --shadow: 0 24px 60px rgba(20, 24, 38, 0.18);
+      --accent: #0f766e;
     }
 
-    [data-theme="light"] {
-      color-scheme: light;
-      --bg: #efefef;
-      --bg-2: #fafafa;
-      --panel: rgba(255, 255, 255, 0.78);
-      --line: rgba(20, 20, 20, 0.1);
-      --line-strong: rgba(20, 20, 20, 0.2);
-      --text: #1f1f1f;
-      --muted: #626262;
-      --accent: #3a3a3a;
-      --accent-soft: rgba(44, 44, 44, 0.12);
-      --ink: #f7faff;
-      --shadow: 0 24px 58px rgba(0, 0, 0, 0.14);
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
       min-height: 100%;
-      font-family: "Bahnschrift", "Segoe UI", "Noto Sans JP", sans-serif;
+      font-family: "Space Grotesk", "Noto Sans JP", "Segoe UI", sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(120vw 90vh at 50% -10%, rgba(255, 255, 255, 0.08), transparent 58%),
-        radial-gradient(90vw 70vh at 100% 0%, rgba(255, 255, 255, 0.04), transparent 62%),
-        linear-gradient(180deg, var(--bg), var(--bg-2));
-      overflow-x: hidden;
+      background: radial-gradient(1200px 800px at 10% 10%, var(--bg-2), transparent 60%),
+                  radial-gradient(1000px 700px at 90% 85%, var(--bg-3), transparent 55%),
+                  linear-gradient(140deg, var(--bg-1), #eef3ff 35%, #fff2ea);
+      overflow: hidden;
     }
 
     body {
       display: grid;
-      place-items: start center;
-      min-height: 100dvh;
-      padding: clamp(12px, 2.2vw, 24px);
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      isolation: isolate;
     }
 
-    .app {
-      width: min(920px, 100%);
-      max-height: calc(100svh - 24px);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 38%, rgba(255, 255, 255, 0.08)),
-        var(--panel);
-      backdrop-filter: blur(16px) saturate(115%);
-      -webkit-backdrop-filter: blur(16px) saturate(115%);
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(3px);
+      opacity: 0.55;
+      z-index: -1;
+      animation: float 14s ease-in-out infinite;
+    }
+
+    .orb.a {
+      width: 300px;
+      aspect-ratio: 1;
+      background: #7dd3fc;
+      top: -80px;
+      left: -90px;
+    }
+
+    .orb.b {
+      width: 260px;
+      aspect-ratio: 1;
+      background: #fca5a5;
+      bottom: -100px;
+      right: -70px;
+      animation-delay: -4s;
+    }
+
+    .orb.c {
+      width: 170px;
+      aspect-ratio: 1;
+      background: #86efac;
+      top: 8%;
+      right: 15%;
+      animation-delay: -8s;
+    }
+
+    .card {
+      width: min(700px, 100%);
+      border: 1px solid var(--border);
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 28px;
       box-shadow: var(--shadow);
-      padding: clamp(12px, 2.5vw, 22px);
-      display: grid;
-      gap: 12px;
-      overflow: auto;
-      position: relative;
+      padding: clamp(28px, 5vw, 56px);
+      transform: translateY(12px);
+      opacity: 0;
+      animation: rise 900ms cubic-bezier(.2,.8,.2,1) forwards;
     }
 
-    .app::before,
-    .app::after {
-      content: "";
-      position: absolute;
-      pointer-events: none;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      inset: 6px;
-      opacity: 0.7;
-    }
-
-    .app::after {
-      inset: 12px;
-      border-color: rgba(255, 255, 255, 0.03);
-    }
-
-    .stage {
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: clamp(12px, 2.4vw, 18px);
-      display: grid;
-      gap: 10px;
-      position: relative;
-      background:
-        radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 48%, transparent 100%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-    }
-
-    .wire-grid {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      border-radius: inherit;
-      background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 22px 22px;
-      mask-image: radial-gradient(circle at 50% 35%, black 45%, transparent 85%);
-      opacity: 0.5;
-    }
-
-    .aurora-flare {
-      position: absolute;
-      top: 14%;
-      left: 50%;
-      width: min(64vw, 520px);
-      height: min(48vw, 380px);
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      background: radial-gradient(circle,
-        rgba(255, 255, 255, 0.14) 0%,
-        rgba(255, 255, 255, 0.08) 28%,
-        rgba(255, 255, 255, 0.03) 45%,
-        transparent 70%);
-      filter: blur(38px);
-      opacity: 0.56;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .aurora-rays {
-      position: absolute;
-      left: 50%;
-      bottom: 36%;
-      width: 140%;
-      height: 80%;
-      transform: translateX(-50%);
-      background: conic-gradient(from 0deg at 50% 100%,
-        transparent 0deg,
-        rgba(255, 255, 255, 0.035) 35deg,
-        transparent 48deg,
-        rgba(255, 255, 255, 0.02) 85deg,
-        transparent 104deg,
-        rgba(255, 255, 255, 0.024) 125deg,
-        transparent 148deg,
-        rgba(255, 255, 255, 0.026) 215deg,
-        transparent 226deg,
-        rgba(255, 255, 255, 0.02) 265deg,
-        transparent 278deg);
-      mix-blend-mode: screen;
-      opacity: 0.34;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .particles {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .particle {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
-      opacity: 0.38;
-    }
-
-    .particle:nth-child(1) { left: 20%; top: 28%; }
-    .particle:nth-child(2) { left: 73%; top: 24%; }
-    .particle:nth-child(3) { left: 52%; top: 42%; }
-
-    [data-theme="light"] .wire-grid {
-      background-image:
-        linear-gradient(to right, rgba(41, 62, 90, 0.06) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(41, 62, 90, 0.06) 1px, transparent 1px);
-    }
-
-    .dial-shell {
-      display: grid;
-      place-items: center;
-      margin-top: 2px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .dial {
-      width: min(64vw, 360px);
-      aspect-ratio: 1 / 1;
-      border-radius: 50%;
-      position: relative;
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--line-strong);
-      background:
-        radial-gradient(circle at center, rgba(255, 255, 255, 0.02), transparent 62%);
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 0 24px rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-    }
-
-    .seg-ring {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
-    .seg {
-      position: absolute;
-      inset: 0;
-      transform: rotate(var(--deg));
-    }
-
-    .seg::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 7px;
-      width: 2px;
-      height: 10px;
-      transform: translateX(-50%);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      opacity: 0.3;
-    }
-
-    .seg.on::before {
-      background: var(--accent);
-      opacity: 0.95;
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.24);
-    }
-
-    .dial::before,
-    .dial::after {
-      content: "";
-      position: absolute;
-      border-radius: 50%;
-      border: 1px solid var(--line);
-    }
-
-    .dial::before {
-      inset: 8%;
-    }
-
-    .dial::after {
-      inset: 16%;
-      border-color: rgba(255, 255, 255, 0.06);
-    }
-
-    .dial-brand {
-      position: absolute;
-      top: 30%;
-      margin: 0;
-      font-size: clamp(0.52rem, 1.4vw, 0.74rem);
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 800;
-      z-index: 1;
-    }
-
-    .time {
-      margin: 0;
-      transform: translateY(8px);
-      z-index: 1;
-      font-size: clamp(2.45rem, 11vw, 5.4rem);
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-      color: var(--text);
-    }
-
-    .meta {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .state {
+    .label {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.76rem;
-      letter-spacing: 0.12em;
+      gap: 10px;
+      letter-spacing: .12em;
       text-transform: uppercase;
+      font-size: .72rem;
       color: var(--muted);
-      font-weight: 800;
+      margin-bottom: 14px;
     }
 
-    .state::before {
-      content: "";
+    .dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #7b8390;
-      box-shadow: 0 0 0 2px var(--accent-soft);
+      background: var(--accent);
+      box-shadow: 0 0 0 8px rgba(15, 118, 110, 0.12);
+      animation: pulse 2.2s ease-out infinite;
     }
 
-    .state[data-status="running"]::before { background: #bac2ce; }
-    .state[data-status="paused"]::before { background: #939dab; }
-    .state[data-status="finished"]::before { background: #d3d9e2; }
-
-    .icon-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 1px solid var(--line-strong);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text);
-      font-size: 1.04rem;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      transition: border-color 120ms ease, transform 120ms ease;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    h1 {
+      font-size: clamp(2rem, 6vw, 4.6rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      text-wrap: balance;
     }
 
-    .icon-btn:hover { border-color: var(--accent); }
-    .icon-btn:active { transform: translateY(1px); }
-
-    .inputs {
-      position: relative;
-      z-index: 1;
-      width: min(440px, 100%);
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(120px, 1fr));
-      gap: 10px;
+    h1 span {
+      background: linear-gradient(90deg, #0f172a, #1d4ed8 45%, #0f766e 85%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
-    .input-wrap { display: grid; gap: 6px; }
-
-    .input-wrap label {
+    p {
       color: var(--muted);
-      font-size: 0.74rem;
-      letter-spacing: 0.14em;
+      font-size: clamp(0.98rem, 2.3vw, 1.2rem);
+      line-height: 1.75;
+      max-width: 52ch;
+    }
+
+    .footer {
+      margin-top: 28px;
+      font-size: .8rem;
+      color: #6b7280;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      font-weight: 800;
     }
 
-    .input-wrap input {
-      width: 100%;
-      border: 1px solid var(--line-strong);
-      border-radius: 11px;
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      padding: 10px;
-      text-align: center;
-      font-size: clamp(1.05rem, 3.8vw, 1.5rem);
-      font-weight: 900;
-      font-variant-numeric: tabular-nums;
+    @keyframes rise {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
-    .action-row {
-      position: relative;
-      z-index: 1;
-      width: min(620px, 100%);
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: end;
-      gap: 10px;
+    @keyframes float {
+      0%, 100% {
+        transform: translate3d(0, 0, 0);
+      }
+      50% {
+        transform: translate3d(0, -20px, 0);
+      }
     }
 
-    .controls {
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(110px, 1fr));
-      gap: 10px;
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.16);
+      }
     }
 
-    .control {
-      min-height: 54px;
-      border-radius: 12px;
-      border: 1px solid var(--line-strong);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      font-size: 1.18rem;
-      font-weight: 900;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
-    }
+    @media (max-width: 480px) {
+      body {
+        overflow: auto;
+      }
 
-    .control:hover {
-      border-color: var(--accent);
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .control:active { transform: translateY(1px); }
-
-    .control.primary {
-      background: linear-gradient(180deg, rgba(210, 210, 210, 0.28), rgba(148, 148, 148, 0.2));
-      border-color: rgba(255, 255, 255, 0.26);
-      color: #e2e2e2;
-    }
-
-    .theme-dock {
-      width: fit-content;
-      padding: 3px;
-      border-radius: 999px;
-      border: 1px solid var(--line-strong);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .theme {
-      appearance: none;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text);
-      min-width: 140px;
-      padding: 9px 12px;
-      font-size: 0.86rem;
-      font-weight: 700;
-    }
-
-    .hint {
-      position: relative;
-      z-index: 1;
-      margin: 2px 0 0;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.82rem;
-      letter-spacing: 0.03em;
-    }
-
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 12px;
-      transform: translateX(-50%) translateY(16px);
-      opacity: 0;
-      border: 1px solid var(--line-strong);
-      border-radius: 10px;
-      background: rgba(18, 18, 18, 0.88);
-      color: var(--text);
-      padding: 9px 12px;
-      max-width: min(92vw, 580px);
-      font-size: 0.88rem;
-      pointer-events: none;
-      z-index: 99;
-      transition: opacity 160ms ease, transform 160ms ease;
-      backdrop-filter: blur(8px);
-    }
-
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    .theme:focus-visible,
-    .icon-btn:focus-visible,
-    .input-wrap input:focus-visible,
-    .control:focus-visible {
-      outline: 2px solid rgba(157, 167, 182, 0.7);
-      outline-offset: 2px;
-    }
-
-    @media (max-width: 520px) {
-      .dial { width: min(74vw, 336px); }
-      .action-row { grid-template-columns: 1fr; }
-      .controls { grid-template-columns: 1fr; }
-      .theme-dock { justify-self: stretch; }
-      .theme { width: 100%; }
-      .app { max-height: calc(100svh - 16px); }
-      .aurora-rays { opacity: 0.28; }
-      .aurora-flare { opacity: 0.5; }
+      .card {
+        border-radius: 22px;
+      }
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <section class="stage" aria-live="polite">
-      <div class="aurora-flare" aria-hidden="true"></div>
-      <div class="aurora-rays" aria-hidden="true"></div>
-      <div class="particles" aria-hidden="true">
-        <span class="particle"></span>
-        <span class="particle"></span>
-        <span class="particle"></span>
-      </div>
-      <div class="wire-grid" aria-hidden="true"></div>
+  <div class="orb a"></div>
+  <div class="orb b"></div>
+  <div class="orb c"></div>
 
-      <div class="dial-shell">
-        <div id="dial" class="dial" style="--p: 0;">
-          <div id="segRing" class="seg-ring" aria-hidden="true"></div>
-          <p class="dial-brand">Monolith Timer</p>
-          <p id="timeText" class="time">05:00</p>
-        </div>
-      </div>
-
-      <div class="meta">
-        <span id="statusText" class="state" data-status="stopped">stopped</span>
-        <button id="notifyBtn" class="icon-btn" type="button" title="Enable notifications" aria-label="Enable notifications">🔔</button>
-      </div>
-
-      <div class="inputs">
-        <div class="input-wrap">
-          <label for="minutesInput">MIN</label>
-          <input id="minutesInput" type="number" min="0" max="99" step="1" inputmode="numeric" value="5">
-        </div>
-        <div class="input-wrap">
-          <label for="secondsInput">SEC</label>
-          <input id="secondsInput" type="number" min="0" max="59" step="1" inputmode="numeric" value="0">
-        </div>
-      </div>
-
-      <div class="action-row">
-        <div id="controls" class="controls"></div>
-        <div class="theme-dock">
-          <select id="themeSelect" class="theme" aria-label="Theme">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="device">Device</option>
-          </select>
-        </div>
-      </div>
-
-      <p id="hint" class="hint">▶ start / ⏸ pause / ■ end / ▶ resume</p>
-    </section>
+  <main class="card" role="main" aria-label="Hello World">
+    <div class="label"><span class="dot" aria-hidden="true"></span> Single File Experience</div>
+    <h1><span>Hello, World.</span></h1>
+    <p>
+      最小構成なのに、洗練された印象を持つ 1 ページ。<br />
+      HTML・CSS だけで、軽やかなモーションとガラス質感を持つデザインに仕上げています。
+    </p>
+    <div class="footer">HTML / CSS only</div>
   </main>
-
-  <div id="toast" class="toast" role="status" aria-live="assertive"></div>
-
-  <script>
-    (() => {
-      const STATUS = { STOPPED: "stopped", RUNNING: "running", PAUSED: "paused", FINISHED: "finished" };
-      const ICON = { START: "▶", PAUSE: "⏸", END: "■", RESUME: "▶", RESTART: "▶" };
-
-      const el = {
-        themeSelect: document.getElementById("themeSelect"),
-        statusText: document.getElementById("statusText"),
-        notifyBtn: document.getElementById("notifyBtn"),
-        minutesInput: document.getElementById("minutesInput"),
-        secondsInput: document.getElementById("secondsInput"),
-        timeText: document.getElementById("timeText"),
-        controls: document.getElementById("controls"),
-        segRing: document.getElementById("segRing"),
-        toast: document.getElementById("toast")
-      };
-
-      const state = {
-        status: STATUS.STOPPED,
-        durationSec: 300,
-        remainingSec: 300,
-        intervalId: null,
-        endAtMs: 0,
-        toastTimer: null
-      };
-
-      const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-      const two = (n) => String(n).padStart(2, "0");
-      const fmt = (sec) => `${two(Math.floor(sec / 60))}:${two(sec % 60)}`;
-      const SEG_COUNT = 60;
-      let segNodes = [];
-
-      function setupSegments() {
-        const frag = document.createDocumentFragment();
-        for (let i = 0; i < SEG_COUNT; i++) {
-          const s = document.createElement("span");
-          s.className = "seg";
-          s.style.setProperty("--deg", `${(360 / SEG_COUNT) * i}deg`);
-          frag.appendChild(s);
-          segNodes.push(s);
-        }
-        el.segRing.innerHTML = "";
-        el.segRing.appendChild(frag);
-      }
-
-      function parseInputs() {
-        const min = clamp(parseInt(el.minutesInput.value || "0", 10) || 0, 0, 99);
-        const sec = clamp(parseInt(el.secondsInput.value || "0", 10) || 0, 0, 59);
-        el.minutesInput.value = String(min);
-        el.secondsInput.value = String(sec);
-        return min * 60 + sec;
-      }
-
-      function syncInputs(totalSec) {
-        const safe = Math.max(0, totalSec | 0);
-        el.minutesInput.value = String(Math.floor(safe / 60));
-        el.secondsInput.value = String(safe % 60);
-      }
-
-      function setProgress() {
-        let p = 0;
-        if (state.status === STATUS.FINISHED) {
-          p = 100;
-        } else if ((state.status === STATUS.RUNNING || state.status === STATUS.PAUSED) && state.durationSec > 0) {
-          p = ((state.durationSec - state.remainingSec) / state.durationSec) * 100;
-        } else {
-          p = 0;
-        }
-        const ratio = clamp(p, 0, 100) / 100;
-        const onCount = Math.round(ratio * SEG_COUNT);
-        for (let i = 0; i < SEG_COUNT; i++) {
-          segNodes[i].classList.toggle("on", i < onCount);
-        }
-      }
-
-      function renderTime() {
-        el.timeText.textContent = fmt(Math.max(0, state.remainingSec));
-        setProgress();
-      }
-
-      function showToast(msg) {
-        if (state.toastTimer) clearTimeout(state.toastTimer);
-        el.toast.textContent = msg;
-        el.toast.classList.add("show");
-        state.toastTimer = setTimeout(() => el.toast.classList.remove("show"), 2400);
-      }
-
-      function stopTicker() {
-        if (state.intervalId) {
-          clearInterval(state.intervalId);
-          state.intervalId = null;
-        }
-      }
-
-      function setStatus(status) {
-        state.status = status;
-        el.statusText.dataset.status = status;
-        el.statusText.textContent = status;
-        const editable = status === STATUS.STOPPED || status === STATUS.FINISHED;
-        el.minutesInput.disabled = !editable;
-        el.secondsInput.disabled = !editable;
-        renderControls();
-      }
-
-      function tick() {
-        const left = Math.ceil((state.endAtMs - Date.now()) / 1000);
-        state.remainingSec = Math.max(0, left);
-        renderTime();
-        if (state.remainingSec <= 0) handleFinish();
-      }
-
-      function startWith(seconds) {
-        const safe = Math.max(1, seconds | 0);
-        stopTicker();
-        state.durationSec = safe;
-        state.remainingSec = safe;
-        state.endAtMs = Date.now() + safe * 1000;
-        renderTime();
-        setStatus(STATUS.RUNNING);
-        state.intervalId = setInterval(tick, 200);
-      }
-
-      function handleFinish() {
-        stopTicker();
-        state.remainingSec = 0;
-        renderTime();
-        setStatus(STATUS.FINISHED);
-        notifyDone();
-      }
-
-      function startFromInputs() {
-        const sec = parseInputs();
-        if (sec <= 0) {
-          showToast("set 1 sec or more");
-          return;
-        }
-        startWith(sec);
-      }
-
-      function pauseTimer() {
-        if (state.status !== STATUS.RUNNING) return;
-        tick();
-        stopTicker();
-        setStatus(STATUS.PAUSED);
-      }
-
-      function resumeTimer() {
-        if (state.status !== STATUS.PAUSED) return;
-        state.endAtMs = Date.now() + state.remainingSec * 1000;
-        setStatus(STATUS.RUNNING);
-        state.intervalId = setInterval(tick, 200);
-      }
-
-      function endToStopped() {
-        stopTicker();
-        state.remainingSec = state.durationSec;
-        syncInputs(state.durationSec);
-        renderTime();
-        setStatus(STATUS.STOPPED);
-      }
-
-      function restartFromInputs() {
-        startFromInputs();
-      }
-
-      function canUseSystemNotification() {
-        if (!window.isSecureContext) return { ok: false, reason: "Notifications need HTTPS or localhost" };
-        if (!("Notification" in window)) return { ok: false, reason: "Notification API not supported" };
-        return { ok: true, reason: "" };
-      }
-
-      function updateNotifyButtonState() {
-        const support = canUseSystemNotification();
-        if (!support.ok) {
-          el.notifyBtn.title = support.reason;
-          return;
-        }
-        if (Notification.permission === "granted") el.notifyBtn.title = "Notifications: On";
-        else if (Notification.permission === "denied") el.notifyBtn.title = "Notifications: Blocked";
-        else el.notifyBtn.title = "Allow notifications";
-      }
-
-      function requestNotifyPermission() {
-        const support = canUseSystemNotification();
-        if (!support.ok) {
-          showToast(`${support.reason} (fallback toast)`);
-          updateNotifyButtonState();
-          return;
-        }
-
-        if (Notification.permission === "granted") {
-          showToast("notifications already enabled");
-          updateNotifyButtonState();
-          return;
-        }
-
-        Notification.requestPermission().then((p) => {
-          if (p === "granted") {
-            showToast("notifications enabled");
-            try {
-              const preview = new Notification("Monolith Timer", { body: "test notification" });
-              setTimeout(() => preview.close(), 1800);
-            } catch (_) {}
-          } else if (p === "denied") {
-            showToast("notifications blocked (toast fallback)");
-          } else {
-            showToast("notifications not granted (toast fallback)");
-          }
-          updateNotifyButtonState();
-        }).catch(() => {
-          showToast("notification request failed");
-          updateNotifyButtonState();
-        });
-      }
-
-      function notifyDone() {
-        const support = canUseSystemNotification();
-        if (support.ok && Notification.permission === "granted") {
-          try {
-            new Notification("Monolith Timer", { body: "timer finished" });
-          } catch (_) {}
-        }
-        showToast("timer finished");
-      }
-
-      function mkControl(icon, ariaLabel, onClick, primary = false) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = `control${primary ? " primary" : ""}`;
-        b.textContent = icon;
-        b.title = ariaLabel;
-        b.setAttribute("aria-label", ariaLabel);
-        b.addEventListener("click", onClick);
-        return b;
-      }
-
-      function renderControls() {
-        el.controls.innerHTML = "";
-        if (state.status === STATUS.STOPPED) {
-          el.controls.append(mkControl(ICON.START, "start", startFromInputs, true));
-        } else if (state.status === STATUS.RUNNING) {
-          el.controls.append(mkControl(ICON.PAUSE, "pause", pauseTimer));
-          el.controls.append(mkControl(ICON.END, "end", endToStopped));
-        } else if (state.status === STATUS.PAUSED) {
-          el.controls.append(mkControl(ICON.RESUME, "resume", resumeTimer, true));
-          el.controls.append(mkControl(ICON.END, "end", endToStopped));
-        } else if (state.status === STATUS.FINISHED) {
-          el.controls.append(mkControl(ICON.RESTART, "resume", restartFromInputs, true));
-        }
-      }
-
-      function applyTheme(mode) {
-        if (mode === "device") {
-          const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-          document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-        } else {
-          document.documentElement.setAttribute("data-theme", mode);
-        }
-      }
-
-      function initTheme() {
-        const saved = localStorage.getItem("monolith_theme") || "dark";
-        el.themeSelect.value = saved;
-        applyTheme(saved);
-      }
-
-      function onInputChange() {
-        const sec = parseInputs();
-        state.durationSec = sec;
-        state.remainingSec = sec;
-        renderTime();
-      }
-
-      function init() {
-        syncInputs(300);
-        setupSegments();
-        renderTime();
-        setStatus(STATUS.STOPPED);
-        initTheme();
-        updateNotifyButtonState();
-
-        el.themeSelect.addEventListener("change", (e) => {
-          const mode = e.target.value;
-          localStorage.setItem("monolith_theme", mode);
-          applyTheme(mode);
-        });
-
-        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-          if (el.themeSelect.value === "device") applyTheme("device");
-        });
-
-        el.minutesInput.addEventListener("change", onInputChange);
-        el.secondsInput.addEventListener("change", onInputChange);
-        el.notifyBtn.addEventListener("click", requestNotifyPermission);
-      }
-
-      init();
-    })();
-  </script>
 </body>
 </html>
