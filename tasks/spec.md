@@ -1,9 +1,11 @@
-# Task Log UI Specification (Single HTML)
+﻿# Task Log UI Specification (Single HTML)
 
 ## 1. Goal
-Build a **single-file HTML task log UI** that records work traces with automatic timestamps.
+Build a single-file HTML task log UI that records work traces with automatic timestamps, plus a plain memo area.
 
-This is **not** a project management tool. It is a lightweight writing surface where each line has a fixed start time and optional end time.
+This is not a project management tool. It is a lightweight writing surface:
+- Top: timestamped task lines
+- Bottom: free-form memo textarea
 
 Priority:
 1. Lightweight
@@ -15,196 +17,171 @@ Priority:
 - Put all CSS and JavaScript inside that HTML file
 - No external libraries
 - No external CSS/JS
-- Desktop browser first (no mobile-specific implementation required)
+- Desktop browser first
 
-## 3. Current Persistence Rule
+## 3. Persistence Rule
 - UI settings are persisted in `localStorage`
 - Storage key: `tasklog_ui_settings_v1`
 - Persisted values:
   - `colorMode`
   - `fontPreset`
   - `fontCustom`
-- Task rows themselves are **not** persisted
+- Task rows are not persisted
+- Memo textarea content is not persisted
 
 ## 4. UI Layout
-Single column layout:
-1. Top-right gear button (open settings modal)
-2. `全出力` button
-3. Task list area
-4. On page load, auto-create the first empty row
+Single column app with two main zones:
+1. Top toolbar: `全出力` button and gear button side-by-side (`gear` immediately right of export)
+2. Editor work area (fills remaining app height), split into:
+  - Top task list pane
+  - Bottom memo textarea pane
 
-## 4.1 Visual Design (Glassmorphism)
-- Apply glassmorphism styling to current UI while keeping existing layout metrics intact.
-- Keep sizes/radius/spacing of existing controls as-is (no structural resize).
-- Background must have layered feel:
-  - Base gradient per color mode
-  - At least two softly blurred circular blobs floating in background
-- Glass surfaces must be used on:
-  - Task list container
-  - Export button
-  - Gear button
-  - Settings modal panel
-  - Modal close button
-  - Modal form controls (`select`, `input`)
-- Glass surface characteristics:
-  - Semi-transparent gradient fill
-  - Soft border line
-  - Backdrop blur + mild saturation
-  - Subtle outer shadow + light inset highlight
-- Color mode adaptation examples:
-  - Light: white/gray atmospheric blobs on bright background
-  - Iceberg Dark: deep navy background with ice-gray blobs
+Rules:
+- Default split ratio is 50% : 50%
+- User can drag the horizontal splitter to resize task/memo pane heights
+- Both panes must show vertical scrollbars when content exceeds visible height
 
-## 5. Line Format
-Each row consists of:
+## 5. Visual Design (Glassmorphism)
+Apply glassmorphism styling to:
+- Task list container
+- Memo textarea
+- Export button
+- Gear button
+- Settings modal panel
+- Modal close button
+- Modal form controls (`select`, `input`)
+
+Background must keep layered atmosphere (gradient + soft blobs).
+
+## 6. Task Line Format
+Each task row consists of:
 - `indent` (visual only, full-width spaces)
 - `status/prefix` (non-editable)
 - `title` (editable task name)
 
-### 5.1 Incomplete format
-`🟨HHMM-　タスク名`
-
-### 5.2 Complete format
-`✅HHMM-HHMM　タスク名`
+Display format:
+- Incomplete: `🟨HHMM-　タスク名`
+- Complete: `✅HHMM-HHMM　タスク名`
 
 Rules:
-- HHMM has no seconds
-- Use system current time
+- Time format is `HHMM` (no seconds)
+- Start time fixed at row creation
+- End time fixed when marked complete
 - Separator after prefix is full-width space `　`
-- Start time is fixed when the row is created
-- End time is fixed when marked complete
 
-## 6. Row Creation Behavior
-- Press `Enter` inside a title to create next row
-- New row start time = current HHMM
-- New row initial state = incomplete (`🟨HHMM-　`)
-- **Indent inheritance required**: new row copies indent level from source row
+## 7. Row Creation Behavior
+- `Enter` in a title creates next row
+- New row start time = current `HHMM`
+- New row state = incomplete
+- Indent inheritance required (copy indent from source row)
 
-Example:
-- Before Enter
-  - `🟨1727-　テスト`
-  - `　🟨1727-　テスト２`
-- After Enter on second row
-  - `🟨1727-　テスト`
-  - `　🟨1727-　テスト２`
-  - `　🟨1727-　`
+## 8. Status Toggle Behavior
+Toggle by:
+- Clicking `.status`
+- Pressing `Alt+C` in `.title`
 
-## 7. Status Toggle Behavior
-Clicking prefix area toggles state.
-`Shift+Enter` (pressed in a row title) must perform the same toggle.
+State rules:
+- Incomplete -> Complete: set end time to current `HHMM`
+- Complete -> Incomplete: clear end time, keep original start time
 
-### 7.1 Incomplete -> Complete
-- Click `🟨...`
-- Set end time = current HHMM
-- Render `✅開始-終了　タスク名`
+## 9. Edit Control
+- Prefix area is non-editable
+- Only `.title` is editable
 
-### 7.2 Complete -> Incomplete
-- Click `✅...`
-- Clear end time
-- Render back to `🟨開始-　タスク名`
-- Keep original start time
-
-## 8. Edit Control
-- Timestamp/prefix area must be non-editable
-- Only task title is editable
-- Prevent structure breakage by separating prefix and title into different elements
-
-Recommended DOM per row:
+Recommended row DOM:
 - `.row`
-  - `.indent` (text node of repeated full-width spaces)
-  - `.status` (clickable prefix text)
+  - `.indent`
+  - `.status`
   - `.title` (`contenteditable=true`)
 
-## 9. Indent Behavior
-- `Tab`: add one full-width space indent at row head
-- `Shift+Tab`: remove one full-width space indent (min 0)
-- Indent is visual only; no parent/child logic
+## 10. Indent Behavior
+- `Tab`: add one full-width-space indent
+- `Shift+Tab`: remove one indent (min 0)
 
-## 10. Delete Behavior
+## 11. Delete Behavior
 - If title is empty and user presses `Backspace`:
-  - Remove that row
+  - Remove row
   - Move caret to end of previous row title (if exists)
 
-## 11. Caret Hit Area Behavior
-- Clicking a row should be treated like editor trailing-space click:
-  - From task text through the right edge of the list box, place caret at end of that row title
-- If user clicks inside list box below existing rows:
-  - Place caret at end of the nearest upper row (practically the last row)
+## 12. Caret Hit Area Behavior
+- Clicking row area (except `.status`) places caret at end of that row title
+- Clicking blank space under rows places caret at end of last row title
 
-## 12. Export Button (`全出力`) Behavior
+## 13. Export Button (`全出力`) Behavior
 On click:
-1. Serialize all rows in display format
+1. Serialize all task rows in display format
 2. Join with `\n`
 3. Copy to clipboard
-4. Clear all rows immediately (no confirm dialog)
-5. Recreate first row (same as initial page load) so user can continue typing
+4. Clear task rows immediately (no confirm)
+5. Recreate first empty task row
 
-### 12.1 Output example
-`✅1706-1820　開発`
-`　✅1706-1710　設計確認`
-`　🟨1710-　開発`
+Notes:
+- Export/clear applies to task rows only
+- Memo textarea is unaffected
 
-## 13. Settings Modal
-Open by clicking gear icon.
+## 14. Memo Textarea Behavior
+- Dedicated free-form memo area
+- No timestamp/status/indent logic
+- Must include a placeholder that explains it is memo-only
+- Not persisted
 
-### 13.1 Font controls
-- System monospace preset
-- Additional monospace presets
-- Custom `font-family` text input
+## 15. Settings Modal
+Open by gear button.
 
-### 13.2 Color mode options
-- Light
-- Dark
-- Iceberg Light
-- Iceberg Dark
+Controls:
+- Font preset
+- Custom `font-family`
+- Color mode:
+  - Aurora Glass
+  - Light
+  - Dark
+  - Iceberg Light
+  - Iceberg Dark
 
-Each mode must provide its own glass tokens (background gradient, blob colors, panel alpha, border alpha, shadow profile), not only text colors.
+Defaults:
+- Default color mode is `Aurora Glass`
 
-### 13.3 Default mode
-- Default color mode must be `Iceberg Dark` when no saved setting exists
+Save/restore:
+- Any settings change saves to `localStorage`
+- On load, apply valid stored values; fallback to defaults
 
-### 13.4 Save/restore
-- Any settings change should be saved to `localStorage`
-- On page load:
-  - Read storage
-  - Apply stored values if valid
-  - Fallback to defaults when missing/invalid
-
-## 14. Data Model (per row)
-Store row state in `dataset`:
-- `data-start`: string HHMM
-- `data-end`: string HHMM or empty
+## 16. Data Model (per task row)
+Store row state in dataset:
+- `data-start`: string `HHMM`
+- `data-end`: string `HHMM` or empty
 - `data-done`: `'1'` or `'0'`
 - `data-indent`: numeric string (0+)
 
-## 15. Essential Functions (recommended)
-- `hhmmNow()` -> current HHMM
-- `rowPrefix(row)` -> formatted prefix text
-- `renderRow(row)` -> refresh indent + status display from dataset
-- `createRow(afterRow, focusTitle, indentLevel=0)` -> append/insert row
-- `placeCaretEnd(el)` -> move caret to end
-- `toggleRowState(row)` -> toggle done/undone and render
-- `lineText(row)` -> serialize one row for export
-- `copyText(text)` -> clipboard write with fallback
+## 17. Essential Functions (recommended)
+- `hhmmNow()`
+- `rowPrefix(row)`
+- `renderRow(row)`
+- `createRow(afterRow, focusTitle, indentLevel=0)`
+- `placeCaretEnd(el)`
+- `toggleRowState(row)`
+- `lineText(row)`
+- `copyText(text)`
+- `setTaskRatio(percent)`
+- `initSplitResize()`
 - `applyTheme(mode)`
 - `applyFont()`
 - `saveSettings()` / `loadSettings()`
 
-## 16. Event Requirements
+## 18. Event Requirements
 - Click on `.status`: toggle done/undone
 - Click on `.row` (excluding `.status`): place caret at row-end
-- Click on list blank area under rows: place caret at last row-end
+- Click blank area in list: place caret at last row-end
 - Keydown on `.title`:
-  - `Enter`: create next row with indent inheritance
+  - `Enter`: create next row (indent inheritance)
+  - `Alt+C`: toggle done/undone
   - `Tab` / `Shift+Tab`: indent adjust
-  - `Shift+Enter`: toggle done/undone
   - `Backspace` on empty title: delete row and move caret
-- Export button click: export+copy+clear+create first row
-- Settings controls change/input: apply immediately and save
+- `全出力` click: export + copy + clear task rows + create first row
+- Splitter drag: resize top/bottom pane ratio
+- Settings control change/input: apply immediately and save
 
-## 17. Implementation Notes
+## 19. Implementation Notes
 - Keep DOM minimal and explicit
 - Avoid unnecessary abstractions
-- Keep code readable and compact
-- Prefer event delegation on list container
+- Prefer event delegation for task list
 - Preserve full-width space handling exactly

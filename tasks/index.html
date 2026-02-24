@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -6,6 +6,7 @@
   <title>Task Log</title>
   <style>
     :root {
+      --task-ratio: 50;
       --bg: #f7f7f8;
       --bg-grad-1: #fdfdfe;
       --bg-grad-2: #edf0f6;
@@ -15,20 +16,23 @@
       --panel-strong: rgba(255, 255, 255, 0.56);
       --text: #1a1a1a;
       --muted: #6b7280;
+      --placeholder: rgba(75, 85, 99, 0.92);
       --line: rgba(255, 255, 255, 0.48);
       --btn-bg: rgba(20, 27, 42, 0.72);
       --btn-text: #ffffff;
       --accent: #2563eb;
+      --accent-2: #7bffb6;
       --overlay: rgba(9, 11, 19, 0.35);
       --glass-shadow: 0 18px 36px rgba(17, 24, 39, 0.18);
       --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      --btn-glow: 0 10px 24px rgba(37, 99, 235, 0.28);
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      min-height: 100vh;
+      min-height: 100dvh;
       background: var(--bg);
       background-image: linear-gradient(145deg, var(--bg-grad-1), var(--bg-grad-2));
       color: var(--text);
@@ -64,24 +68,35 @@
     }
 
     .app {
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 20px 18px 28px;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 12px 18px;
       position: relative;
       z-index: 1;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+    }
+
+    .toolbar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
     }
 
     .gear {
-      position: absolute;
-      top: 12px;
-      right: 12px;
       border: 1px solid var(--line);
       background: linear-gradient(135deg, var(--panel-strong), var(--panel));
       color: var(--text);
       border-radius: 8px;
-      width: 36px;
+      min-width: 36px;
+      padding: 0 10px;
       height: 36px;
-      font-size: 18px;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
       backdrop-filter: blur(16px) saturate(130%);
       -webkit-backdrop-filter: blur(16px) saturate(130%);
@@ -89,18 +104,35 @@
     }
 
     .export {
-      border: 1px solid var(--btn-bg);
-      background: linear-gradient(135deg, var(--panel-strong), var(--btn-bg));
+      border: 1px solid transparent;
+      background: linear-gradient(140deg, var(--accent), var(--accent-2));
       color: var(--btn-text);
       border-radius: 8px;
       height: 38px;
       padding: 0 14px;
       font: inherit;
+      font-weight: 700;
       cursor: pointer;
-      margin-bottom: 14px;
       backdrop-filter: blur(14px) saturate(130%);
       -webkit-backdrop-filter: blur(14px) saturate(130%);
-      box-shadow: var(--glass-shadow);
+      box-shadow: var(--btn-glow);
+      transition: transform 0.25s ease;
+    }
+
+    .export:hover {
+      transform: translateY(-2px);
+    }
+
+    .work {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(120px, calc(var(--task-ratio) * 1%)) 14px minmax(120px, 1fr);
+      gap: 0;
+    }
+
+    .task-pane,
+    .memo-pane {
+      min-height: 0;
     }
 
     .list {
@@ -108,10 +140,53 @@
       background: linear-gradient(135deg, var(--panel-strong), var(--panel));
       border-radius: 10px;
       padding: 8px 10px;
-      min-height: 120px;
+      height: 100%;
+      overflow-y: auto;
       backdrop-filter: blur(18px) saturate(140%);
       -webkit-backdrop-filter: blur(18px) saturate(140%);
       box-shadow: var(--glass-shadow), var(--glass-inset);
+    }
+
+    .splitter {
+      cursor: ns-resize;
+      display: grid;
+      place-items: center;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .splitter::before {
+      content: "";
+      width: 100%;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, var(--line), transparent);
+    }
+
+    .memo {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+      line-height: 1.6;
+      overflow-y: auto;
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      box-shadow: var(--glass-shadow), var(--glass-inset);
+    }
+
+    .memo::placeholder {
+      color: var(--muted);
+    }
+
+    input::placeholder {
+      color: var(--placeholder);
+      opacity: 1;
     }
 
     .row {
@@ -213,9 +288,20 @@
 </head>
 <body>
   <div class="app">
-    <button class="gear" id="gear" type="button" aria-label="設定">⚙</button>
-    <button class="export" id="export" type="button">全出力</button>
-    <div class="list" id="list"></div>
+    <div class="toolbar">
+      <button class="export" id="export" type="button">全出力</button>
+      <button class="gear" id="gear" type="button" aria-label="設定">設定</button>
+    </div>
+
+    <div class="work" id="work">
+      <div class="task-pane">
+        <div class="list" id="list"></div>
+      </div>
+      <div class="splitter" id="splitter" role="separator" aria-label="タスクとメモの高さを調整" aria-orientation="horizontal"></div>
+      <div class="memo-pane">
+        <textarea class="memo" id="memo" placeholder="メモ専用エリアです。ここは時刻や完了状態の管理を行わず、自由に記録できます。"></textarea>
+      </div>
+    </div>
   </div>
 
   <div class="modal" id="modal" aria-hidden="true">
@@ -227,7 +313,7 @@
       <div class="field">
         <label class="label" for="fontPreset">フォント</label>
         <select id="fontPreset">
-          <option value="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">システム標準 等幅</option>
+          <option value="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">システム等幅</option>
           <option value="Consolas, 'Courier New', monospace">Consolas</option>
           <option value="Menlo, Monaco, monospace">Menlo</option>
           <option value="custom">カスタム</option>
@@ -240,6 +326,7 @@
       <div class="field">
         <label class="label" for="colorMode">カラーモード</label>
         <select id="colorMode">
+          <option value="auroraGlass">Aurora Glass</option>
           <option value="light">ライト</option>
           <option value="dark">ダーク</option>
           <option value="icebergLight">Icebergライト</option>
@@ -251,6 +338,8 @@
 
   <script>
     const listEl = document.getElementById('list');
+    const workEl = document.getElementById('work');
+    const splitterEl = document.getElementById('splitter');
     const exportBtn = document.getElementById('export');
     const gearBtn = document.getElementById('gear');
     const modalEl = document.getElementById('modal');
@@ -259,35 +348,46 @@
     const fontCustomEl = document.getElementById('fontCustom');
     const colorModeEl = document.getElementById('colorMode');
     const SETTINGS_KEY = 'tasklog_ui_settings_v1';
+    const FULL_WIDTH_SPACE = '　';
+    const SPLIT_MIN = 20;
+    const SPLIT_MAX = 80;
 
     const THEMES = {
+      auroraGlass: {
+        '--bg': '#091226', '--bg-grad-1': '#13274c', '--bg-grad-2': '#091226', '--blob-1': 'rgba(91, 231, 255, 0.28)',
+        '--blob-2': 'rgba(123, 255, 182, 0.24)', '--panel': 'rgba(255, 255, 255, 0.1)', '--panel-strong': 'rgba(255, 255, 255, 0.16)',
+        '--text': '#eaf4ff', '--muted': '#b8c7df', '--placeholder': 'rgba(214, 231, 255, 0.92)', '--line': 'rgba(255, 255, 255, 0.24)', '--btn-bg': 'rgba(91, 231, 255, 0.9)',
+        '--btn-text': '#041126', '--accent': '#5be7ff', '--accent-2': '#7bffb6', '--overlay': 'rgba(3, 8, 22, 0.56)',
+        '--glass-shadow': '0 24px 48px rgba(2, 8, 22, 0.45)', '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.18)',
+        '--btn-glow': '0 10px 24px rgba(91, 231, 255, 0.35)'
+      },
       light: {
         '--bg': '#f7f7f8', '--bg-grad-1': '#fdfdfe', '--bg-grad-2': '#edf0f6', '--blob-1': 'rgba(182, 193, 214, 0.42)',
         '--blob-2': 'rgba(149, 160, 186, 0.3)', '--panel': 'rgba(255, 255, 255, 0.42)', '--panel-strong': 'rgba(255, 255, 255, 0.56)',
-        '--text': '#1a1a1a', '--muted': '#6b7280', '--line': 'rgba(255, 255, 255, 0.48)', '--btn-bg': 'rgba(20, 27, 42, 0.72)',
-        '--btn-text': '#ffffff', '--accent': '#2563eb', '--overlay': 'rgba(9, 11, 19, 0.35)', '--glass-shadow': '0 18px 36px rgba(17, 24, 39, 0.18)',
-        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.45)'
+        '--text': '#1a1a1a', '--muted': '#6b7280', '--placeholder': 'rgba(75, 85, 99, 0.92)', '--line': 'rgba(255, 255, 255, 0.48)', '--btn-bg': 'rgba(20, 27, 42, 0.72)',
+        '--btn-text': '#ffffff', '--accent': '#2563eb', '--accent-2': '#60a5fa', '--overlay': 'rgba(9, 11, 19, 0.35)', '--glass-shadow': '0 18px 36px rgba(17, 24, 39, 0.18)',
+        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.45)', '--btn-glow': '0 10px 24px rgba(37, 99, 235, 0.28)'
       },
       dark: {
         '--bg': '#111318', '--bg-grad-1': '#161b25', '--bg-grad-2': '#0e1219', '--blob-1': 'rgba(101, 124, 163, 0.32)',
         '--blob-2': 'rgba(75, 105, 143, 0.24)', '--panel': 'rgba(38, 45, 61, 0.46)', '--panel-strong': 'rgba(45, 54, 72, 0.6)',
-        '--text': '#e5e7eb', '--muted': '#9ca3af', '--line': 'rgba(183, 197, 221, 0.22)', '--btn-bg': 'rgba(227, 234, 245, 0.74)',
-        '--btn-text': '#111827', '--accent': '#60a5fa', '--overlay': 'rgba(0, 0, 0, 0.55)', '--glass-shadow': '0 22px 42px rgba(0, 0, 0, 0.45)',
-        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.14)'
+        '--text': '#e5e7eb', '--muted': '#9ca3af', '--placeholder': 'rgba(214, 224, 240, 0.86)', '--line': 'rgba(183, 197, 221, 0.22)', '--btn-bg': 'rgba(227, 234, 245, 0.74)',
+        '--btn-text': '#111827', '--accent': '#60a5fa', '--accent-2': '#93c5fd', '--overlay': 'rgba(0, 0, 0, 0.55)', '--glass-shadow': '0 22px 42px rgba(0, 0, 0, 0.45)',
+        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.14)', '--btn-glow': '0 10px 24px rgba(96, 165, 250, 0.28)'
       },
       icebergLight: {
         '--bg': '#e8eef5', '--bg-grad-1': '#f2f7fc', '--bg-grad-2': '#dce6f2', '--blob-1': 'rgba(157, 183, 211, 0.4)',
         '--blob-2': 'rgba(133, 161, 193, 0.34)', '--panel': 'rgba(246, 251, 255, 0.44)', '--panel-strong': 'rgba(252, 254, 255, 0.58)',
-        '--text': '#1f2d3d', '--muted': '#607186', '--line': 'rgba(255, 255, 255, 0.5)', '--btn-bg': 'rgba(62, 126, 182, 0.76)',
-        '--btn-text': '#ffffff', '--accent': '#2c5f8f', '--overlay': 'rgba(34, 55, 78, 0.32)', '--glass-shadow': '0 18px 34px rgba(44, 77, 110, 0.22)',
-        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.5)'
+        '--text': '#1f2d3d', '--muted': '#607186', '--placeholder': 'rgba(72, 91, 114, 0.9)', '--line': 'rgba(255, 255, 255, 0.5)', '--btn-bg': 'rgba(62, 126, 182, 0.76)',
+        '--btn-text': '#ffffff', '--accent': '#2c5f8f', '--accent-2': '#5f8fc2', '--overlay': 'rgba(34, 55, 78, 0.32)', '--glass-shadow': '0 18px 34px rgba(44, 77, 110, 0.22)',
+        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.5)', '--btn-glow': '0 10px 24px rgba(44, 95, 143, 0.26)'
       },
       icebergDark: {
         '--bg': '#161821', '--bg-grad-1': '#1d2232', '--bg-grad-2': '#131620', '--blob-1': 'rgba(141, 160, 189, 0.28)',
         '--blob-2': 'rgba(167, 180, 201, 0.22)', '--panel': 'rgba(34, 40, 58, 0.46)', '--panel-strong': 'rgba(43, 51, 72, 0.62)',
-        '--text': '#c6c8d1', '--muted': '#8e95b5', '--line': 'rgba(201, 210, 228, 0.24)', '--btn-bg': 'rgba(132, 160, 198, 0.78)',
-        '--btn-text': '#161821', '--accent': '#a093c7', '--overlay': 'rgba(0, 0, 0, 0.6)', '--glass-shadow': '0 24px 44px rgba(0, 0, 0, 0.48)',
-        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.16)'
+        '--text': '#c6c8d1', '--muted': '#8e95b5', '--placeholder': 'rgba(199, 209, 228, 0.84)', '--line': 'rgba(201, 210, 228, 0.24)', '--btn-bg': 'rgba(132, 160, 198, 0.78)',
+        '--btn-text': '#161821', '--accent': '#a093c7', '--accent-2': '#8ab7df', '--overlay': 'rgba(0, 0, 0, 0.6)', '--glass-shadow': '0 24px 44px rgba(0, 0, 0, 0.48)',
+        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.16)', '--btn-glow': '0 10px 24px rgba(160, 147, 199, 0.26)'
       }
     };
 
@@ -301,13 +401,13 @@
     function rowPrefix(row) {
       const start = row.dataset.start;
       if (row.dataset.done === '1') {
-        return '✅' + start + '-' + row.dataset.end + '　';
+        return '✅' + start + '-' + row.dataset.end + FULL_WIDTH_SPACE;
       }
-      return '🟨' + start + '-　';
+      return '🟨' + start + '-' + FULL_WIDTH_SPACE;
     }
 
     function renderRow(row) {
-      row.querySelector('.indent').textContent = '　'.repeat(Number(row.dataset.indent || 0));
+      row.querySelector('.indent').textContent = FULL_WIDTH_SPACE.repeat(Number(row.dataset.indent || 0));
       row.querySelector('.status').textContent = rowPrefix(row);
     }
 
@@ -353,7 +453,7 @@
     }
 
     function lineText(row) {
-      const indent = '　'.repeat(Number(row.dataset.indent || 0));
+      const indent = FULL_WIDTH_SPACE.repeat(Number(row.dataset.indent || 0));
       const title = row.querySelector('.title').textContent || '';
       return indent + rowPrefix(row) + title;
     }
@@ -385,6 +485,42 @@
       renderRow(row);
     }
 
+    function setTaskRatio(percent) {
+      const clamped = Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, percent));
+      document.documentElement.style.setProperty('--task-ratio', String(clamped));
+      splitterEl.setAttribute('aria-valuenow', String(Math.round(clamped)));
+    }
+
+    function initSplitResize() {
+      let dragging = false;
+
+      splitterEl.addEventListener('pointerdown', (e) => {
+        dragging = true;
+        splitterEl.setPointerCapture(e.pointerId);
+      });
+
+      splitterEl.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const rect = workEl.getBoundingClientRect();
+        const usable = rect.height - splitterEl.offsetHeight;
+        if (usable <= 0) return;
+        const top = e.clientY - rect.top - splitterEl.offsetHeight / 2;
+        setTaskRatio((top / usable) * 100);
+      });
+
+      splitterEl.addEventListener('pointerup', (e) => {
+        dragging = false;
+        splitterEl.releasePointerCapture(e.pointerId);
+      });
+
+      splitterEl.addEventListener('pointercancel', (e) => {
+        dragging = false;
+        if (splitterEl.hasPointerCapture(e.pointerId)) {
+          splitterEl.releasePointerCapture(e.pointerId);
+        }
+      });
+    }
+
     listEl.addEventListener('click', (e) => {
       const status = e.target.closest('.status');
       if (status) {
@@ -408,7 +544,7 @@
       const row = title.closest('.row');
       if (!row) return;
 
-      if (e.key === 'Enter' && e.shiftKey) {
+      if (e.altKey && String(e.key).toLowerCase() === 'c') {
         e.preventDefault();
         toggleRowState(row);
         return;
@@ -450,7 +586,7 @@
     });
 
     function applyTheme(mode) {
-      const vars = THEMES[mode] || THEMES.light;
+      const vars = THEMES[mode] || THEMES.auroraGlass;
       for (const [k, v] of Object.entries(vars)) {
         document.documentElement.style.setProperty(k, v);
       }
@@ -458,7 +594,9 @@
 
     function applyFont() {
       const preset = fontPresetEl.value;
-      const font = preset === 'custom' ? (fontCustomEl.value.trim() || "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace") : preset;
+      const font = preset === 'custom'
+        ? (fontCustomEl.value.trim() || "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace")
+        : preset;
       document.body.style.fontFamily = font;
     }
 
@@ -475,7 +613,7 @@
 
     function loadSettings() {
       const defaults = {
-        colorMode: 'icebergDark',
+        colorMode: 'auroraGlass',
         fontPreset: "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace",
         fontCustom: ''
       };
@@ -514,23 +652,27 @@
       applyTheme(colorModeEl.value);
       saveSettings();
     });
+
     fontPresetEl.addEventListener('change', () => {
       applyFont();
       saveSettings();
     });
+
     fontCustomEl.addEventListener('input', () => {
       if (fontPresetEl.value === 'custom') applyFont();
       saveSettings();
     });
 
     const settings = loadSettings();
-    colorModeEl.value = THEMES[settings.colorMode] ? settings.colorMode : 'icebergDark';
+    colorModeEl.value = THEMES[settings.colorMode] ? settings.colorMode : 'auroraGlass';
     fontCustomEl.value = settings.fontCustom;
     const presetExists = Array.from(fontPresetEl.options).some((o) => o.value === settings.fontPreset);
     fontPresetEl.value = presetExists ? settings.fontPreset : fontPresetEl.options[0].value;
 
     applyTheme(colorModeEl.value);
     applyFont();
+    setTaskRatio(50);
+    initSplitResize();
     createRow(null, false);
   </script>
 </body>
