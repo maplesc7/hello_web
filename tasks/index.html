@@ -569,6 +569,11 @@
         return;
       }
 
+      const title = e.target.closest('.title');
+      if (title) {
+        return;
+      }
+
       const row = e.target.closest('.row');
       if (row) {
         placeCaretEnd(row.querySelector('.title'));
