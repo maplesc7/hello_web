@@ -1,288 +1,446 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Glassmorphism Sample (One File)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glassmorphism Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root{
-      --bg1:#0ea5e9;
-      --bg2:#a855f7;
-      --bg3:#22c55e;
-      --text:#0b1220;
-      --muted: rgba(15, 23, 42, 0.65);
-      --glass: rgba(255, 255, 255, 0.14);
-      --stroke: rgba(255, 255, 255, 0.22);
-      --shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+    :root {
+      --bg-1: #091226;
+      --bg-2: #13274c;
+      --ink: #eaf4ff;
+      --muted: #b8c7df;
+      --glass: rgba(255, 255, 255, 0.1);
+      --glass-strong: rgba(255, 255, 255, 0.16);
+      --line: rgba(255, 255, 255, 0.24);
+      --accent: #5be7ff;
+      --accent-2: #7bffb6;
+      --shadow: 0 24px 48px rgba(2, 8, 22, 0.45);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
     }
 
-    *{ box-sizing: border-box; }
-    html, body { height: 100%; }
-    body{
+    * {
+      box-sizing: border-box;
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Meiryo", sans-serif;
-      color: var(--text);
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Manrope", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1000px 600px at 10% -10%, #2f7fff50 0%, transparent 60%),
+        radial-gradient(900px 500px at 90% -10%, #00ffbf3b 0%, transparent 60%),
+        linear-gradient(140deg, var(--bg-1), var(--bg-2));
       overflow-x: hidden;
-      background: #0b1220;
-    }
-
-    /* Background: gradient + subtle noise-ish pattern */
-    .bg{
-      min-height: 100%;
-      display: grid;
-      place-items: center;
-      padding: 48px 20px;
       position: relative;
-      isolation: isolate;
-    }
-    .bg::before{
-      content:"";
-      position:absolute;
-      inset:-20%;
-      background:
-        radial-gradient(900px 600px at 15% 25%, color-mix(in srgb, var(--bg1) 70%, transparent) 0%, transparent 60%),
-        radial-gradient(900px 700px at 85% 15%, color-mix(in srgb, var(--bg2) 70%, transparent) 0%, transparent 55%),
-        radial-gradient(800px 600px at 70% 90%, color-mix(in srgb, var(--bg3) 55%, transparent) 0%, transparent 60%),
-        linear-gradient(180deg, #0b1220 0%, #0b1220 100%);
-      filter: saturate(1.2);
-      z-index: -2;
-    }
-    .bg::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 1.2px);
-      background-size: 18px 18px;
-      opacity: 0.35;
-      z-index: -1;
-      pointer-events:none;
-      mix-blend-mode: overlay;
     }
 
-    /* Floating blobs */
-    .blob{
-      position:absolute;
-      width: 420px;
-      height: 420px;
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
       border-radius: 50%;
-      background: rgba(255,255,255,0.12);
-      filter: blur(0.2px);
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset;
-      transform: translateZ(0);
-      z-index: -1;
+      filter: blur(10px);
     }
-    .blob.one{ top: 8%; left: 8%; background: rgba(14,165,233,0.22); }
-    .blob.two{ top: 18%; right: 10%; background: rgba(168,85,247,0.22); width: 460px; height: 460px; }
-    .blob.three{ bottom: 8%; left: 18%; background: rgba(34,197,94,0.18); width: 520px; height: 520px; }
 
-    /* Glass card */
-    .card{
-      width: min(920px, 100%);
-      border-radius: 24px;
-      background: var(--glass);
-      border: 1px solid var(--stroke);
+    body::before {
+      width: 44vw;
+      max-width: 560px;
+      aspect-ratio: 1;
+      top: 56vh;
+      left: -12vw;
+      background: linear-gradient(140deg, #5be7ff55, transparent 65%);
+      animation: floatBlob 12s ease-in-out infinite;
+    }
+
+    body::after {
+      width: 40vw;
+      max-width: 500px;
+      aspect-ratio: 1;
+      top: 12vh;
+      right: -10vw;
+      background: linear-gradient(220deg, #7bffb64a, transparent 68%);
+      animation: floatBlob 14s ease-in-out infinite reverse;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.16;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.35) 0.5px, transparent 0.5px);
+      background-size: 3px 3px;
+      mix-blend-mode: soft-light;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 2;
+      width: min(1120px, 92vw);
+      margin: 34px auto 48px;
+    }
+
+    .glass {
+      background: linear-gradient(135deg, var(--glass-strong), var(--glass));
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      overflow: hidden;
-      position: relative;
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      inset: -2px;
-      background:
-        linear-gradient(135deg,
-          rgba(255,255,255,0.35) 0%,
-          rgba(255,255,255,0.08) 35%,
-          rgba(255,255,255,0.22) 70%,
-          rgba(255,255,255,0.06) 100%);
-      opacity: 0.35;
-      pointer-events:none;
     }
 
-    .content{
-      position: relative;
-      padding: 28px;
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border-radius: var(--radius-xl);
+      margin-bottom: 24px;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      font-size: 1.05rem;
+    }
+
+    .dot {
+      width: 10px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: linear-gradient(140deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 14px #5be7ff99;
+    }
+
+    .menu {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.86rem;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      transition: 0.25s ease;
+    }
+
+    .chip:hover {
+      color: var(--ink);
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .hero {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
       gap: 20px;
+      grid-template-columns: 1.15fr 0.85fr;
+      margin-bottom: 22px;
     }
 
-    h1{
-      margin: 0 0 8px;
-      font-size: clamp(20px, 2.6vw, 30px);
-      letter-spacing: 0.2px;
-    }
-    p{
-      margin: 0 0 16px;
-      color: rgba(15, 23, 42, 0.78);
-      line-height: 1.7;
-      font-size: 14.5px;
+    .hero-main {
+      padding: clamp(22px, 4vw, 38px);
+      border-radius: var(--radius-xl);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.9s ease 0.08s both;
     }
 
-    .pill{
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      inset: auto -30% -45% auto;
+      width: 420px;
+      height: 280px;
+      background: radial-gradient(circle at center, #5be7ff35 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .kicker {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 12px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #d4eaff;
+      margin-bottom: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.22);
-      color: rgba(15, 23, 42, 0.85);
-      font-size: 12.5px;
-      user-select: none;
-    }
-    .dot{
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: rgba(15, 23, 42, 0.45);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.18);
     }
 
-    .actions{
+    h1 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(1.8rem, 4.3vw, 3.4rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+      max-width: 16ch;
+    }
+
+    .lead {
+      color: var(--muted);
+      max-width: 52ch;
+      font-size: clamp(0.94rem, 1.8vw, 1.05rem);
+      line-height: 1.75;
+      margin-bottom: 24px;
+    }
+
+    .actions {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .btn{
-      appearance: none;
-      border: 1px solid rgba(255,255,255,0.28);
-      background: rgba(255,255,255,0.16);
-      color: rgba(15, 23, 42, 0.88);
-      padding: 10px 12px;
-      border-radius: 14px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    .btn:hover{
-      transform: translateY(-1px);
-      background: rgba(255,255,255,0.22);
-      border-color: rgba(255,255,255,0.36);
-    }
-    .btn.primary{
-      background: rgba(15, 23, 42, 0.72);
-      color: rgba(255,255,255,0.92);
-      border-color: rgba(255,255,255,0.18);
-    }
-    .btn.primary:hover{
-      background: rgba(15, 23, 42, 0.78);
     }
 
-    .side{
+    .btn {
+      border: 1px solid transparent;
+      padding: 11px 15px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.86rem;
+      letter-spacing: 0.02em;
+      transition: 0.25s ease;
+    }
+
+    .btn-primary {
+      color: #041126;
+      background: linear-gradient(140deg, var(--accent), var(--accent-2));
+      box-shadow: 0 10px 24px rgba(91, 231, 255, 0.35);
+    }
+
+    .btn-secondary {
+      color: var(--ink);
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .hero-side {
+      padding: clamp(18px, 3vw, 26px);
+      border-radius: var(--radius-xl);
       display: grid;
       gap: 14px;
-      align-content: start;
+      animation: fadeUp 0.9s ease 0.16s both;
     }
 
-    .mini{
-      border-radius: 18px;
+    .stat {
       padding: 14px;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.22);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-    .mini h2{
-      margin: 0 0 6px;
-      font-size: 13px;
-      letter-spacing: 0.2px;
-      color: rgba(15, 23, 42, 0.85);
-    }
-    .mini .row{
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 8px 0;
-      border-top: 1px solid rgba(255,255,255,0.16);
-      font-size: 13px;
-      color: rgba(15, 23, 42, 0.78);
-    }
-    .mini .row:first-of-type{ border-top: none; padding-top: 0; }
-    .mini .val{
-      font-variant-numeric: tabular-nums;
-      color: rgba(15, 23, 42, 0.9);
-      font-weight: 650;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.06);
     }
 
-    .footer{
-      position: relative;
-      padding: 14px 28px 22px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      border-top: 1px solid rgba(255,255,255,0.18);
-      color: rgba(15, 23, 42, 0.68);
-      font-size: 12px;
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-bottom: 4px;
     }
-    .kbd{
+
+    .stat-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: 18px;
+      animation: fadeUp 0.85s ease both;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.2s; }
+    .card:nth-child(2) { animation-delay: 0.28s; }
+    .card:nth-child(3) { animation-delay: 0.36s; }
+
+    .card-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1rem;
+      margin-bottom: 9px;
+    }
+
+    .card p {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 0.74rem;
+      color: #d8fff1;
+      border: 1px solid rgba(123, 255, 182, 0.45);
+      border-radius: 999px;
       padding: 4px 8px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.14);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      color: rgba(15, 23, 42, 0.78);
+      background: rgba(123, 255, 182, 0.09);
     }
 
-    /* Responsive */
-    @media (max-width: 780px){
-      .content{ grid-template-columns: 1fr; }
-      .blob{ filter: blur(0.6px); opacity: 0.9; }
+    .footer-note {
+      text-align: center;
+      color: #b9c8dfcc;
+      font-size: 0.78rem;
+      margin-top: 16px;
+      animation: fadeUp 1s ease 0.45s both;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes floatBlob {
+      0%, 100% {
+        transform: translateY(0px) translateX(0px);
+      }
+      50% {
+        transform: translateY(-16px) translateX(8px);
+      }
+    }
+
+    @media (max-width: 940px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 620px) {
+      .wrap {
+        margin-top: 18px;
+      }
+
+      .nav {
+        gap: 12px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .menu {
+        width: 100%;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        max-width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <main class="bg">
-    <div class="blob one" aria-hidden="true"></div>
-    <div class="blob two" aria-hidden="true"></div>
-    <div class="blob three" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
 
-    <section class="card" role="region" aria-label="Glassmorphism sample card">
-      <div class="content">
-        <div>
-          <span class="pill"><span class="dot"></span> Glassmorphism UI</span>
-          <h1>ワンファイルのグラスモーフィズム（HTML + CSS）</h1>
-          <p>
-            半透明のパネル + ぼかし（backdrop-filter）+ 輪郭の薄いストロークで、
-            それっぽい雰囲気を最小構成で作っています。
-          </p>
+  <main class="wrap">
+    <nav class="nav glass">
+      <div class="brand"><span class="dot"></span> Glassmorphism Lab</div>
+      <div class="menu" aria-label="Menu">
+        <a class="chip" href="#">Home</a>
+        <a class="chip" href="#">Gallery</a>
+        <a class="chip" href="#">Tokens</a>
+        <a class="chip" href="#">About</a>
+      </div>
+    </nav>
 
-          <div class="actions">
-            <button class="btn primary" type="button">Primary</button>
-            <button class="btn" type="button">Secondary</button>
-            <button class="btn" type="button">Ghost</button>
-          </div>
+    <section class="hero">
+      <article class="hero-main glass">
+        <div class="kicker">Visual System 2026</div>
+        <h1>透明感と奥行きで魅せる、次世代グラスモーフィズム</h1>
+        <p class="lead">
+          1ファイルだけで構築した、モダンなガラスUIサンプルです。多層グラデーション、
+          ブラー、ハイライト、柔らかいシャドウ、控えめなモーションを組み合わせ、
+          高級感のあるインターフェースに仕上げています。
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#">Explore Design</a>
+          <a class="btn btn-secondary" href="#">View Components</a>
         </div>
+      </article>
 
-        <aside class="side" aria-label="Side widgets">
-          <div class="mini">
-            <h2>Quick Stats</h2>
-            <div class="row"><span>Blur</span><span class="val">14px</span></div>
-            <div class="row"><span>Opacity</span><span class="val">0.14</span></div>
-            <div class="row"><span>Border</span><span class="val">1px</span></div>
-          </div>
-
-          <div class="mini">
-            <h2>Notes</h2>
-            <div class="row"><span>Edge</span><span class="val">soft</span></div>
-            <div class="row"><span>Shadow</span><span class="val">deep</span></div>
-            <div class="row"><span>BG</span><span class="val">gradient</span></div>
-          </div>
-        </aside>
-      </div>
-
-      <div class="footer">
-        <span>Tip: backdrop-filter が効かないブラウザでは透明パネル風に見えます。</span>
-        <span class="kbd">One file</span>
-      </div>
+      <aside class="hero-side glass">
+        <div class="stat">
+          <div class="stat-label">Backdrop Blur</div>
+          <div class="stat-value">18px</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Layered Gradients</div>
+          <div class="stat-value">4 Layers</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Responsive Width</div>
+          <div class="stat-value">Mobile Ready</div>
+        </div>
+      </aside>
     </section>
+
+    <section class="grid" aria-label="Feature cards">
+      <article class="card glass">
+        <h2 class="card-title">Refraction Feel</h2>
+        <p>
+          透明パネル上に半透明レイヤーを重ねることで、背景が屈折して見えるような質感を演出します。
+        </p>
+        <span class="badge">Glass Surface</span>
+      </article>
+
+      <article class="card glass">
+        <h2 class="card-title">Premium Contrast</h2>
+        <p>
+          文字の可読性を保ちながら、ハイライトと境界線で輪郭を明確化。暗い背景でも情報が沈みません。
+        </p>
+        <span class="badge">Readable UI</span>
+      </article>
+
+      <article class="card glass">
+        <h2 class="card-title">Intentional Motion</h2>
+        <p>
+          入場アニメーションと背景の浮遊だけに動きを限定し、視線誘導をしながらも過剰演出を避けています。
+        </p>
+        <span class="badge">Subtle Animation</span>
+      </article>
+    </section>
+
+    <p class="footer-note">Single-file HTML sample: glassmorphism with modern visual polish.</p>
   </main>
 </body>
 </html>
