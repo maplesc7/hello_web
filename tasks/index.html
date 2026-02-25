@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -102,6 +102,26 @@
       backdrop-filter: blur(16px) saturate(130%);
       -webkit-backdrop-filter: blur(16px) saturate(130%);
       box-shadow: var(--glass-shadow), var(--glass-inset);
+    }
+
+    .clear {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
+      color: var(--text);
+      border-radius: 8px;
+      height: 38px;
+      padding: 0 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(14px) saturate(130%);
+      -webkit-backdrop-filter: blur(14px) saturate(130%);
+      box-shadow: var(--glass-shadow), var(--glass-inset);
+      transition: transform 0.25s ease;
+    }
+
+    .clear:hover {
+      transform: translateY(-2px);
     }
 
     .export {
@@ -291,6 +311,7 @@
   <div class="app">
     <div class="toolbar">
       <button class="export" id="export" type="button">全出力</button>
+      <button class="clear" id="clear" type="button">クリア</button>
       <button class="gear" id="gear" type="button" aria-label="設定">設定</button>
     </div>
 
@@ -328,6 +349,7 @@
         <label class="label" for="colorMode">カラーモード</label>
         <select id="colorMode">
           <option value="auroraGlass">Aurora Glass</option>
+          <option value="mistFog">Mist Fog</option>
           <option value="light">ライト</option>
           <option value="dark">ダーク</option>
           <option value="icebergLight">Icebergライト</option>
@@ -342,6 +364,8 @@
     const workEl = document.getElementById('work');
     const splitterEl = document.getElementById('splitter');
     const exportBtn = document.getElementById('export');
+    const clearBtn = document.getElementById('clear');
+    const memoEl = document.getElementById('memo');
     const gearBtn = document.getElementById('gear');
     const modalEl = document.getElementById('modal');
     const closeBtn = document.getElementById('close');
@@ -349,9 +373,14 @@
     const fontCustomEl = document.getElementById('fontCustom');
     const colorModeEl = document.getElementById('colorMode');
     const SETTINGS_KEY = 'tasklog_ui_settings_v1';
+    const CONTENT_KEY = 'tasklog_content_v1';
+    const CONTENT_TTL_MS = 365 * 24 * 60 * 60 * 1000;
+    const SAVE_DEBOUNCE_MS = 800;
     const FULL_WIDTH_SPACE = '　';
     const SPLIT_MIN = 20;
     const SPLIT_MAX = 80;
+    let saveTimer = null;
+    let hasUnsavedChanges = false;
 
     const THEMES = {
       auroraGlass: {
@@ -361,6 +390,13 @@
         '--btn-text': '#041126', '--accent': '#5be7ff', '--accent-2': '#7bffb6', '--overlay': 'rgba(3, 8, 22, 0.56)',
         '--glass-shadow': '0 24px 48px rgba(2, 8, 22, 0.45)', '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.18)',
         '--btn-glow': '0 10px 24px rgba(91, 231, 255, 0.35)'
+      },
+      mistFog: {
+        '--bg': '#e6e0d4', '--bg-grad-1': '#f1ebdf', '--bg-grad-2': '#d5ccbd', '--blob-1': 'rgba(145, 132, 111, 0.28)',
+        '--blob-2': 'rgba(110, 129, 106, 0.2)', '--panel': 'rgba(250, 245, 235, 0.42)', '--panel-strong': 'rgba(255, 250, 242, 0.58)',
+        '--text': '#2f2a24', '--muted': '#6e6558', '--placeholder': 'rgba(85, 77, 66, 0.88)', '--line': 'rgba(255, 250, 240, 0.5)', '--btn-bg': 'rgba(92, 102, 82, 0.78)',
+        '--btn-text': '#f6f4ef', '--accent': '#7d6f56', '--accent-2': '#7f9276', '--overlay': 'rgba(36, 31, 25, 0.34)', '--glass-shadow': '0 18px 34px rgba(60, 49, 35, 0.2)',
+        '--glass-inset': 'inset 0 1px 0 rgba(255, 252, 246, 0.52)', '--btn-glow': '0 10px 22px rgba(110, 129, 106, 0.24)'
       },
       light: {
         '--bg': '#f7f7f8', '--bg-grad-1': '#fdfdfe', '--bg-grad-2': '#edf0f6', '--blob-1': 'rgba(182, 193, 214, 0.42)',
@@ -462,13 +498,13 @@
       sel.addRange(range);
     }
 
-    function createRow(afterRow, focusTitle, indentLevel = 0) {
+    function createRow(afterRow, focusTitle, indentLevel = 0, state = null) {
       const row = document.createElement('div');
       row.className = 'row';
-      row.dataset.start = hhmmNow();
-      row.dataset.end = '';
-      row.dataset.done = '0';
-      row.dataset.indent = String(indentLevel);
+      row.dataset.start = typeof state?.start === 'string' ? state.start : hhmmNow();
+      row.dataset.end = typeof state?.end === 'string' ? state.end : '';
+      row.dataset.done = state?.done === '1' ? '1' : '0';
+      row.dataset.indent = String(Number.isFinite(state?.indent) ? Math.max(0, state.indent) : indentLevel);
 
       const indent = document.createElement('span');
       indent.className = 'indent';
@@ -480,6 +516,7 @@
       title.className = 'title';
       title.contentEditable = 'true';
       title.spellcheck = false;
+      title.textContent = typeof state?.title === 'string' ? state.title : '';
 
       row.append(indent, status, title);
       if (afterRow && afterRow.parentNode === listEl) {
@@ -491,6 +528,121 @@
       renderRow(row);
       if (focusTitle) placeCaretEnd(title);
       return row;
+    }
+
+    function serializeRows() {
+      return Array.from(listEl.querySelectorAll('.row')).map((row) => ({
+        start: row.dataset.start || hhmmNow(),
+        end: row.dataset.end || '',
+        done: row.dataset.done === '1' ? '1' : '0',
+        indent: Math.max(0, Number(row.dataset.indent || 0)),
+        title: row.querySelector('.title')?.textContent || ''
+      }));
+    }
+
+    function isInitialEmptyState(rows, memoText) {
+      if ((memoText || '') !== '') return false;
+      if (!Array.isArray(rows) || rows.length !== 1) return false;
+      const row = rows[0];
+      return row.done === '0' && row.end === '' && row.indent === 0 && row.title === '';
+    }
+
+    function saveContentNow() {
+      const rows = serializeRows();
+      const memoText = memoEl.value || '';
+      if (isInitialEmptyState(rows, memoText)) {
+        try {
+          localStorage.removeItem(CONTENT_KEY);
+          hasUnsavedChanges = false;
+        } catch (_) {}
+        return;
+      }
+
+      const payload = {
+        version: 1,
+        savedAt: Date.now(),
+        memo: memoText,
+        rows
+      };
+      try {
+        localStorage.setItem(CONTENT_KEY, JSON.stringify(payload));
+        hasUnsavedChanges = false;
+      } catch (_) {}
+    }
+
+    function scheduleSaveContent() {
+      hasUnsavedChanges = true;
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        saveTimer = null;
+        saveContentNow();
+      }, SAVE_DEBOUNCE_MS);
+    }
+
+    function clearSavedContent() {
+      if (saveTimer) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+      }
+      try {
+        localStorage.removeItem(CONTENT_KEY);
+      } catch (_) {}
+      hasUnsavedChanges = false;
+    }
+
+    function loadContent() {
+      try {
+        const raw = localStorage.getItem(CONTENT_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return null;
+
+        const savedAt = Number(parsed.savedAt);
+        if (!Number.isFinite(savedAt)) return null;
+        if (Date.now() - savedAt > CONTENT_TTL_MS) {
+          localStorage.removeItem(CONTENT_KEY);
+          return null;
+        }
+
+        const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+        const normalizedRows = rows
+          .map((r) => ({
+            start: typeof r?.start === 'string' ? r.start : hhmmNow(),
+            end: typeof r?.end === 'string' ? r.end : '',
+            done: r?.done === '1' ? '1' : '0',
+            indent: Math.max(0, Number(r?.indent || 0)),
+            title: typeof r?.title === 'string' ? r.title : ''
+          }));
+
+        return {
+          memo: typeof parsed.memo === 'string' ? parsed.memo : '',
+          rows: normalizedRows
+        };
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function resetTaskMemoToInitial() {
+      listEl.innerHTML = '';
+      memoEl.value = '';
+      createRow(null, false);
+      hasUnsavedChanges = false;
+    }
+
+    function restoreOrInitContent() {
+      const loaded = loadContent();
+      if (!loaded || loaded.rows.length === 0) {
+        resetTaskMemoToInitial();
+        return;
+      }
+
+      listEl.innerHTML = '';
+      memoEl.value = loaded.memo;
+      for (const row of loaded.rows) {
+        createRow(null, false, 0, row);
+      }
+      hasUnsavedChanges = false;
     }
 
     function lineText(row) {
@@ -524,6 +676,7 @@
         row.dataset.end = hhmmNow();
       }
       renderRow(row);
+      scheduleSaveContent();
     }
 
     function setTaskRatio(percent) {
@@ -599,6 +752,7 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         createRow(row, true, Number(row.dataset.indent || 0));
+        scheduleSaveContent();
         return;
       }
 
@@ -652,6 +806,7 @@
         const n = Number(row.dataset.indent || 0);
         row.dataset.indent = String(e.shiftKey ? Math.max(0, n - 1) : n + 1);
         renderRow(row);
+        scheduleSaveContent();
         return;
       }
 
@@ -661,11 +816,20 @@
           e.preventDefault();
           const prev = row.previousElementSibling;
           row.remove();
+          scheduleSaveContent();
           if (prev && prev.classList.contains('row')) {
             placeCaretEnd(prev.querySelector('.title'));
           }
         }
       }
+    });
+
+    listEl.addEventListener('input', (e) => {
+      if (e.target.closest('.title')) scheduleSaveContent();
+    });
+
+    memoEl.addEventListener('input', () => {
+      scheduleSaveContent();
     });
 
     exportBtn.addEventListener('click', async () => {
@@ -674,6 +838,12 @@
       await copyText(out);
       listEl.innerHTML = '';
       createRow(null, false);
+      scheduleSaveContent();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      clearSavedContent();
+      resetTaskMemoToInitial();
     });
 
     function applyTheme(mode) {
@@ -754,6 +924,12 @@
       saveSettings();
     });
 
+    window.addEventListener('beforeunload', (e) => {
+      if (!hasUnsavedChanges) return;
+      e.preventDefault();
+      e.returnValue = '';
+    });
+
     const settings = loadSettings();
     colorModeEl.value = THEMES[settings.colorMode] ? settings.colorMode : 'auroraGlass';
     fontCustomEl.value = settings.fontCustom;
@@ -764,7 +940,7 @@
     applyFont();
     setTaskRatio(50);
     initSplitResize();
-    createRow(null, false);
+    restoreOrInitContent();
   </script>
 </body>
 </html>
