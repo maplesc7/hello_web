@@ -732,19 +732,6 @@
       return { start, end, text: value.slice(start, end) };
     }
 
-    function lastNonEmptyMemoLineEnd(value) {
-      let start = 0;
-      let lastEnd = null;
-      while (start <= value.length) {
-        const next = value.indexOf('\n', start);
-        const end = next === -1 ? value.length : next;
-        if (end > start) lastEnd = end;
-        if (next === -1) break;
-        start = next + 1;
-      }
-      return lastEnd;
-    }
-
     function isMemoClickRightOfLine(el, lineText, clientX) {
       const style = getComputedStyle(el);
       const rect = el.getBoundingClientRect();
@@ -768,8 +755,7 @@
       const line = memoLineRangeAt(value, start);
 
       if (line.text.length === 0) {
-        const target = lastNonEmptyMemoLineEnd(value);
-        if (target != null) memoEl.setSelectionRange(target, target);
+        memoEl.setSelectionRange(line.end, line.end);
         return;
       }
 
