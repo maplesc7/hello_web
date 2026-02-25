@@ -718,6 +718,66 @@
       splitterEl.setAttribute('aria-valuenow', String(Math.round(clamped)));
     }
 
+    function currentTaskRatio() {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--task-ratio');
+      const n = Number.parseFloat(raw);
+      return Number.isFinite(n) ? n : 50;
+    }
+
+    function memoLineRangeAt(value, pos) {
+      const idx = Math.max(0, Math.min(pos, value.length));
+      const start = value.lastIndexOf('\n', Math.max(0, idx - 1)) + 1;
+      const next = value.indexOf('\n', idx);
+      const end = next === -1 ? value.length : next;
+      return { start, end, text: value.slice(start, end) };
+    }
+
+    function lastNonEmptyMemoLineEnd(value) {
+      let start = 0;
+      let lastEnd = null;
+      while (start <= value.length) {
+        const next = value.indexOf('\n', start);
+        const end = next === -1 ? value.length : next;
+        if (end > start) lastEnd = end;
+        if (next === -1) break;
+        start = next + 1;
+      }
+      return lastEnd;
+    }
+
+    function isMemoClickRightOfLine(el, lineText, clientX) {
+      const style = getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      const borderLeft = Number.parseFloat(style.borderLeftWidth) || 0;
+      const paddingLeft = Number.parseFloat(style.paddingLeft) || 0;
+      const x = clientX - rect.left - borderLeft - paddingLeft + el.scrollLeft;
+      const canvas = isMemoClickRightOfLine._canvas || (isMemoClickRightOfLine._canvas = document.createElement('canvas'));
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return false;
+      ctx.font = style.font;
+      const width = ctx.measureText(lineText).width;
+      return x >= width - 2;
+    }
+
+    function normalizeMemoCaretOnClick(clientX) {
+      const start = memoEl.selectionStart;
+      const end = memoEl.selectionEnd;
+      if (start == null || end == null) return;
+      if (start !== end) return;
+      const value = memoEl.value || '';
+      const line = memoLineRangeAt(value, start);
+
+      if (line.text.length === 0) {
+        const target = lastNonEmptyMemoLineEnd(value);
+        if (target != null) memoEl.setSelectionRange(target, target);
+        return;
+      }
+
+      if (isMemoClickRightOfLine(memoEl, line.text, clientX)) {
+        memoEl.setSelectionRange(line.end, line.end);
+      }
+    }
+
     function initSplitResize() {
       let dragging = false;
 
@@ -738,6 +798,7 @@
       splitterEl.addEventListener('pointerup', (e) => {
         dragging = false;
         splitterEl.releasePointerCapture(e.pointerId);
+        saveSettings();
       });
 
       splitterEl.addEventListener('pointercancel', (e) => {
@@ -745,6 +806,7 @@
         if (splitterEl.hasPointerCapture(e.pointerId)) {
           splitterEl.releasePointerCapture(e.pointerId);
         }
+        saveSettings();
       });
     }
 
@@ -879,6 +941,27 @@
       scheduleSaveContent();
     });
 
+    let memoPointerStartX = 0;
+    let memoPointerStartY = 0;
+    let memoPointerMoved = false;
+    memoEl.addEventListener('pointerdown', (e) => {
+      memoPointerStartX = e.clientX;
+      memoPointerStartY = e.clientY;
+      memoPointerMoved = false;
+    });
+    memoEl.addEventListener('pointermove', (e) => {
+      if (memoPointerMoved) return;
+      const dx = e.clientX - memoPointerStartX;
+      const dy = e.clientY - memoPointerStartY;
+      if ((dx * dx + dy * dy) > 9) memoPointerMoved = true;
+    });
+    memoEl.addEventListener('pointerup', (e) => {
+      if (memoPointerMoved) return;
+      requestAnimationFrame(() => {
+        normalizeMemoCaretOnClick(e.clientX);
+      });
+    });
+
     exportBtn.addEventListener('click', async () => {
       const rows = Array.from(listEl.querySelectorAll('.row'));
       const out = normalizeToCrlf(rows.map(lineText).join('\n'));
@@ -912,7 +995,8 @@
       const settings = {
         colorMode: colorModeEl.value,
         fontPreset: fontPresetEl.value,
-        fontCustom: fontCustomEl.value
+        fontCustom: fontCustomEl.value,
+        taskRatio: currentTaskRatio()
       };
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -923,16 +1007,19 @@
       const defaults = {
         colorMode: 'auroraGlass',
         fontPreset: "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace",
-        fontCustom: ''
+        fontCustom: '',
+        taskRatio: 50
       };
       try {
         const raw = localStorage.getItem(SETTINGS_KEY);
         if (!raw) return defaults;
         const parsed = JSON.parse(raw);
+        const taskRatio = Number.parseFloat(parsed.taskRatio);
         return {
           colorMode: typeof parsed.colorMode === 'string' ? parsed.colorMode : defaults.colorMode,
           fontPreset: typeof parsed.fontPreset === 'string' ? parsed.fontPreset : defaults.fontPreset,
-          fontCustom: typeof parsed.fontCustom === 'string' ? parsed.fontCustom : defaults.fontCustom
+          fontCustom: typeof parsed.fontCustom === 'string' ? parsed.fontCustom : defaults.fontCustom,
+          taskRatio: Number.isFinite(taskRatio) ? Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, taskRatio)) : defaults.taskRatio
         };
       } catch (_) {
         return defaults;
@@ -985,7 +1072,7 @@
 
     applyTheme(colorModeEl.value);
     applyFont();
-    setTaskRatio(50);
+    setTaskRatio(settings.taskRatio);
     initSplitResize();
     restoreOrInitContent();
   </script>
