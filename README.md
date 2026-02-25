@@ -7,15 +7,22 @@
 
 - `index.html`
   - ルートに置いたシンプルな Hello World ページ（ガラス風デザイン）
+  - ▶ 公開ページ: https://hello-web-er0.pages.dev/
+
 - `glassmorphism/`
   - グラスモーフィズム表現のデザインサンプル
   - `index.html` / `spec.md`
+  - ▶ 公開ページ: https://hello-web-er0.pages.dev/glassmorphism/
+
 - `timer/`
   - Monolith Timer（単体で動くカウントダウンタイマー）
   - `index.html` / `spec.md`
+  - ▶ 公開ページ: https://hello-web-er0.pages.dev/timer/
+
 - `tasks/`
   - 時刻自動記録型のタスクログ UI
   - `index.html` / `spec.md`
+  - ▶ 公開ページ: https://hello-web-er0.pages.dev/tasks/
 
 ## 方針
 
