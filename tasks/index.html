@@ -90,6 +90,26 @@
       width: fit-content;
     }
 
+    .clock {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
+      color: var(--text);
+      border-radius: 8px;
+      min-width: 94px;
+      height: 36px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      backdrop-filter: blur(16px) saturate(130%);
+      -webkit-backdrop-filter: blur(16px) saturate(130%);
+      box-shadow: var(--glass-shadow), var(--glass-inset);
+    }
+
     .gear {
       border: 1px solid var(--line);
       background: linear-gradient(135deg, var(--panel-strong), var(--panel));
@@ -315,6 +335,7 @@
       <button class="export" id="export" type="button">全出力</button>
       <button class="clear" id="clear" type="button">クリア</button>
       <button class="gear" id="gear" type="button" aria-label="設定">設定</button>
+      <span class="clock" id="clock" aria-live="polite" aria-label="現在時刻">--:--</span>
     </div>
 
     <div class="work" id="work">
@@ -371,6 +392,7 @@
     const clearBtn = document.getElementById('clear');
     const memoEl = document.getElementById('memo');
     const gearBtn = document.getElementById('gear');
+    const clockEl = document.getElementById('clock');
     const modalEl = document.getElementById('modal');
     const closeBtn = document.getElementById('close');
     const fontPresetEl = document.getElementById('fontPreset');
@@ -463,6 +485,17 @@
       return h + m;
     }
 
+    function clockTextNow() {
+      const d = new Date();
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      return h + ':' + m;
+    }
+
+    function renderClock() {
+      clockEl.textContent = clockTextNow();
+    }
+
     function rowPrefix(row) {
       const start = row.dataset.start;
       if (row.dataset.done === '1') {
@@ -526,6 +559,59 @@
       sel.addRange(range);
     }
 
+    function selectionOffsetsInContentEditable(el) {
+      const textLen = (el.textContent || '').length;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return { start: textLen, end: textLen };
+      const range = sel.getRangeAt(0);
+      if (!el.contains(range.startContainer) || !el.contains(range.endContainer)) {
+        return { start: textLen, end: textLen };
+      }
+      const preStart = range.cloneRange();
+      preStart.selectNodeContents(el);
+      preStart.setEnd(range.startContainer, range.startOffset);
+      const preEnd = range.cloneRange();
+      preEnd.selectNodeContents(el);
+      preEnd.setEnd(range.endContainer, range.endOffset);
+      return { start: preStart.toString().length, end: preEnd.toString().length };
+    }
+
+    function textPointAt(el, offset) {
+      const text = el.textContent || '';
+      const target = Math.max(0, Math.min(offset, text.length));
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let node = null;
+      let remaining = target;
+      let last = null;
+      while ((node = walker.nextNode())) {
+        last = node;
+        const len = node.textContent.length;
+        if (remaining <= len) return { node, offset: remaining };
+        remaining -= len;
+      }
+      if (last) return { node: last, offset: last.textContent.length };
+      return { node: el, offset: 0 };
+    }
+
+    function placeSelectionOffsets(el, start, end) {
+      const text = el.textContent || '';
+      const s = Math.max(0, Math.min(start, text.length));
+      const e = Math.max(0, Math.min(end, text.length));
+      if (s === e) {
+        placeCaretOffset(el, s);
+        return;
+      }
+      el.focus();
+      const p1 = textPointAt(el, s);
+      const p2 = textPointAt(el, e);
+      const range = document.createRange();
+      range.setStart(p1.node, p1.offset);
+      range.setEnd(p2.node, p2.offset);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+
     function createRow(afterRow, focusTitle, indentLevel = 0, state = null) {
       const row = document.createElement('div');
       row.className = 'row';
@@ -566,6 +652,131 @@
         indent: Math.max(0, Number(row.dataset.indent || 0)),
         title: row.querySelector('.title')?.textContent || ''
       }));
+    }
+
+    function taskFocusState() {
+      const active = document.activeElement;
+      if (!active || !active.classList || !active.classList.contains('title')) return null;
+      const row = active.closest('.row');
+      if (!row) return null;
+      const rows = Array.from(listEl.querySelectorAll('.row'));
+      const rowIndex = rows.indexOf(row);
+      if (rowIndex < 0) return null;
+      const sel = selectionOffsetsInContentEditable(active);
+      return { rowIndex, start: sel.start, end: sel.end };
+    }
+
+    function taskState() {
+      return {
+        rows: serializeRows(),
+        focus: taskFocusState()
+      };
+    }
+
+    function sameTaskState(a, b) {
+      if (!a || !b) return false;
+      return JSON.stringify(a) === JSON.stringify(b);
+    }
+
+    const TASK_HISTORY_LIMIT = 300;
+    const HISTORY_GROUP_WINDOW_MS = 900;
+    let taskUndoStack = [];
+    let taskRedoStack = [];
+    let taskApplyingHistory = false;
+    let taskLastEditMeta = null;
+
+    function resetTaskHistory() {
+      taskUndoStack = [taskState()];
+      taskRedoStack = [];
+      taskLastEditMeta = null;
+    }
+
+    function pushTaskUndoState(state, options = {}) {
+      if (taskApplyingHistory) return;
+      const last = taskUndoStack[taskUndoStack.length - 1];
+      if (!sameTaskState(last, state)) taskUndoStack.push(state);
+      if (taskUndoStack.length > TASK_HISTORY_LIMIT) taskUndoStack.shift();
+      taskRedoStack = [];
+      if (!options.keepGroup) taskLastEditMeta = null;
+    }
+
+    function taskBeforeInputMeta(title, inputType) {
+      const row = title?.closest('.row');
+      if (!row) return null;
+      const rows = Array.from(listEl.querySelectorAll('.row'));
+      const rowIndex = rows.indexOf(row);
+      if (rowIndex < 0) return null;
+      const sel = selectionOffsetsInContentEditable(title);
+      return {
+        time: Date.now(),
+        inputType,
+        rowIndex,
+        start: sel.start,
+        end: sel.end
+      };
+    }
+
+    function isGroupableInputType(inputType) {
+      return inputType === 'insertText' || inputType === 'deleteContentBackward' || inputType === 'deleteContentForward';
+    }
+
+    function shouldPushTaskBoundary(meta) {
+      if (!meta) return false;
+      if (!isGroupableInputType(meta.inputType)) return true;
+      if (!taskLastEditMeta) return true;
+      if (!isGroupableInputType(taskLastEditMeta.inputType)) return true;
+      if (meta.inputType !== taskLastEditMeta.inputType) return true;
+      if (meta.rowIndex !== taskLastEditMeta.rowIndex) return true;
+      if (meta.time - taskLastEditMeta.time > HISTORY_GROUP_WINDOW_MS) return true;
+      if (meta.start !== meta.end) return true;
+      if (taskLastEditMeta.start !== taskLastEditMeta.end) return true;
+      return Math.abs(meta.start - taskLastEditMeta.start) > 1;
+    }
+
+    function restoreTaskFocus(focus) {
+      if (!focus) return;
+      const rows = Array.from(listEl.querySelectorAll('.row'));
+      if (rows.length === 0) return;
+      const idx = Math.max(0, Math.min(focus.rowIndex, rows.length - 1));
+      const title = rows[idx].querySelector('.title');
+      if (!title) return;
+      placeSelectionOffsets(title, Number(focus.start || 0), Number(focus.end || 0));
+    }
+
+    function applyTaskState(state) {
+      if (!state || !Array.isArray(state.rows)) return;
+      taskApplyingHistory = true;
+      taskLastEditMeta = null;
+      listEl.innerHTML = '';
+      if (state.rows.length === 0) {
+        createRow(null, false);
+      } else {
+        for (const row of state.rows) createRow(null, false, 0, row);
+      }
+      restoreTaskFocus(state.focus);
+      taskApplyingHistory = false;
+      scheduleSaveContent();
+    }
+
+    function taskUndo() {
+      const current = taskState();
+      if (taskUndoStack.length === 0) return;
+      let prev = taskUndoStack.pop();
+      while (prev && sameTaskState(prev, current) && taskUndoStack.length > 0) {
+        prev = taskUndoStack.pop();
+      }
+      if (!prev || sameTaskState(prev, current)) return;
+      taskRedoStack.push(current);
+      applyTaskState(prev);
+    }
+
+    function taskRedo() {
+      const current = taskState();
+      if (taskRedoStack.length === 0) return;
+      const next = taskRedoStack.pop();
+      if (!next || sameTaskState(next, current)) return;
+      taskUndoStack.push(current);
+      applyTaskState(next);
     }
 
     function isInitialEmptyState(rows, memoText) {
@@ -656,6 +867,8 @@
       memoEl.value = '';
       createRow(null, false);
       hasUnsavedChanges = false;
+      resetTaskHistory();
+      resetMemoHistory();
     }
 
     function restoreOrInitContent() {
@@ -671,6 +884,8 @@
         createRow(null, false, 0, row);
       }
       hasUnsavedChanges = false;
+      resetTaskHistory();
+      resetMemoHistory();
     }
 
     function lineText(row) {
@@ -725,6 +940,92 @@
       el.value = before + text + after;
       const pos = start + text.length;
       el.setSelectionRange(pos, pos);
+    }
+
+    function memoState() {
+      return {
+        value: memoEl.value || '',
+        start: memoEl.selectionStart ?? 0,
+        end: memoEl.selectionEnd ?? 0
+      };
+    }
+
+    function sameMemoState(a, b) {
+      if (!a || !b) return false;
+      return a.value === b.value && a.start === b.start && a.end === b.end;
+    }
+
+    const MEMO_HISTORY_LIMIT = 300;
+    let memoUndoStack = [];
+    let memoRedoStack = [];
+    let memoApplyingHistory = false;
+    let memoLastEditMeta = null;
+
+    function resetMemoHistory() {
+      memoUndoStack = [memoState()];
+      memoRedoStack = [];
+      memoLastEditMeta = null;
+    }
+
+    function pushMemoUndoState(state, options = {}) {
+      const last = memoUndoStack[memoUndoStack.length - 1];
+      if (!sameMemoState(last, state)) memoUndoStack.push(state);
+      if (memoUndoStack.length > MEMO_HISTORY_LIMIT) memoUndoStack.shift();
+      memoRedoStack = [];
+      if (!options.keepGroup) memoLastEditMeta = null;
+    }
+
+    function memoBeforeInputMeta(inputType) {
+      const state = memoState();
+      return {
+        time: Date.now(),
+        inputType,
+        start: state.start,
+        end: state.end
+      };
+    }
+
+    function shouldPushMemoBoundary(meta) {
+      if (!meta) return false;
+      if (!isGroupableInputType(meta.inputType)) return true;
+      if (!memoLastEditMeta) return true;
+      if (!isGroupableInputType(memoLastEditMeta.inputType)) return true;
+      if (meta.inputType !== memoLastEditMeta.inputType) return true;
+      if (meta.time - memoLastEditMeta.time > HISTORY_GROUP_WINDOW_MS) return true;
+      if (meta.start !== meta.end) return true;
+      if (memoLastEditMeta.start !== memoLastEditMeta.end) return true;
+      return Math.abs(meta.start - memoLastEditMeta.start) > 1;
+    }
+
+    function applyMemoState(state) {
+      if (!state) return;
+      memoApplyingHistory = true;
+      memoLastEditMeta = null;
+      memoEl.value = state.value;
+      memoEl.setSelectionRange(state.start, state.end);
+      memoApplyingHistory = false;
+      scheduleSaveContent();
+    }
+
+    function memoUndo() {
+      const current = memoState();
+      if (memoUndoStack.length === 0) return;
+      let prev = memoUndoStack.pop();
+      while (prev && sameMemoState(prev, current) && memoUndoStack.length > 0) {
+        prev = memoUndoStack.pop();
+      }
+      if (!prev || sameMemoState(prev, current)) return;
+      memoRedoStack.push(current);
+      applyMemoState(prev);
+    }
+
+    function memoRedo() {
+      const current = memoState();
+      if (memoRedoStack.length === 0) return;
+      const next = memoRedoStack.pop();
+      if (!next || sameMemoState(next, current)) return;
+      memoUndoStack.push(current);
+      applyMemoState(next);
     }
 
     function toggleRowState(row) {
@@ -827,6 +1128,7 @@
     listEl.addEventListener('click', (e) => {
       const status = e.target.closest('.status');
       if (status) {
+        pushTaskUndoState(taskState());
         toggleRowState(status.closest('.row'));
         return;
       }
@@ -846,20 +1148,49 @@
       if (last) placeCaretEnd(last.querySelector('.title'));
     });
 
+    listEl.addEventListener('beforeinput', (e) => {
+      const title = e.target.closest('.title');
+      if (!title) return;
+      if (taskApplyingHistory) return;
+      const inputType = String(e.inputType || '');
+      if (inputType === 'historyUndo' || inputType === 'historyRedo') return;
+      const meta = taskBeforeInputMeta(title, inputType);
+      if (shouldPushTaskBoundary(meta)) {
+        pushTaskUndoState(taskState(), { keepGroup: true });
+      }
+      taskLastEditMeta = meta;
+    });
+
     listEl.addEventListener('keydown', (e) => {
       const title = e.target.closest('.title');
       if (!title) return;
       const row = title.closest('.row');
       if (!row) return;
 
+      if (e.ctrlKey && !e.altKey) {
+        const key = String(e.key).toLowerCase();
+        if (key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          taskUndo();
+          return;
+        }
+        if (key === 'y' || (key === 'z' && e.shiftKey)) {
+          e.preventDefault();
+          taskRedo();
+          return;
+        }
+      }
+
       if (e.altKey && String(e.key).toLowerCase() === 'c') {
         e.preventDefault();
+        pushTaskUndoState(taskState());
         toggleRowState(row);
         return;
       }
 
       if (e.key === 'Enter') {
         e.preventDefault();
+        pushTaskUndoState(taskState());
         createRow(row, true, Number(row.dataset.indent || 0));
         scheduleSaveContent();
         return;
@@ -912,6 +1243,7 @@
 
       if (e.key === 'Tab') {
         e.preventDefault();
+        pushTaskUndoState(taskState());
         const n = Number(row.dataset.indent || 0);
         row.dataset.indent = String(e.shiftKey ? Math.max(0, n - 1) : n + 1);
         renderRow(row);
@@ -923,6 +1255,7 @@
         const text = title.textContent || '';
         if (text.length === 0) {
           e.preventDefault();
+          pushTaskUndoState(taskState());
           const prev = row.previousElementSibling;
           row.remove();
           scheduleSaveContent();
@@ -934,6 +1267,7 @@
     });
 
     listEl.addEventListener('input', (e) => {
+      if (taskApplyingHistory) return;
       if (e.target.closest('.title')) scheduleSaveContent();
     });
 
@@ -941,16 +1275,44 @@
       const title = e.target.closest('.title');
       if (!title) return;
       e.preventDefault();
+      pushTaskUndoState(taskState());
       insertPlainTextIntoContentEditable(title, plainClipboardText(e));
       scheduleSaveContent();
     });
 
+    memoEl.addEventListener('beforeinput', (e) => {
+      if (memoApplyingHistory) return;
+      const inputType = String(e.inputType || '');
+      if (inputType === 'historyUndo' || inputType === 'historyRedo') return;
+      const meta = memoBeforeInputMeta(inputType);
+      if (shouldPushMemoBoundary(meta)) {
+        pushMemoUndoState(memoState(), { keepGroup: true });
+      }
+      memoLastEditMeta = meta;
+    });
+
+    memoEl.addEventListener('keydown', (e) => {
+      if (!e.ctrlKey || e.altKey) return;
+      const key = String(e.key).toLowerCase();
+      if (key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        memoUndo();
+        return;
+      }
+      if (key === 'y' || (key === 'z' && e.shiftKey)) {
+        e.preventDefault();
+        memoRedo();
+      }
+    });
+
     memoEl.addEventListener('input', () => {
+      if (memoApplyingHistory) return;
       scheduleSaveContent();
     });
 
     memoEl.addEventListener('paste', (e) => {
       e.preventDefault();
+      pushMemoUndoState(memoState());
       insertPlainTextIntoTextarea(memoEl, plainClipboardText(e));
       scheduleSaveContent();
     });
@@ -1088,6 +1450,8 @@
     applyFont();
     setTaskRatio(settings.taskRatio);
     initSplitResize();
+    renderClock();
+    setInterval(renderClock, 1000);
     restoreOrInitContent();
   </script>
 </body>
