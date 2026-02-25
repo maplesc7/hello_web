@@ -666,6 +666,39 @@
       }
     }
 
+    function normalizeToCrlf(text) {
+      return String(text || '').replace(/\r?\n/g, '\r\n');
+    }
+
+    function plainClipboardText(e) {
+      const text = e.clipboardData?.getData('text/plain');
+      return typeof text === 'string' ? text : '';
+    }
+
+    function insertPlainTextIntoContentEditable(el, text) {
+      el.focus();
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      const node = document.createTextNode(text);
+      range.insertNode(node);
+      range.setStartAfter(node);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+
+    function insertPlainTextIntoTextarea(el, text) {
+      const start = el.selectionStart ?? el.value.length;
+      const end = el.selectionEnd ?? el.value.length;
+      const before = el.value.slice(0, start);
+      const after = el.value.slice(end);
+      el.value = before + text + after;
+      const pos = start + text.length;
+      el.setSelectionRange(pos, pos);
+    }
+
     function toggleRowState(row) {
       if (!row) return;
       if (row.dataset.done === '1') {
@@ -828,13 +861,27 @@
       if (e.target.closest('.title')) scheduleSaveContent();
     });
 
+    listEl.addEventListener('paste', (e) => {
+      const title = e.target.closest('.title');
+      if (!title) return;
+      e.preventDefault();
+      insertPlainTextIntoContentEditable(title, plainClipboardText(e));
+      scheduleSaveContent();
+    });
+
     memoEl.addEventListener('input', () => {
+      scheduleSaveContent();
+    });
+
+    memoEl.addEventListener('paste', (e) => {
+      e.preventDefault();
+      insertPlainTextIntoTextarea(memoEl, plainClipboardText(e));
       scheduleSaveContent();
     });
 
     exportBtn.addEventListener('click', async () => {
       const rows = Array.from(listEl.querySelectorAll('.row'));
-      const out = rows.map(lineText).join('\n');
+      const out = normalizeToCrlf(rows.map(lineText).join('\n'));
       await copyText(out);
       listEl.innerHTML = '';
       createRow(null, false);
