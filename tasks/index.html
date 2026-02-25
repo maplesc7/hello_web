@@ -13,6 +13,8 @@
       --bg-grad-2: #edf0f6;
       --blob-1: rgba(182, 193, 214, 0.42);
       --blob-2: rgba(149, 160, 186, 0.3);
+      --blob-shape-1: radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%);
+      --blob-shape-2: radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%);
       --panel: rgba(255, 255, 255, 0.42);
       --panel-strong: rgba(255, 255, 255, 0.56);
       --text: #1a1a1a;
@@ -57,7 +59,7 @@
       aspect-ratio: 1;
       left: -10vw;
       top: 52vh;
-      background: radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%);
+      background: var(--blob-shape-1);
     }
 
     body::after {
@@ -65,7 +67,7 @@
       aspect-ratio: 1;
       right: -8vw;
       top: 8vh;
-      background: radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%);
+      background: var(--blob-shape-2);
     }
 
     .app {
@@ -348,12 +350,14 @@
       <div class="field">
         <label class="label" for="colorMode">カラーモード</label>
         <select id="colorMode">
-          <option value="auroraGlass">Aurora Glass</option>
-          <option value="mistFog">Mist Fog</option>
-          <option value="light">ライト</option>
-          <option value="dark">ダーク</option>
-          <option value="icebergLight">Icebergライト</option>
-          <option value="icebergDark">Icebergダーク</option>
+          <option value="オーロラガラス">オーロラガラス</option>
+          <option value="ミストフォグ">ミストフォグ</option>
+          <option value="ライト">ライト</option>
+          <option value="ダーク">ダーク</option>
+          <option value="アイスバーグライト">アイスバーグライト</option>
+          <option value="アイスバーグダーク">アイスバーグダーク</option>
+          <option value="スチールライト">スチールライト</option>
+          <option value="スチールダーク">スチールダーク</option>
         </select>
       </div>
     </div>
@@ -383,48 +387,72 @@
     let hasUnsavedChanges = false;
 
     const THEMES = {
-      auroraGlass: {
+      オーロラガラス: {
         '--bg': '#091226', '--bg-grad-1': '#13274c', '--bg-grad-2': '#091226', '--blob-1': 'rgba(91, 231, 255, 0.28)',
-        '--blob-2': 'rgba(123, 255, 182, 0.24)', '--panel': 'rgba(255, 255, 255, 0.1)', '--panel-strong': 'rgba(255, 255, 255, 0.16)',
+        '--blob-2': 'rgba(123, 255, 182, 0.24)', '--blob-shape-1': 'radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%)',
+        '--blob-shape-2': 'radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%)', '--panel': 'rgba(255, 255, 255, 0.1)', '--panel-strong': 'rgba(255, 255, 255, 0.16)',
         '--text': '#eaf4ff', '--muted': '#b8c7df', '--placeholder': 'rgba(214, 231, 255, 0.92)', '--line': 'rgba(255, 255, 255, 0.24)', '--btn-bg': 'rgba(91, 231, 255, 0.9)',
         '--btn-text': '#041126', '--accent': '#5be7ff', '--accent-2': '#7bffb6', '--overlay': 'rgba(3, 8, 22, 0.56)',
         '--glass-shadow': '0 24px 48px rgba(2, 8, 22, 0.45)', '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.18)',
         '--btn-glow': '0 10px 24px rgba(91, 231, 255, 0.35)'
       },
-      mistFog: {
+      ミストフォグ: {
         '--bg': '#e6e0d4', '--bg-grad-1': '#f1ebdf', '--bg-grad-2': '#d5ccbd', '--blob-1': 'rgba(145, 132, 111, 0.28)',
-        '--blob-2': 'rgba(110, 129, 106, 0.2)', '--panel': 'rgba(250, 245, 235, 0.42)', '--panel-strong': 'rgba(255, 250, 242, 0.58)',
+        '--blob-2': 'rgba(110, 129, 106, 0.2)', '--blob-shape-1': 'radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%)',
+        '--blob-shape-2': 'radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%)', '--panel': 'rgba(250, 245, 235, 0.42)', '--panel-strong': 'rgba(255, 250, 242, 0.58)',
         '--text': '#2f2a24', '--muted': '#6e6558', '--placeholder': 'rgba(85, 77, 66, 0.88)', '--line': 'rgba(255, 250, 240, 0.5)', '--btn-bg': 'rgba(92, 102, 82, 0.78)',
         '--btn-text': '#f6f4ef', '--accent': '#7d6f56', '--accent-2': '#7f9276', '--overlay': 'rgba(36, 31, 25, 0.34)', '--glass-shadow': '0 18px 34px rgba(60, 49, 35, 0.2)',
         '--glass-inset': 'inset 0 1px 0 rgba(255, 252, 246, 0.52)', '--btn-glow': '0 10px 22px rgba(110, 129, 106, 0.24)'
       },
-      light: {
+      ライト: {
         '--bg': '#f7f7f8', '--bg-grad-1': '#fdfdfe', '--bg-grad-2': '#edf0f6', '--blob-1': 'rgba(182, 193, 214, 0.42)',
-        '--blob-2': 'rgba(149, 160, 186, 0.3)', '--panel': 'rgba(255, 255, 255, 0.42)', '--panel-strong': 'rgba(255, 255, 255, 0.56)',
+        '--blob-2': 'rgba(149, 160, 186, 0.3)', '--blob-shape-1': 'radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%)',
+        '--blob-shape-2': 'radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%)', '--panel': 'rgba(255, 255, 255, 0.42)', '--panel-strong': 'rgba(255, 255, 255, 0.56)',
         '--text': '#1a1a1a', '--muted': '#6b7280', '--placeholder': 'rgba(75, 85, 99, 0.92)', '--line': 'rgba(255, 255, 255, 0.48)', '--btn-bg': 'rgba(20, 27, 42, 0.72)',
         '--btn-text': '#ffffff', '--accent': '#2563eb', '--accent-2': '#60a5fa', '--overlay': 'rgba(9, 11, 19, 0.35)', '--glass-shadow': '0 18px 36px rgba(17, 24, 39, 0.18)',
         '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.45)', '--btn-glow': '0 10px 24px rgba(37, 99, 235, 0.28)'
       },
-      dark: {
+      ダーク: {
         '--bg': '#111318', '--bg-grad-1': '#161b25', '--bg-grad-2': '#0e1219', '--blob-1': 'rgba(101, 124, 163, 0.32)',
-        '--blob-2': 'rgba(75, 105, 143, 0.24)', '--panel': 'rgba(38, 45, 61, 0.46)', '--panel-strong': 'rgba(45, 54, 72, 0.6)',
+        '--blob-2': 'rgba(75, 105, 143, 0.24)', '--blob-shape-1': 'radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%)',
+        '--blob-shape-2': 'radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%)', '--panel': 'rgba(38, 45, 61, 0.46)', '--panel-strong': 'rgba(45, 54, 72, 0.6)',
         '--text': '#e5e7eb', '--muted': '#9ca3af', '--placeholder': 'rgba(214, 224, 240, 0.86)', '--line': 'rgba(183, 197, 221, 0.22)', '--btn-bg': 'rgba(227, 234, 245, 0.74)',
         '--btn-text': '#111827', '--accent': '#60a5fa', '--accent-2': '#93c5fd', '--overlay': 'rgba(0, 0, 0, 0.55)', '--glass-shadow': '0 22px 42px rgba(0, 0, 0, 0.45)',
         '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.14)', '--btn-glow': '0 10px 24px rgba(96, 165, 250, 0.28)'
       },
-      icebergLight: {
+      アイスバーグライト: {
         '--bg': '#e8eef5', '--bg-grad-1': '#f2f7fc', '--bg-grad-2': '#dce6f2', '--blob-1': 'rgba(157, 183, 211, 0.4)',
-        '--blob-2': 'rgba(133, 161, 193, 0.34)', '--panel': 'rgba(246, 251, 255, 0.44)', '--panel-strong': 'rgba(252, 254, 255, 0.58)',
+        '--blob-2': 'rgba(133, 161, 193, 0.34)', '--blob-shape-1': 'radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%)',
+        '--blob-shape-2': 'radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%)', '--panel': 'rgba(246, 251, 255, 0.44)', '--panel-strong': 'rgba(252, 254, 255, 0.58)',
         '--text': '#1f2d3d', '--muted': '#607186', '--placeholder': 'rgba(72, 91, 114, 0.9)', '--line': 'rgba(255, 255, 255, 0.5)', '--btn-bg': 'rgba(62, 126, 182, 0.76)',
         '--btn-text': '#ffffff', '--accent': '#2c5f8f', '--accent-2': '#5f8fc2', '--overlay': 'rgba(34, 55, 78, 0.32)', '--glass-shadow': '0 18px 34px rgba(44, 77, 110, 0.22)',
         '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.5)', '--btn-glow': '0 10px 24px rgba(44, 95, 143, 0.26)'
       },
-      icebergDark: {
+      アイスバーグダーク: {
         '--bg': '#161821', '--bg-grad-1': '#1d2232', '--bg-grad-2': '#131620', '--blob-1': 'rgba(141, 160, 189, 0.28)',
-        '--blob-2': 'rgba(167, 180, 201, 0.22)', '--panel': 'rgba(34, 40, 58, 0.46)', '--panel-strong': 'rgba(43, 51, 72, 0.62)',
+        '--blob-2': 'rgba(167, 180, 201, 0.22)', '--blob-shape-1': 'radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%)',
+        '--blob-shape-2': 'radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%)', '--panel': 'rgba(34, 40, 58, 0.46)', '--panel-strong': 'rgba(43, 51, 72, 0.62)',
         '--text': '#c6c8d1', '--muted': '#8e95b5', '--placeholder': 'rgba(199, 209, 228, 0.84)', '--line': 'rgba(201, 210, 228, 0.24)', '--btn-bg': 'rgba(132, 160, 198, 0.78)',
         '--btn-text': '#161821', '--accent': '#a093c7', '--accent-2': '#8ab7df', '--overlay': 'rgba(0, 0, 0, 0.6)', '--glass-shadow': '0 24px 44px rgba(0, 0, 0, 0.48)',
         '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.16)', '--btn-glow': '0 10px 24px rgba(160, 147, 199, 0.26)'
+      },
+      スチールライト: {
+        '--bg': '#c7ccd3', '--bg-grad-1': '#eef1f4', '--bg-grad-2': '#aeb5be', '--blob-1': 'rgba(255, 255, 255, 0.5)',
+        '--blob-2': 'rgba(60, 67, 77, 0.2)', '--blob-shape-1': 'linear-gradient(45deg, transparent 46%, rgba(255,255,255,0.65) 49%, transparent 52%), linear-gradient(-45deg, transparent 46%, rgba(128,136,146,0.35) 49%, transparent 52%), radial-gradient(circle at 32% 32%, rgba(255,255,255,0.35), transparent 70%)',
+        '--blob-shape-2': 'linear-gradient(45deg, transparent 47%, rgba(234,238,244,0.5) 50%, transparent 53%), linear-gradient(-45deg, transparent 47%, rgba(111,120,131,0.28) 50%, transparent 53%), radial-gradient(circle at 52% 40%, rgba(255,255,255,0.22), transparent 72%)',
+        '--panel': 'rgba(248, 250, 252, 0.42)', '--panel-strong': 'rgba(255, 255, 255, 0.58)', '--text': '#1d232b',
+        '--muted': '#4b5561', '--placeholder': 'rgba(55, 65, 76, 0.88)', '--line': 'rgba(255, 255, 255, 0.58)', '--btn-bg': 'rgba(58, 65, 74, 0.82)',
+        '--btn-text': '#f7fafc', '--accent': '#59636f', '--accent-2': '#8f99a5', '--overlay': 'rgba(21, 27, 35, 0.38)',
+        '--glass-shadow': '0 20px 38px rgba(23, 30, 39, 0.24)', '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.62)', '--btn-glow': '0 10px 22px rgba(70, 78, 89, 0.28)'
+      },
+      スチールダーク: {
+        '--bg': '#2d323a', '--bg-grad-1': '#434a54', '--bg-grad-2': '#1f232a', '--blob-1': 'rgba(215, 223, 233, 0.24)',
+        '--blob-2': 'rgba(120, 129, 141, 0.2)', '--blob-shape-1': 'linear-gradient(45deg, transparent 45%, rgba(208,216,227,0.28) 49%, transparent 53%), linear-gradient(-45deg, transparent 45%, rgba(84,92,103,0.4) 49%, transparent 53%), radial-gradient(circle at 35% 30%, rgba(196,204,214,0.18), transparent 72%)',
+        '--blob-shape-2': 'linear-gradient(45deg, transparent 46%, rgba(186,194,205,0.22) 50%, transparent 54%), linear-gradient(-45deg, transparent 46%, rgba(72,79,89,0.42) 50%, transparent 54%), radial-gradient(circle at 55% 45%, rgba(192,200,211,0.14), transparent 74%)',
+        '--panel': 'rgba(58, 65, 75, 0.5)', '--panel-strong': 'rgba(74, 82, 95, 0.64)', '--text': '#e7ebf0',
+        '--muted': '#adb4bf', '--placeholder': 'rgba(223, 230, 240, 0.84)', '--line': 'rgba(213, 220, 231, 0.24)', '--btn-bg': 'rgba(226, 233, 243, 0.76)',
+        '--btn-text': '#1f252d', '--accent': '#9ea7b4', '--accent-2': '#77808d', '--overlay': 'rgba(4, 6, 9, 0.56)',
+        '--glass-shadow': '0 24px 44px rgba(0, 0, 0, 0.5)', '--glass-inset': 'inset 0 1px 0 rgba(240, 245, 252, 0.18)', '--btn-glow': '0 10px 24px rgba(127, 138, 151, 0.32)'
       }
     };
 
@@ -963,7 +991,7 @@
     });
 
     function applyTheme(mode) {
-      const vars = THEMES[mode] || THEMES.auroraGlass;
+      const vars = THEMES[mode] || THEMES.オーロラガラス;
       for (const [k, v] of Object.entries(vars)) {
         document.documentElement.style.setProperty(k, v);
       }
@@ -991,7 +1019,7 @@
 
     function loadSettings() {
       const defaults = {
-        colorMode: 'auroraGlass',
+        colorMode: 'オーロラガラス',
         fontPreset: "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace",
         fontCustom: '',
         taskRatio: 50
@@ -1051,7 +1079,7 @@
     });
 
     const settings = loadSettings();
-    colorModeEl.value = THEMES[settings.colorMode] ? settings.colorMode : 'auroraGlass';
+    colorModeEl.value = THEMES[settings.colorMode] ? settings.colorMode : 'オーロラガラス';
     fontCustomEl.value = settings.fontCustom;
     const presetExists = Array.from(fontPresetEl.options).some((o) => o.value === settings.fontPreset);
     fontPresetEl.value = presetExists ? settings.fontPreset : fontPresetEl.options[0].value;
