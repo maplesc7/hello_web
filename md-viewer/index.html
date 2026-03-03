@@ -440,9 +440,77 @@
     }
     button:hover { filter: brightness(1.05); }
 
+    .workspace {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 0 20px 24px 0;
+    }
+    .outline-panel {
+      position: sticky;
+      top: 70px;
+      flex: 0 0 300px;
+      width: 300px;
+      margin-left: -22px;
+      z-index: 3;
+    }
+    .outline-panel-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 18px 42px rgba(16, 26, 42, 0.2);
+      padding: 18px 14px;
+      max-height: calc(100vh - 92px);
+      overflow: auto;
+      transform: translateX(14px);
+      transition: all var(--motion-speed) ease;
+    }
+    .outline-title {
+      margin: 0 0 10px;
+      font-family: var(--font-head);
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      color: color-mix(in srgb, var(--accent) 55%, var(--text) 45%);
+    }
+    .outline-empty {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    .outline-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .outline-item {
+      margin: 2px 0;
+    }
+    .outline-link {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 13px;
+      line-height: 1.45;
+      cursor: pointer;
+      transition: background-color var(--motion-speed) ease, color var(--motion-speed) ease;
+      display: block;
+    }
+    .outline-link:hover {
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+    }
+    .outline-link.level-1 { color: color-mix(in srgb, #d86060 72%, var(--text) 28%); }
+    .outline-link.level-2 { color: color-mix(in srgb, #4f85d6 72%, var(--text) 28%); }
+    .outline-link.level-3 { color: color-mix(in srgb, #45a568 72%, var(--text) 28%); }
+    .outline-link.level-4 { color: color-mix(in srgb, #b6932f 72%, var(--text) 28%); }
+
     .container {
+      flex: 1 1 auto;
       max-width: var(--content-width);
-      margin: 28px auto;
+      margin: 28px auto 0;
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: 14px;
@@ -450,6 +518,43 @@
       padding: var(--content-padding);
       min-height: 55vh;
       transition: all var(--motion-speed) ease;
+    }
+
+    @media (max-width: 1080px) {
+      .workspace {
+        gap: 12px;
+        padding-right: 10px;
+      }
+      .outline-panel {
+        flex-basis: 250px;
+        width: 250px;
+        margin-left: -14px;
+      }
+      .outline-panel-card {
+        transform: translateX(8px);
+        max-height: calc(100vh - 84px);
+      }
+      .container {
+        margin-top: 20px;
+      }
+    }
+    @media (max-width: 760px) {
+      .workspace {
+        gap: 8px;
+      }
+      .outline-panel {
+        flex-basis: 190px;
+        width: 190px;
+        margin-left: -10px;
+      }
+      .outline-panel-card {
+        transform: translateX(6px);
+        padding: 12px 9px;
+      }
+      .outline-link {
+        font-size: 12px;
+        padding: 5px 6px;
+      }
     }
 
     h1, h2, h3, h4, h5, h6 {
@@ -547,14 +652,16 @@
     body[data-theme$="-motion"] button:active {
       transform: scale(0.98);
     }
-    body[data-theme$="-motion"] .container {
+    body[data-theme$="-motion"] .container,
+    body[data-theme$="-motion"] .outline-panel-card {
       box-shadow: 0 22px 46px rgba(72, 36, 40, 0.28);
     }
     body[data-theme$="-motion"] h2 {
       border-bottom-width: 2px;
     }
 
-    body[data-theme$="-editorial"] .container {
+    body[data-theme$="-editorial"] .container,
+    body[data-theme$="-editorial"] .outline-panel-card {
       border-radius: 6px;
       box-shadow: 0 18px 38px rgba(56, 40, 22, 0.26);
     }
@@ -573,7 +680,8 @@
       color: var(--accent);
     }
 
-    body[data-theme$="-grain"] .container {
+    body[data-theme$="-grain"] .container,
+    body[data-theme$="-grain"] .outline-panel-card {
       border-style: dashed;
       border-width: 1px;
       box-shadow: 0 16px 34px rgba(40, 46, 58, 0.22);
@@ -602,7 +710,8 @@
       font-weight: 600;
     }
 
-    body[data-theme$="-reading"] .container {
+    body[data-theme$="-reading"] .container,
+    body[data-theme$="-reading"] .outline-panel-card {
       border-radius: 10px;
       box-shadow: 0 20px 40px rgba(24, 24, 24, 0.24);
       border-left: 4px solid var(--line);
@@ -710,7 +819,8 @@
         --field-text: #111111;
         color: var(--text);
       }
-      .toolbar, .modal { display: none !important; }
+      .toolbar, .modal, .outline-panel { display: none !important; }
+      .workspace { display: block; padding: 0; }
       .container {
         margin: 0;
         border: none;
@@ -744,12 +854,23 @@
     </div>
   </div>
 
-  <main id="content" class="container initial-clickable">
-    <div class="empty">
-      <p>Markdownファイルを選択するとここに表示されます。</p>
-      <p>最初に「Markdownを選択」を押すか、ページへドラッグ＆ドロップしてください（.md/.markdown/.txt）。</p>
-    </div>
-  </main>
+  <div class="workspace">
+    <aside class="outline-panel" aria-label="アウトライン">
+      <div class="outline-panel-card">
+        <h2 class="outline-title">アウトライン</h2>
+        <nav id="outlineNav">
+          <p class="outline-empty">Markdown読込後に見出しを表示します。</p>
+        </nav>
+      </div>
+    </aside>
+
+    <main id="content" class="container initial-clickable">
+      <div class="empty">
+        <p>Markdownファイルを選択するとここに表示されます。</p>
+        <p>最初に「Markdownを選択」を押すか、ページへドラッグ＆ドロップしてください（.md/.markdown/.txt）。</p>
+      </div>
+    </main>
+  </div>
 
   <div id="themeModal" class="modal" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
@@ -809,6 +930,7 @@
     const chooseFileBtnEl = document.getElementById("chooseFileBtn");
     const fileNameEl = document.getElementById("fileName");
     const contentEl = document.getElementById("content");
+    const outlineNavEl = document.getElementById("outlineNav");
     const themeBtnEl = document.getElementById("themeBtn");
     const downloadHtmlBtnEl = document.getElementById("downloadHtmlBtn");
     const printBtnEl = document.getElementById("printBtn");
@@ -854,6 +976,8 @@
         text: "行長を抑え、行間を深く取り、長時間の精読に合わせた集中読書スタイルです。"
       }
     };
+
+    const PLAIN_TEXT_HYPHEN_TOKEN = "__MDV_PLAIN_HYPHEN__";
 
     function escapeHtml(text) {
       return text
@@ -1019,6 +1143,15 @@
           continue;
         }
 
+        const plainHyphenLine = line.match(/^(\s*)__MDV_PLAIN_HYPHEN__(.*)$/);
+        if (plainHyphenLine) {
+          closeAllLists();
+          closeQuote();
+          out.push(`<p>${inlineFormat(`${plainHyphenLine[1]}- ${plainHyphenLine[2]}`)}</p>`);
+          i += 1;
+          continue;
+        }
+
         if (i + 1 < lines.length && line.includes("|") && isTableSeparatorLine(lines[i + 1])) {
           closeAllLists();
           closeQuote();
@@ -1082,6 +1215,38 @@
       if (inCode) out.push("</code></pre>");
       return out.join("\n");
     }
+    function normalizeGoogleDocsMarkdown(text) {
+      let normalized = text.replace(/\r\n?/g, "\n");
+      normalized = normalized.replace(/^(\s*)\\-\s+(.*)$/gm, `$1${PLAIN_TEXT_HYPHEN_TOKEN}$2`);
+      normalized = normalized.replace(/\\([\\`*_{}\[\]()#+\-.!|])/g, "$1");
+      return normalized;
+    }
+
+    function buildOutline() {
+      const headings = Array.from(contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6"));
+      if (headings.length === 0) {
+        outlineNavEl.innerHTML = '<p class="outline-empty">見出しが見つかりません。</p>';
+        return;
+      }
+
+      const countsByBase = new Map();
+      const listItems = headings.map((heading, index) => {
+        const text = (heading.textContent || "").trim() || `見出し ${index + 1}`;
+        const level = Number(heading.tagName.slice(1));
+        if (!heading.id) {
+          const baseId = `mdv-heading-${index + 1}`;
+          const used = countsByBase.get(baseId) || 0;
+          countsByBase.set(baseId, used + 1);
+          heading.id = used === 0 ? baseId : `${baseId}-${used + 1}`;
+        }
+        const safeText = escapeHtml(text);
+        const indentPx = Math.max(0, (level - 1) * 14);
+        return `<li class="outline-item"><button class="outline-link level-${level}" type="button" data-target-id="${heading.id}" style="padding-left:${8 + indentPx}px">${safeText}</button></li>`;
+      }).join("\n");
+
+      outlineNavEl.innerHTML = `<ul class="outline-list">${listItems}</ul>`;
+    }
+
     function composeThemeId() {
       return `${currentMode}-${currentStyle}`;
     }
@@ -1158,8 +1323,10 @@
 
     async function loadSelectedMarkdownFile(file) {
       const text = await file.text();
-      const html = markdownToHtml(text);
+      const normalizedText = normalizeGoogleDocsMarkdown(text);
+      const html = markdownToHtml(normalizedText);
       contentEl.innerHTML = html;
+      buildOutline();
       contentEl.classList.remove("initial-clickable");
       document.body.classList.remove("drag-over-active");
       currentBaseName = getBaseNameFromFileName(file.name);
@@ -1248,6 +1415,15 @@ ${pageBody}
       if (ev.target === themeModalEl) closeThemeModal();
     });
     downloadHtmlBtnEl.addEventListener("click", downloadCurrentHtml);
+    outlineNavEl.addEventListener("click", (ev) => {
+      const trigger = ev.target.closest("button[data-target-id]");
+      if (!trigger) return;
+      const targetId = trigger.getAttribute("data-target-id");
+      if (!targetId) return;
+      const targetHeading = document.getElementById(targetId);
+      if (!targetHeading) return;
+      targetHeading.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     window.addEventListener("beforeprint", handleBeforePrint);
     window.addEventListener("afterprint", handleAfterPrint);
     printBtnEl.addEventListener("click", () => window.print());
@@ -1273,7 +1449,11 @@ ${pageBody}
       setDefaultThemeBySystem();
     }
     applyTheme();
+    buildOutline();
   </script>
 </body>
 </html>
+
+
+
 
