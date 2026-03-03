@@ -11,18 +11,20 @@
 
 - `glassmorphism/`
   - グラスモーフィズム表現のデザインサンプル
-  - `index.html` / `spec.md`
   - ▶ 公開ページ: https://hello-web-er0.pages.dev/glassmorphism/
 
 - `timer/`
   - Monolith Timer（単体で動くカウントダウンタイマー）
-  - `index.html` / `spec.md`
   - ▶ 公開ページ: https://hello-web-er0.pages.dev/timer/
 
 - `tasks/`
   - 時刻自動記録型のタスクログ UI
-  - `index.html` / `spec.md`
   - ▶ 公開ページ: https://hello-web-er0.pages.dev/tasks/
+
+- `md-viewer`/
+  - Markdown / TXT を読み込んで見やすく表示するビューア
+  - デザイン切替（スタイル×ライト/ダーク）、PDF保存（印刷）、初回全画面ドラッグ&ドロップ対応
+  - ▶ 公開ページ: https://hello-web-er0.pages.dev/md-viewer/
 
 ## 方針
 
