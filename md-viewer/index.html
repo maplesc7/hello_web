@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markdown Viewer</title>
+  <style>
+    :root {
+      --bg-top: #f7fbff;
+      --bg-bottom: #edf2f8;
+      --paper: #ffffff;
+      --text: #1f2a37;
+      --accent: #0b6bcb;
+      --line: #d7e1ed;
+      --code-bg: #f2f6fb;
+      --quote-bg: #f7fbff;
+      --quote-line: #9fc3e7;
+      --th-bg: #f4f8fd;
+      --toolbar-bg: rgba(247, 251, 255, 0.88);
+      --toolbar-text: #2c3e53;
+      --toolbar-border: #d7e1ed;
+      --button-border: #0a5db3;
+      --button-text: #ffffff;
+      --font-body: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --content-width: 920px;
+      --content-padding: 34px 38px;
+      --field-bg: #ffffff;
+      --field-text: #1f2a37;
+      --motion-speed: 180ms;
+      --page-overlay: none;
+      --page-overlay-opacity: 0;
+      --body-line-height: 1.9;
+    }
+
+    body[data-theme^="light-"] {
+      --bg-top: #f7fbff;
+      --bg-bottom: #edf2f8;
+      --paper: #ffffff;
+      --text: #1f2a37;
+      --accent: #0b6bcb;
+      --line: #d7e1ed;
+      --code-bg: #f2f6fb;
+      --quote-bg: #f7fbff;
+      --quote-line: #9fc3e7;
+      --th-bg: #f4f8fd;
+      --toolbar-bg: rgba(247, 251, 255, 0.88);
+      --toolbar-text: #2c3e53;
+      --toolbar-border: #d7e1ed;
+      --button-border: #0a5db3;
+      --button-text: #ffffff;
+      --font-body: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --content-width: 920px;
+      --content-padding: 34px 38px;
+      --field-bg: #ffffff;
+      --field-text: #1f2a37;
+      --motion-speed: 180ms;
+      --page-overlay: none;
+      --page-overlay-opacity: 0;
+      --body-line-height: 1.9;
+    }
+
+    body[data-theme^="dark-"] {
+      --bg-top: #131922;
+      --bg-bottom: #0d1118;
+      --paper: #171f2a;
+      --text: #e4ebf4;
+      --accent: #5aa2ff;
+      --line: #2a3a4e;
+      --code-bg: #0f1722;
+      --quote-bg: #152130;
+      --quote-line: #5f9ee2;
+      --th-bg: #1d2a3b;
+      --toolbar-bg: rgba(17, 24, 34, 0.9);
+      --toolbar-text: #d4dfeb;
+      --toolbar-border: #2a3a4e;
+      --button-border: #3f7fcb;
+      --button-text: #ffffff;
+      --font-body: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --content-width: 920px;
+      --content-padding: 34px 38px;
+      --field-bg: #1b2738;
+      --field-text: #e4ebf4;
+      --motion-speed: 180ms;
+      --page-overlay: none;
+      --page-overlay-opacity: 0;
+      --body-line-height: 1.9;
+    }
+
+    body[data-theme$="-focus"] {
+      --content-width: 980px;
+      --content-padding: 34px 44px;
+      --font-body: "Verdana", "Yu Gothic UI", Meiryo, sans-serif;
+      --font-head: "Trebuchet MS", "Yu Gothic UI", Meiryo, sans-serif;
+    }
+    body[data-theme="light-focus"] {
+      --bg-top: #f1f7f6;
+      --bg-bottom: #e5efee;
+      --paper: #fcfffe;
+      --text: #1d3432;
+      --accent: #176d63;
+      --line: #c9deda;
+      --code-bg: #edf6f5;
+      --quote-bg: #eef7f6;
+      --quote-line: #62a89f;
+      --th-bg: #edf8f6;
+      --toolbar-bg: rgba(241, 247, 246, 0.9);
+      --toolbar-text: #224543;
+      --toolbar-border: #c9deda;
+      --button-border: #14584f;
+      --field-bg: #ffffff;
+      --field-text: #1d3432;
+    }
+    body[data-theme="dark-focus"] {
+      --bg-top: #0f1b1a;
+      --bg-bottom: #0a1212;
+      --paper: #142422;
+      --text: #dbefed;
+      --accent: #37b6a6;
+      --line: #295250;
+      --code-bg: #0d1b1a;
+      --quote-bg: #132826;
+      --quote-line: #59b2a8;
+      --th-bg: #1a322f;
+      --toolbar-bg: rgba(15, 27, 26, 0.92);
+      --toolbar-text: #cde5e2;
+      --toolbar-border: #295250;
+      --button-border: #2f988c;
+      --field-bg: #17312f;
+      --field-text: #dbefed;
+    }
+
+    body[data-theme$="-aurora"] {
+      --content-padding: 36px 40px;
+      --motion-speed: 230ms;
+    }
+    body[data-theme="light-aurora"] {
+      --bg-top: #eef7ff;
+      --bg-bottom: #f0f0ff;
+      --paper: rgba(255, 255, 255, 0.88);
+      --text: #213049;
+      --accent: #2976cf;
+      --line: #cad9ee;
+      --code-bg: #eef4ff;
+      --quote-bg: #f2f7ff;
+      --quote-line: #8ab5f2;
+      --th-bg: #edf4ff;
+      --toolbar-bg: rgba(244, 250, 255, 0.74);
+      --toolbar-text: #284463;
+      --toolbar-border: #c7d7eb;
+      --button-border: #2562ad;
+      --field-bg: rgba(255, 255, 255, 0.92);
+      --field-text: #213049;
+    }
+    body[data-theme="dark-aurora"] {
+      --bg-top: #101a2c;
+      --bg-bottom: #121022;
+      --paper: rgba(19, 29, 47, 0.86);
+      --text: #dce8fb;
+      --accent: #72a9ff;
+      --line: #31486a;
+      --code-bg: #111b2d;
+      --quote-bg: #17263c;
+      --quote-line: #6fa2ec;
+      --th-bg: #1a2c45;
+      --toolbar-bg: rgba(13, 21, 36, 0.76);
+      --toolbar-text: #cfdef6;
+      --toolbar-border: #2d4465;
+      --button-border: #5a8dd8;
+      --field-bg: rgba(27, 39, 60, 0.94);
+      --field-text: #dce8fb;
+    }
+
+    body[data-theme$="-motion"] {
+      --motion-speed: 110ms;
+      --content-padding: 34px 42px;
+    }
+    body[data-theme="light-motion"] {
+      --bg-top: #fff8f2;
+      --bg-bottom: #f4f7ff;
+      --paper: #fffefd;
+      --text: #2f2a38;
+      --accent: #f05a42;
+      --line: #e5d9d5;
+      --code-bg: #fff3ef;
+      --quote-bg: #fff6f2;
+      --quote-line: #f39080;
+      --th-bg: #fff2ec;
+      --toolbar-bg: rgba(255, 248, 243, 0.9);
+      --toolbar-text: #473a45;
+      --toolbar-border: #e9d7cf;
+      --button-border: #d24b35;
+      --field-bg: #ffffff;
+      --field-text: #332b39;
+    }
+    body[data-theme="dark-motion"] {
+      --bg-top: #221515;
+      --bg-bottom: #17131e;
+      --paper: #221e2d;
+      --text: #f6e7e3;
+      --accent: #ff7e67;
+      --line: #4f3940;
+      --code-bg: #1a1623;
+      --quote-bg: #2a1f2b;
+      --quote-line: #ff9d8d;
+      --th-bg: #2a222f;
+      --toolbar-bg: rgba(31, 22, 30, 0.92);
+      --toolbar-text: #f3dbd4;
+      --toolbar-border: #503840;
+      --button-border: #dd6f5c;
+      --field-bg: #2c2130;
+      --field-text: #f6e7e3;
+    }
+
+    body[data-theme$="-editorial"] {
+      --font-body: "Yu Mincho", "Hiragino Mincho ProN", serif;
+      --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --content-width: 920px;
+      --body-line-height: 2;
+    }
+    body[data-theme="light-editorial"] {
+      --bg-top: #fbf8f4;
+      --bg-bottom: #f2ece3;
+      --paper: #fffdf9;
+      --text: #2f2a24;
+      --accent: #8f5d20;
+      --line: #e8dcc9;
+      --code-bg: #f8f1e8;
+      --quote-bg: #fbf4ea;
+      --quote-line: #cda878;
+      --th-bg: #f7efdf;
+      --toolbar-bg: rgba(251, 247, 240, 0.92);
+      --toolbar-text: #4b3f33;
+      --toolbar-border: #e8dcc9;
+      --button-border: #764d1b;
+      --field-bg: #fffdf9;
+      --field-text: #2f2a24;
+    }
+    body[data-theme="dark-editorial"] {
+      --bg-top: #1d1813;
+      --bg-bottom: #15110d;
+      --paper: #241d16;
+      --text: #f1e6d7;
+      --accent: #d79a4b;
+      --line: #4d3d2d;
+      --code-bg: #1b140f;
+      --quote-bg: #2a2118;
+      --quote-line: #bf9158;
+      --th-bg: #2d241a;
+      --toolbar-bg: rgba(31, 24, 18, 0.92);
+      --toolbar-text: #eadac5;
+      --toolbar-border: #4d3d2d;
+      --button-border: #b8813d;
+      --field-bg: #2b2118;
+      --field-text: #f1e6d7;
+    }
+
+    body[data-theme$="-grain"] {
+      --page-overlay: radial-gradient(circle at 20% 20%, rgba(0, 0, 0, 0.035) 0, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+      --page-overlay-opacity: 0.3;
+    }
+    body[data-theme="light-grain"] {
+      --bg-top: #f8f7f4;
+      --bg-bottom: #efede8;
+      --paper: #fffefb;
+      --text: #2a3139;
+      --accent: #596a85;
+      --line: #d9dedf;
+      --code-bg: #f3f5f4;
+      --quote-bg: #f7f8f8;
+      --quote-line: #8d99ad;
+      --th-bg: #f2f5f6;
+      --toolbar-bg: rgba(247, 247, 244, 0.92);
+      --toolbar-text: #404a58;
+      --toolbar-border: #d7dddf;
+      --button-border: #4f6079;
+      --field-bg: #ffffff;
+      --field-text: #2a3139;
+    }
+    body[data-theme="dark-grain"] {
+      --bg-top: #141619;
+      --bg-bottom: #101114;
+      --paper: #1a1d22;
+      --text: #e2e7ed;
+      --accent: #8da0bc;
+      --line: #30353e;
+      --code-bg: #12151a;
+      --quote-bg: #1a1f27;
+      --quote-line: #7f8da1;
+      --th-bg: #202530;
+      --toolbar-bg: rgba(19, 21, 25, 0.92);
+      --toolbar-text: #d8dee7;
+      --toolbar-border: #323844;
+      --button-border: #70839f;
+      --field-bg: #20252d;
+      --field-text: #e2e7ed;
+    }
+
+    body[data-theme$="-adaptive"] {
+      --motion-speed: 150ms;
+    }
+    body[data-theme="light-adaptive"] {
+      --bg-top: #ffffff;
+      --bg-bottom: #eef2f8;
+      --paper: #ffffff;
+      --text: #131c2a;
+      --accent: #005ecb;
+      --code-bg: #eef4ff;
+      --quote-bg: #f2f7ff;
+      --quote-line: #4d8bda;
+      --th-bg: #edf3ff;
+      --toolbar-bg: rgba(255, 255, 255, 0.95);
+      --toolbar-text: #1c2d44;
+      --field-bg: #ffffff;
+      --field-text: #131c2a;
+    }
+    body[data-theme="dark-adaptive"] {
+      --bg-top: #0b1018;
+      --bg-bottom: #070a10;
+      --paper: #0f1622;
+      --text: #f5f8ff;
+      --accent: #5aa4ff;
+      --code-bg: #111b2a;
+      --quote-bg: #122033;
+      --quote-line: #6daeff;
+      --th-bg: #16243a;
+      --toolbar-bg: rgba(9, 14, 22, 0.95);
+      --toolbar-text: #e6efff;
+      --field-bg: #111b2a;
+      --field-text: #f5f8ff;
+    }
+
+    body[data-theme$="-reading"] {
+      --content-width: 920px;
+      --content-padding: 40px 42px;
+      --body-line-height: 2.05;
+      --font-body: "Yu Mincho", "Hiragino Mincho ProN", serif;
+      --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --motion-speed: 220ms;
+    }
+    body[data-theme="light-reading"] {
+      --bg-top: #fdfcf9;
+      --bg-bottom: #f3f1eb;
+      --paper: #fffefc;
+      --text: #2b2a26;
+      --accent: #6b6f76;
+      --line: #dfddd7;
+      --code-bg: #f6f4ee;
+      --quote-bg: #f7f5ef;
+      --quote-line: #a29e93;
+      --th-bg: #f6f3ec;
+      --toolbar-bg: rgba(253, 252, 249, 0.94);
+      --toolbar-text: #4a4842;
+      --toolbar-border: #e0ddd5;
+      --button-border: #5f6268;
+      --field-bg: #fffefc;
+      --field-text: #2b2a26;
+    }
+    body[data-theme="dark-reading"] {
+      --bg-top: #161513;
+      --bg-bottom: #11100f;
+      --paper: #1e1c1a;
+      --text: #efe9dd;
+      --accent: #b9b2a4;
+      --line: #3a3631;
+      --code-bg: #171513;
+      --quote-bg: #24211e;
+      --quote-line: #8f887a;
+      --th-bg: #262320;
+      --toolbar-bg: rgba(21, 19, 18, 0.94);
+      --toolbar-text: #e6ddd0;
+      --toolbar-border: #3a3631;
+      --button-border: #9f988b;
+      --field-bg: #25211e;
+      --field-text: #efe9dd;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: var(--body-line-height);
+      transition: background-color var(--motion-speed) ease, color var(--motion-speed) ease;
+      position: relative;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: var(--page-overlay);
+      background-size: 3px 3px;
+      opacity: var(--page-overlay-opacity);
+      z-index: -1;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+      background: var(--toolbar-bg);
+      color: var(--toolbar-text);
+      border-bottom: 1px solid var(--toolbar-border);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .theme-name {
+      font-size: 13px;
+      padding: 0 6px;
+      opacity: 0.95;
+    }
+    .filename {
+      font-size: 13px;
+      opacity: 0.95;
+    }
+
+    button {
+      border: 1px solid var(--button-border);
+      background: var(--accent);
+      color: var(--button-text);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.05); }
+
+    .container {
+      max-width: var(--content-width);
+      margin: 28px auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 18px 42px rgba(16, 26, 42, 0.2);
+      padding: var(--content-padding);
+      min-height: 55vh;
+      transition: all var(--motion-speed) ease;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-head);
+      line-height: 1.35;
+      margin-top: 1.4em;
+      margin-bottom: 0.55em;
+    }
+    h1 { font-size: 2rem; border-bottom: 2px solid var(--line); padding-bottom: .35em; }
+    h2 { font-size: 1.55rem; border-bottom: 1px solid var(--line); padding-bottom: .25em; }
+    h3 { font-size: 1.25rem; }
+    p { margin: .75em 0; }
+    ul, ol { padding-left: 1.45em; }
+    li { margin: .35em 0; }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      background: var(--code-bg);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 0.14em 0.34em;
+      font-size: .95em;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      overflow-x: auto;
+    }
+    pre code {
+      border: none;
+      background: transparent;
+      padding: 0;
+      font-size: .92em;
+    }
+
+    blockquote {
+      margin: 1.1em 0;
+      padding: .25em 1em;
+      border-left: 4px solid var(--quote-line);
+      background: var(--quote-bg);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .5em .65em;
+      text-align: left;
+    }
+    th { background: var(--th-bg); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .empty {
+      color: #5d6c7b;
+      text-align: center;
+      margin: 6rem 0;
+    }
+    .container.initial-clickable {
+      cursor: pointer;
+    }
+    .container.initial-clickable:hover {
+      box-shadow: 0 22px 46px rgba(16, 26, 42, 0.24);
+    }
+    body.drag-over-active .container {
+      outline: 2px dashed var(--accent);
+      outline-offset: 6px;
+    }
+
+    body[data-theme$="-aurora"] .container {
+      backdrop-filter: blur(12px) saturate(1.05);
+      border: 1px solid rgba(126, 166, 225, 0.55);
+      box-shadow: 0 22px 46px rgba(34, 73, 130, 0.24);
+    }
+    body[data-theme$="-aurora"] h1 {
+      background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #ff7fbd 45%));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      border-bottom: 1px solid var(--line);
+    }
+    body[data-theme$="-aurora"] .toolbar {
+      backdrop-filter: blur(18px) saturate(1.06);
+    }
+
+    body[data-theme$="-motion"] button {
+      transition: transform var(--motion-speed) ease, filter var(--motion-speed) ease;
+    }
+    body[data-theme$="-motion"] button:hover {
+      transform: translateY(-1px) scale(1.01);
+    }
+    body[data-theme$="-motion"] button:active {
+      transform: scale(0.98);
+    }
+    body[data-theme$="-motion"] .container {
+      box-shadow: 0 22px 46px rgba(72, 36, 40, 0.28);
+    }
+    body[data-theme$="-motion"] h2 {
+      border-bottom-width: 2px;
+    }
+
+    body[data-theme$="-editorial"] .container {
+      border-radius: 6px;
+      box-shadow: 0 18px 38px rgba(56, 40, 22, 0.26);
+    }
+    body[data-theme$="-editorial"] h1,
+    body[data-theme$="-editorial"] h2 {
+      letter-spacing: 0.02em;
+      border-bottom-style: double;
+      border-bottom-width: 3px;
+    }
+    body[data-theme$="-editorial"] p:first-of-type::first-letter {
+      font-size: 2.1em;
+      line-height: 0.9;
+      float: left;
+      margin-right: 0.08em;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    body[data-theme$="-grain"] .container {
+      border-style: dashed;
+      border-width: 1px;
+      box-shadow: 0 16px 34px rgba(40, 46, 58, 0.22);
+    }
+    body[data-theme$="-grain"] table tbody tr:nth-child(even) td {
+      background: color-mix(in srgb, var(--th-bg) 35%, transparent);
+    }
+    body[data-theme$="-grain"] hr {
+      border: none;
+      border-top: 1px dashed var(--line);
+    }
+
+    body[data-theme$="-adaptive"] .container,
+    body[data-theme$="-adaptive"] th,
+    body[data-theme$="-adaptive"] td,
+    body[data-theme$="-adaptive"] code,
+    body[data-theme$="-adaptive"] pre {
+      border-width: 2px;
+    }
+    body[data-theme$="-adaptive"] a {
+      text-decoration: underline;
+      text-underline-offset: 0.18em;
+      font-weight: 600;
+    }
+    body[data-theme$="-adaptive"] button {
+      font-weight: 600;
+    }
+
+    body[data-theme$="-reading"] .container {
+      border-radius: 10px;
+      box-shadow: 0 20px 40px rgba(24, 24, 24, 0.24);
+      border-left: 4px solid var(--line);
+    }
+    body[data-theme$="-reading"] p,
+    body[data-theme$="-reading"] li {
+      font-size: 1.04rem;
+    }
+    body[data-theme$="-reading"] h1,
+    body[data-theme$="-reading"] h2,
+    body[data-theme$="-reading"] h3 {
+      margin-top: 1.65em;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(16, 24, 32, 0.38);
+      padding: 16px;
+    }
+    .modal.open { display: flex; }
+    .modal-card {
+      width: min(520px, 100%);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+      padding: 18px;
+    }
+    .modal-title {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
+      font-family: var(--font-head);
+    }
+    .modal-text {
+      margin: 0 0 14px;
+      font-size: 14px;
+    }
+    .modal-label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      opacity: 0.9;
+    }
+    .modal-select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 14px;
+      background: var(--field-bg);
+      color: var(--field-text);
+      margin-bottom: 14px;
+    }
+    .modal-select option {
+      background: var(--field-bg);
+      color: var(--field-text);
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .style-description {
+      border: 1px solid var(--line);
+      background: var(--code-bg);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+    .style-description-title {
+      margin: 0 0 5px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .style-description-text {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--line);
+    }
+
+    @media print {
+      @page { size: A4; margin: 14mm; }
+      body { background: #fff; }
+      .toolbar, .modal { display: none !important; }
+      .container {
+        margin: 0;
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        max-width: none;
+        padding: 0;
+      }
+      a { color: inherit; text-decoration: none; }
+      pre, blockquote, table { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light-clear">
+  <input id="mdFileInput" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden />
+
+  <div class="toolbar">
+    <div id="fileName" class="filename">読み込みファイル: 未選択</div>
+    <div class="toolbar-group">
+      <div id="themeName" class="theme-name">現在のデザイン: ライト・クリア</div>
+      <button id="chooseFileBtn" type="button">Markdownを選択</button>
+      <button id="themeBtn" type="button">デザイン変更</button>
+      <button id="downloadHtmlBtn" type="button">このHTMLを保存</button>
+      <button id="printBtn" type="button">PDFで保存（印刷機能）</button>
+    </div>
+  </div>
+
+  <main id="content" class="container initial-clickable">
+    <div class="empty">
+      <p>Markdownファイルを選択するとここに表示されます。</p>
+      <p>最初に「Markdownを選択」を押すか、ページへドラッグ＆ドロップしてください（.md/.markdown/.txt）。</p>
+    </div>
+  </main>
+
+  <div id="themeModal" class="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
+      <h2 id="themeModalTitle" class="modal-title">デザインを選択</h2>
+      <p class="modal-text">スタイルとモードを組み合わせてデザインを選択します。</p>
+      <label class="modal-label" for="styleSelect">スタイル</label>
+      <select id="styleSelect" class="modal-select">
+        <option value="clear">クリア</option>
+        <option value="focus">フォーカス</option>
+        <option value="aurora">オーロラ・グラス</option>
+        <option value="motion">モーション・アクセント</option>
+        <option value="editorial">エディトリアル</option>
+        <option value="grain">グレイン・テクスチャ</option>
+        <option value="adaptive">アダプティブ・コントラスト</option>
+        <option value="reading">フォーカス・リーディング</option>
+      </select>
+      <label class="modal-label" for="modeSelect">モード</label>
+      <select id="modeSelect" class="modal-select">
+        <option value="light">ライト</option>
+        <option value="dark">ダーク</option>
+      </select>
+      <div id="styleDescription" class="style-description" aria-live="polite">
+        <p id="styleDescriptionTitle" class="style-description-title">クリア</p>
+        <p id="styleDescriptionText" class="style-description-text">余計な装飾を抑え、情報を素直に読むための基準スタイルです。</p>
+      </div>
+      <div class="modal-actions">
+        <button id="closeThemeBtn" class="btn-secondary" type="button">閉じる</button>
+        <button id="applyThemeBtn" type="button">適用</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const themeStyles = [
+      { id: "clear", label: "クリア" },
+      { id: "focus", label: "フォーカス" },
+      { id: "aurora", label: "オーロラ・グラス" },
+      { id: "motion", label: "モーション・アクセント" },
+      { id: "editorial", label: "エディトリアル" },
+      { id: "grain", label: "グレイン・テクスチャ" },
+      { id: "adaptive", label: "アダプティブ・コントラスト" },
+      { id: "reading", label: "フォーカス・リーディング" },
+    ];
+    const themeModes = [
+      { id: "light", label: "ライト" },
+      { id: "dark", label: "ダーク" },
+    ];
+    const THEME_PREF_KEY = "md_viewer_theme_pref_v1";
+    const THEME_PREF_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+    let currentStyle = "clear";
+    let currentMode = "light";
+    let hasLoadedMarkdown = false;
+
+    const fileInputEl = document.getElementById("mdFileInput");
+    const chooseFileBtnEl = document.getElementById("chooseFileBtn");
+    const fileNameEl = document.getElementById("fileName");
+    const contentEl = document.getElementById("content");
+    const themeNameEl = document.getElementById("themeName");
+    const themeBtnEl = document.getElementById("themeBtn");
+    const downloadHtmlBtnEl = document.getElementById("downloadHtmlBtn");
+    const printBtnEl = document.getElementById("printBtn");
+    const themeModalEl = document.getElementById("themeModal");
+    const styleSelectEl = document.getElementById("styleSelect");
+    const modeSelectEl = document.getElementById("modeSelect");
+    const applyThemeBtnEl = document.getElementById("applyThemeBtn");
+    const closeThemeBtnEl = document.getElementById("closeThemeBtn");
+    const styleDescriptionTitleEl = document.getElementById("styleDescriptionTitle");
+    const styleDescriptionTextEl = document.getElementById("styleDescriptionText");
+
+    const styleDescriptions = {
+      clear: {
+        label: "クリア",
+        text: "余計な装飾を抑え、Markdownの構造を素直に追える標準スタイルです。"
+      },
+      focus: {
+        label: "フォーカス",
+        text: "余白と行送りを広めに取り、長文でも視線移動を安定させる読書寄りのスタイルです。"
+      },
+      aurora: {
+        label: "オーロラ・グラス",
+        text: "半透明レイヤーと柔らかな発光を使い、最新UIらしい奥行きと軽さを加えるスタイルです。"
+      },
+      motion: {
+        label: "モーション・アクセント",
+        text: "ホバーや押下の反応を明確にして、操作感とテンポの良さを強めるアクティブなスタイルです。"
+      },
+      editorial: {
+        label: "エディトリアル",
+        text: "タイポグラフィに強弱をつけ、雑誌的な見出しの存在感と読み物感を強めるスタイルです。"
+      },
+      grain: {
+        label: "グレイン・テクスチャ",
+        text: "微細な質感と穏やかなコントラストで、無機質さを抑えた落ち着いた紙面風スタイルです。"
+      },
+      adaptive: {
+        label: "アダプティブ・コントラスト",
+        text: "境界線と文字コントラストを強調し、表やコードを見落としにくくする視認性重視スタイルです。"
+      },
+      reading: {
+        label: "フォーカス・リーディング",
+        text: "行長を抑え、行間を深く取り、長時間の精読に合わせた集中読書スタイルです。"
+      }
+    };
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function inlineFormat(text) {
+      let escaped = escapeHtml(text);
+      escaped = escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+      escaped = escaped.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      escaped = escaped.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+      escaped = escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+      return escaped;
+    }
+
+    function isTableSeparatorLine(line) {
+      const stripped = line.trim();
+      if (!stripped.includes("|")) return false;
+      const cells = stripped.replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      if (cells.length === 0) return false;
+      return cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+    }
+
+    function splitTableRow(line) {
+      return line.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+    }
+
+    function convertTableBlock(lines, startIndex) {
+      const headerCells = splitTableRow(lines[startIndex]);
+      const alignCells = splitTableRow(lines[startIndex + 1]);
+      const aligns = alignCells.map((cell) => {
+        const left = cell.startsWith(":");
+        const right = cell.endsWith(":");
+        if (left && right) return "center";
+        if (right) return "right";
+        return "left";
+      });
+
+      let i = startIndex + 2;
+      const bodyRows = [];
+      while (i < lines.length) {
+        const row = lines[i].trim();
+        if (!row || !row.includes("|")) break;
+        bodyRows.push(splitTableRow(lines[i]));
+        i += 1;
+      }
+
+      const thead = headerCells
+        .map((cell, idx) => `<th style="text-align:${aligns[idx] || "left"}">${inlineFormat(cell)}</th>`)
+        .join("");
+      const tbody = bodyRows
+        .map((row) => {
+          const tds = row
+            .map((cell, idx) => `<td style="text-align:${aligns[idx] || "left"}">${inlineFormat(cell)}</td>`)
+            .join("");
+          return `<tr>${tds}</tr>`;
+        })
+        .join("");
+
+      return {
+        html: `<table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table>`,
+        nextIndex: i,
+      };
+    }
+
+    function markdownToHtml(text) {
+      const lines = text.split(/\r?\n/);
+      const out = [];
+      let i = 0;
+      let inCode = false;
+      let inUl = false;
+      let inOl = false;
+      let inBlockquote = false;
+
+      function closeLists() {
+        if (inUl) { out.push("</ul>"); inUl = false; }
+        if (inOl) { out.push("</ol>"); inOl = false; }
+      }
+      function closeQuote() {
+        if (inBlockquote) { out.push("</blockquote>"); inBlockquote = false; }
+      }
+
+      while (i < lines.length) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        if (trimmed.startsWith("```")) {
+          closeLists();
+          closeQuote();
+          if (!inCode) {
+            inCode = true;
+            out.push("<pre><code>");
+          } else {
+            inCode = false;
+            out.push("</code></pre>");
+          }
+          i += 1;
+          continue;
+        }
+        if (inCode) {
+          out.push(escapeHtml(line));
+          i += 1;
+          continue;
+        }
+
+        if (!trimmed) {
+          closeLists();
+          closeQuote();
+          out.push("");
+          i += 1;
+          continue;
+        }
+
+        if (i + 1 < lines.length && line.includes("|") && isTableSeparatorLine(lines[i + 1])) {
+          closeLists();
+          closeQuote();
+          const converted = convertTableBlock(lines, i);
+          out.push(converted.html);
+          i = converted.nextIndex;
+          continue;
+        }
+
+        const heading = line.match(/^(#{1,6})\s+(.*)$/);
+        if (heading) {
+          closeLists();
+          closeQuote();
+          const level = heading[1].length;
+          out.push(`<h${level}>${inlineFormat(heading[2])}</h${level}>`);
+          i += 1;
+          continue;
+        }
+
+        if (/^---+$/.test(trimmed)) {
+          closeLists();
+          closeQuote();
+          out.push("<hr />");
+          i += 1;
+          continue;
+        }
+
+        const ul = line.match(/^\s*[-*]\s+(.*)$/);
+        if (ul) {
+          closeQuote();
+          if (inOl) { out.push("</ol>"); inOl = false; }
+          if (!inUl) { out.push("<ul>"); inUl = true; }
+          out.push(`<li>${inlineFormat(ul[1])}</li>`);
+          i += 1;
+          continue;
+        }
+
+        const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+        if (ol) {
+          closeQuote();
+          if (inUl) { out.push("</ul>"); inUl = false; }
+          if (!inOl) { out.push("<ol>"); inOl = true; }
+          out.push(`<li>${inlineFormat(ol[1])}</li>`);
+          i += 1;
+          continue;
+        }
+
+        const quote = line.match(/^\s*>\s?(.*)$/);
+        if (quote) {
+          closeLists();
+          if (!inBlockquote) { out.push("<blockquote>"); inBlockquote = true; }
+          out.push(`<p>${inlineFormat(quote[1])}</p>`);
+          i += 1;
+          continue;
+        }
+
+        closeLists();
+        closeQuote();
+        out.push(`<p>${inlineFormat(line)}</p>`);
+        i += 1;
+      }
+
+      closeLists();
+      closeQuote();
+      if (inCode) out.push("</code></pre>");
+      return out.join("\n");
+    }
+
+    function composeThemeId() {
+      return `${currentMode}-${currentStyle}`;
+    }
+
+    function getModeLabel() {
+      const found = themeModes.find((item) => item.id === currentMode);
+      return found ? found.label : "ライト";
+    }
+
+    function getStyleLabel() {
+      const found = themeStyles.find((item) => item.id === currentStyle);
+      return found ? found.label : "クリア";
+    }
+
+    function applyTheme() {
+      document.body.setAttribute("data-theme", composeThemeId());
+      themeNameEl.textContent = `現在のデザイン: ${getModeLabel()}・${getStyleLabel()}`;
+      styleSelectEl.value = currentStyle;
+      modeSelectEl.value = currentMode;
+      renderStyleDescription();
+    }
+
+    function setDefaultThemeBySystem() {
+      const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      currentMode = isDark ? "dark" : "light";
+    }
+
+    function saveThemePreference() {
+      const payload = {
+        style: currentStyle,
+        mode: currentMode,
+        expiresAt: Date.now() + THEME_PREF_TTL_MS,
+      };
+      localStorage.setItem(THEME_PREF_KEY, JSON.stringify(payload));
+    }
+
+    function restoreThemePreference() {
+      const raw = localStorage.getItem(THEME_PREF_KEY);
+      if (!raw) return false;
+      try {
+        const payload = JSON.parse(raw);
+        if (!payload || typeof payload !== "object") return false;
+        if (typeof payload.expiresAt !== "number" || payload.expiresAt < Date.now()) {
+          localStorage.removeItem(THEME_PREF_KEY);
+          return false;
+        }
+        if (!themeStyles.some((item) => item.id === payload.style)) return false;
+        if (!themeModes.some((item) => item.id === payload.mode)) return false;
+        currentStyle = payload.style;
+        currentMode = payload.mode;
+        return true;
+      } catch {
+        localStorage.removeItem(THEME_PREF_KEY);
+        return false;
+      }
+    }
+
+    function openThemeModal() {
+      themeModalEl.classList.add("open");
+      themeModalEl.setAttribute("aria-hidden", "false");
+      renderStyleDescription();
+    }
+    function closeThemeModal() {
+      themeModalEl.classList.remove("open");
+      themeModalEl.setAttribute("aria-hidden", "true");
+    }
+    function applyThemeFromSelect() {
+      if (themeStyles.some((item) => item.id === styleSelectEl.value)) {
+        currentStyle = styleSelectEl.value;
+      }
+      if (themeModes.some((item) => item.id === modeSelectEl.value)) {
+        currentMode = modeSelectEl.value;
+      }
+      applyTheme();
+      saveThemePreference();
+      closeThemeModal();
+    }
+
+    function renderStyleDescription() {
+      const modeLabel = modeSelectEl.value === "dark" ? "ダーク" : "ライト";
+      const targetStyle = styleDescriptions[styleSelectEl.value] || styleDescriptions.clear;
+      styleDescriptionTitleEl.textContent = `${modeLabel}・${targetStyle.label}`;
+      styleDescriptionTextEl.textContent = targetStyle.text;
+    }
+
+    async function loadSelectedMarkdownFile(file) {
+      const text = await file.text();
+      const html = markdownToHtml(text);
+      contentEl.innerHTML = html;
+      contentEl.classList.remove("initial-clickable");
+      document.body.classList.remove("drag-over-active");
+      document.title = file.name;
+      fileNameEl.textContent = `読み込みファイル: ${file.name}`;
+      hasLoadedMarkdown = true;
+    }
+
+    function pickMarkdownFile(fileList) {
+      if (!fileList || fileList.length === 0) return null;
+      const files = Array.from(fileList);
+      return files.find((file) => {
+        const lower = (file.name || "").toLowerCase();
+        return lower.endsWith(".md") || lower.endsWith(".markdown") || lower.endsWith(".txt");
+      }) || null;
+    }
+
+    function downloadCurrentHtml() {
+      // 実行中DOMのスナップショットではなく、このページの元ファイル本体を保存する。
+      const sourceUrl = window.location.href;
+      const a = document.createElement("a");
+      a.href = sourceUrl;
+      a.download = "index.html";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    chooseFileBtnEl.addEventListener("click", () => {
+      fileInputEl.click();
+    });
+    fileInputEl.addEventListener("change", async () => {
+      const file = fileInputEl.files && fileInputEl.files[0];
+      if (!file) return;
+      await loadSelectedMarkdownFile(file);
+    });
+    contentEl.addEventListener("click", () => {
+      if (!hasLoadedMarkdown) fileInputEl.click();
+    });
+
+    themeBtnEl.addEventListener("click", openThemeModal);
+    applyThemeBtnEl.addEventListener("click", applyThemeFromSelect);
+    closeThemeBtnEl.addEventListener("click", closeThemeModal);
+    styleSelectEl.addEventListener("change", renderStyleDescription);
+    modeSelectEl.addEventListener("change", renderStyleDescription);
+    themeModalEl.addEventListener("click", (ev) => {
+      if (ev.target === themeModalEl) closeThemeModal();
+    });
+    downloadHtmlBtnEl.addEventListener("click", downloadCurrentHtml);
+    printBtnEl.addEventListener("click", () => window.print());
+
+    window.addEventListener("dragover", (ev) => {
+      ev.preventDefault();
+      document.body.classList.add("drag-over-active");
+    });
+    window.addEventListener("dragleave", (ev) => {
+      if (ev.relatedTarget == null) {
+        document.body.classList.remove("drag-over-active");
+      }
+    });
+    window.addEventListener("drop", async (ev) => {
+      ev.preventDefault();
+      document.body.classList.remove("drag-over-active");
+      const file = pickMarkdownFile(ev.dataTransfer && ev.dataTransfer.files);
+      if (!file) return;
+      await loadSelectedMarkdownFile(file);
+    });
+
+    if (!restoreThemePreference()) {
+      setDefaultThemeBySystem();
+    }
+    applyTheme();
+  </script>
+</body>
+</html>
