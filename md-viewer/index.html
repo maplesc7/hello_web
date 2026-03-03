@@ -696,7 +696,20 @@
 
     @media print {
       @page { size: A4; margin: 14mm; }
-      body { background: #fff; }
+      body {
+        background: #fff;
+        --paper: #ffffff;
+        --text: #111111;
+        --line: #d0d0d0;
+        --code-bg: #f5f5f5;
+        --quote-bg: #fafafa;
+        --quote-line: #9a9a9a;
+        --th-bg: #f2f2f2;
+        --accent: #0b57d0;
+        --field-bg: #ffffff;
+        --field-text: #111111;
+        color: var(--text);
+      }
       .toolbar, .modal { display: none !important; }
       .container {
         margin: 0;
@@ -705,8 +718,15 @@
         border-radius: 0;
         max-width: none;
         padding: 0;
+        color: var(--text);
       }
-      a { color: inherit; text-decoration: none; }
+      p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, code, pre {
+        color: var(--text) !important;
+      }
+      a {
+        color: #0b57d0 !important;
+        text-decoration: none;
+      }
       pre, blockquote, table { break-inside: avoid; }
     }
   </style>
@@ -717,11 +737,10 @@
   <div class="toolbar">
     <div id="fileName" class="filename">読み込みファイル: 未選択</div>
     <div class="toolbar-group">
-      <div id="themeName" class="theme-name">現在のデザイン: ライト・クリア</div>
-      <button id="chooseFileBtn" type="button">Markdownを選択</button>
-      <button id="themeBtn" type="button">デザイン変更</button>
-      <button id="downloadHtmlBtn" type="button">このHTMLを保存</button>
-      <button id="printBtn" type="button">PDFで保存（印刷機能）</button>
+      <button id="chooseFileBtn" type="button" aria-label="MarkdownまたはTextを選択">📄選択</button>
+      <button id="themeBtn" type="button" aria-label="デザインを変更">🎨デザイン</button>
+      <button id="downloadHtmlBtn" type="button" aria-label="現在表示状態のHTMLを保存">💾HTML</button>
+      <button id="printBtn" type="button" aria-label="印刷機能でPDF保存">🖨️PDF</button>
     </div>
   </div>
 
@@ -783,12 +802,13 @@
     let currentStyle = "clear";
     let currentMode = "light";
     let hasLoadedMarkdown = false;
+    let currentBaseName = "md_viewer";
+    let themeBeforePrint = null;
 
     const fileInputEl = document.getElementById("mdFileInput");
     const chooseFileBtnEl = document.getElementById("chooseFileBtn");
     const fileNameEl = document.getElementById("fileName");
     const contentEl = document.getElementById("content");
-    const themeNameEl = document.getElementById("themeName");
     const themeBtnEl = document.getElementById("themeBtn");
     const downloadHtmlBtnEl = document.getElementById("downloadHtmlBtn");
     const printBtnEl = document.getElementById("printBtn");
@@ -1023,19 +1043,8 @@
       return `${currentMode}-${currentStyle}`;
     }
 
-    function getModeLabel() {
-      const found = themeModes.find((item) => item.id === currentMode);
-      return found ? found.label : "ライト";
-    }
-
-    function getStyleLabel() {
-      const found = themeStyles.find((item) => item.id === currentStyle);
-      return found ? found.label : "クリア";
-    }
-
     function applyTheme() {
       document.body.setAttribute("data-theme", composeThemeId());
-      themeNameEl.textContent = `現在のデザイン: ${getModeLabel()}・${getStyleLabel()}`;
       styleSelectEl.value = currentStyle;
       modeSelectEl.value = currentMode;
       renderStyleDescription();
@@ -1110,7 +1119,8 @@
       contentEl.innerHTML = html;
       contentEl.classList.remove("initial-clickable");
       document.body.classList.remove("drag-over-active");
-      document.title = file.name;
+      currentBaseName = getBaseNameFromFileName(file.name);
+      document.title = currentBaseName;
       fileNameEl.textContent = `読み込みファイル: ${file.name}`;
       hasLoadedMarkdown = true;
     }
@@ -1124,15 +1134,54 @@
       }) || null;
     }
 
+    function getBaseNameFromFileName(fileName) {
+      if (!fileName) return "md_viewer";
+      return fileName.replace(/\.[^.]+$/, "") || fileName;
+    }
+
     function downloadCurrentHtml() {
-      // 実行中DOMのスナップショットではなく、このページの元ファイル本体を保存する。
-      const sourceUrl = window.location.href;
+      // ツールバーやスクリプトを含まない、整形済み本文のみの静的HTMLを保存する。
+      const styleEl = document.querySelector("style");
+      const cssText = styleEl ? styleEl.textContent : "";
+      const pageBody = contentEl.innerHTML;
+      const themeId = composeThemeId();
+      const title = escapeHtml(currentBaseName || "document");
+      const html = `<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${title}</title>
+  <style>
+${cssText}
+  </style>
+</head>
+<body data-theme="${themeId}">
+  <main class="container">
+${pageBody}
+  </main>
+</body>
+</html>`;
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const sourceUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = sourceUrl;
-      a.download = "index.html";
+      a.download = `${currentBaseName}.html`;
       document.body.appendChild(a);
       a.click();
       a.remove();
+      URL.revokeObjectURL(sourceUrl);
+    }
+
+    function handleBeforePrint() {
+      themeBeforePrint = document.body.getAttribute("data-theme");
+      document.body.setAttribute("data-theme", "light-clear");
+    }
+
+    function handleAfterPrint() {
+      if (themeBeforePrint) {
+        document.body.setAttribute("data-theme", themeBeforePrint);
+      }
     }
 
     chooseFileBtnEl.addEventListener("click", () => {
@@ -1156,6 +1205,8 @@
       if (ev.target === themeModalEl) closeThemeModal();
     });
     downloadHtmlBtnEl.addEventListener("click", downloadCurrentHtml);
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
     printBtnEl.addEventListener("click", () => window.print());
 
     window.addEventListener("dragover", (ev) => {
