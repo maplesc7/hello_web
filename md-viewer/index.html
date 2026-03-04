@@ -380,6 +380,10 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
+      --content-resolved-width: min(var(--content-width), 100%);
+      --outline-resolved-width: 300px;
+      --left-gutter-width: 0px;
+      --right-gutter-width: 0px;
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
       color: var(--text);
       font-family: var(--font-body);
@@ -441,28 +445,33 @@
     button:hover { filter: brightness(1.05); }
 
     .workspace {
+      --layout-gap: 26px;
+      --outline-base-width: 300px;
       display: flex;
       align-items: flex-start;
-      gap: 18px;
-      padding: 0 20px 24px 0;
+      gap: var(--layout-gap);
+      padding: 24px 20px 24px;
+      justify-content: center;
+      flex-wrap: nowrap;
+      width: 100%;
+      overflow: visible;
     }
     .outline-panel {
       position: sticky;
       top: 70px;
-      flex: 0 0 300px;
-      width: 300px;
-      margin-left: -22px;
-      z-index: 3;
+      flex: 0 0 var(--outline-resolved-width, var(--outline-base-width));
+      width: var(--outline-resolved-width, var(--outline-base-width));
+      min-width: 0;
+      z-index: 1;
     }
     .outline-panel-card {
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: 14px;
-      box-shadow: 0 18px 42px rgba(16, 26, 42, 0.2);
+      box-shadow: 0 10px 16px -12px rgba(16, 26, 42, 0.22);
       padding: 18px 14px;
       max-height: calc(100vh - 92px);
       overflow: auto;
-      transform: translateX(14px);
       transition: all var(--motion-speed) ease;
     }
     .outline-title {
@@ -498,6 +507,8 @@
       cursor: pointer;
       transition: background-color var(--motion-speed) ease, color var(--motion-speed) ease;
       display: block;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .outline-link:hover {
       background: color-mix(in srgb, var(--accent) 14%, transparent);
@@ -508,49 +519,72 @@
     .outline-link.level-4 { color: color-mix(in srgb, #b6932f 72%, var(--text) 28%); }
 
     .container {
-      flex: 1 1 auto;
-      max-width: var(--content-width);
-      margin: 28px auto 0;
+      flex: 0 0 auto;
+      width: var(--content-resolved-width, min(var(--content-width), 100%));
+      max-width: var(--content-resolved-width, min(var(--content-width), 100%));
+      min-width: 0;
+      margin: 0;
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: 14px;
-      box-shadow: 0 18px 42px rgba(16, 26, 42, 0.2);
+      box-shadow: 0 12px 20px -14px rgba(16, 26, 42, 0.26);
       padding: var(--content-padding);
       min-height: 55vh;
       transition: all var(--motion-speed) ease;
+      position: relative;
+      z-index: 2;
+    }
+    body[data-outline-position="hidden"] .outline-panel {
+      display: none;
+    }
+    body[data-content-position="left"] .workspace {
+      justify-content: flex-start;
+    }
+    body[data-content-position="right"] .workspace {
+      justify-content: flex-end;
+    }
+    body[data-content-position="left"] .container,
+    body[data-content-position="right"] .container {
+      transform: none;
+    }
+    body[data-content-position="center"] .workspace {
+      display: grid;
+      grid-template-columns: var(--left-gutter-width, 0px) var(--content-resolved-width, min(var(--content-width), 100%)) var(--right-gutter-width, 0px);
+      column-gap: 0;
+      row-gap: 0;
+      justify-content: stretch;
+      align-items: start;
+    }
+    body[data-content-position="center"] .container {
+      grid-column: 2;
+      justify-self: stretch;
+    }
+    body[data-content-position="center"][data-outline-position="left"] .outline-panel {
+      grid-column: 1;
+      justify-self: end;
+      align-self: start;
+    }
+    body[data-content-position="center"][data-outline-position="right"] .outline-panel {
+      grid-column: 3;
+      justify-self: start;
+      align-self: start;
     }
 
     @media (max-width: 1080px) {
       .workspace {
-        gap: 12px;
-        padding-right: 10px;
-      }
-      .outline-panel {
-        flex-basis: 250px;
-        width: 250px;
-        margin-left: -14px;
+        --layout-gap: 18px;
+        --outline-base-width: 250px;
+        padding-right: 14px;
       }
       .outline-panel-card {
-        transform: translateX(8px);
         max-height: calc(100vh - 84px);
-      }
-      .container {
-        margin-top: 20px;
       }
     }
     @media (max-width: 760px) {
       .workspace {
-        gap: 8px;
+        --layout-gap: 8px;
       }
-      .outline-panel {
-        flex-basis: 190px;
-        width: 190px;
-        margin-left: -10px;
-      }
-      .outline-panel-card {
-        transform: translateX(6px);
-        padding: 12px 9px;
-      }
+      .outline-panel { display: none !important; }
       .outline-link {
         font-size: 12px;
         padding: 5px 6px;
@@ -620,7 +654,7 @@
       cursor: pointer;
     }
     .container.initial-clickable:hover {
-      box-shadow: 0 22px 46px rgba(16, 26, 42, 0.24);
+      box-shadow: 0 14px 22px -14px rgba(16, 26, 42, 0.28);
     }
     body.drag-over-active .container {
       outline: 2px dashed var(--accent);
@@ -630,7 +664,7 @@
     body[data-theme$="-aurora"] .container {
       backdrop-filter: blur(12px) saturate(1.05);
       border: 1px solid rgba(126, 166, 225, 0.55);
-      box-shadow: 0 22px 46px rgba(34, 73, 130, 0.24);
+      box-shadow: 0 12px 20px -14px rgba(34, 73, 130, 0.28);
     }
     body[data-theme$="-aurora"] h1 {
       background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #ff7fbd 45%));
@@ -652,18 +686,23 @@
     body[data-theme$="-motion"] button:active {
       transform: scale(0.98);
     }
-    body[data-theme$="-motion"] .container,
+    body[data-theme$="-motion"] .container {
+      box-shadow: 0 12px 20px -14px rgba(72, 36, 40, 0.3);
+    }
     body[data-theme$="-motion"] .outline-panel-card {
-      box-shadow: 0 22px 46px rgba(72, 36, 40, 0.28);
+      box-shadow: 0 10px 16px -12px rgba(72, 36, 40, 0.24);
     }
     body[data-theme$="-motion"] h2 {
       border-bottom-width: 2px;
     }
 
-    body[data-theme$="-editorial"] .container,
+    body[data-theme$="-editorial"] .container {
+      border-radius: 6px;
+      box-shadow: 0 12px 20px -14px rgba(56, 40, 22, 0.3);
+    }
     body[data-theme$="-editorial"] .outline-panel-card {
       border-radius: 6px;
-      box-shadow: 0 18px 38px rgba(56, 40, 22, 0.26);
+      box-shadow: 0 10px 16px -12px rgba(56, 40, 22, 0.22);
     }
     body[data-theme$="-editorial"] h1,
     body[data-theme$="-editorial"] h2 {
@@ -680,11 +719,15 @@
       color: var(--accent);
     }
 
-    body[data-theme$="-grain"] .container,
+    body[data-theme$="-grain"] .container {
+      border-style: dashed;
+      border-width: 1px;
+      box-shadow: 0 12px 20px -14px rgba(40, 46, 58, 0.28);
+    }
     body[data-theme$="-grain"] .outline-panel-card {
       border-style: dashed;
       border-width: 1px;
-      box-shadow: 0 16px 34px rgba(40, 46, 58, 0.22);
+      box-shadow: 0 10px 16px -12px rgba(40, 46, 58, 0.22);
     }
     body[data-theme$="-grain"] table tbody tr:nth-child(even) td {
       background: color-mix(in srgb, var(--th-bg) 35%, transparent);
@@ -710,10 +753,14 @@
       font-weight: 600;
     }
 
-    body[data-theme$="-reading"] .container,
+    body[data-theme$="-reading"] .container {
+      border-radius: 10px;
+      box-shadow: 0 12px 20px -14px rgba(24, 24, 24, 0.28);
+      border-left: 4px solid var(--line);
+    }
     body[data-theme$="-reading"] .outline-panel-card {
       border-radius: 10px;
-      box-shadow: 0 20px 40px rgba(24, 24, 24, 0.24);
+      box-shadow: 0 10px 16px -12px rgba(24, 24, 24, 0.22);
       border-left: 4px solid var(--line);
     }
     body[data-theme$="-reading"] p,
@@ -797,6 +844,11 @@
       font-size: 13px;
       line-height: 1.6;
     }
+    .modal-note {
+      margin: -8px 0 12px;
+      font-size: 12px;
+      opacity: 0.78;
+    }
     .btn-secondary {
       background: transparent;
       color: var(--text);
@@ -841,7 +893,7 @@
     }
   </style>
 </head>
-<body data-theme="light-clear">
+<body data-theme="light-clear" data-outline-position="left" data-content-position="center">
   <input id="mdFileInput" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden />
 
   <div class="toolbar">
@@ -892,6 +944,20 @@
         <option value="light">ライト</option>
         <option value="dark">ダーク</option>
       </select>
+      <label class="modal-label" for="outlinePositionSelect">アウトライン位置</label>
+      <select id="outlinePositionSelect" class="modal-select">
+        <option value="left">左</option>
+        <option value="right">右</option>
+        <option value="hidden">非表示</option>
+      </select>
+      <p class="modal-note">画面幅が760px以下のときは、設定に関わらずアウトラインを自動で非表示にします。</p>
+      <p class="modal-note">本文位置が中央のときは本文を画面中央に固定し、余り幅に応じてアウトライン幅を自動調整します（文字改行あり）。</p>
+      <label class="modal-label" for="contentPositionSelect">本文位置</label>
+      <select id="contentPositionSelect" class="modal-select">
+        <option value="left">左</option>
+        <option value="center">中央</option>
+        <option value="right">右</option>
+      </select>
       <div id="styleDescription" class="style-description" aria-live="polite">
         <p id="styleDescriptionTitle" class="style-description-title">クリア</p>
         <p id="styleDescriptionText" class="style-description-text">余計な装飾を抑え、情報を素直に読むための基準スタイルです。</p>
@@ -918,10 +984,17 @@
       { id: "light", label: "ライト" },
       { id: "dark", label: "ダーク" },
     ];
-    const THEME_PREF_KEY = "md_viewer_theme_pref_v1";
+    const outlinePositions = ["left", "right", "hidden"];
+    const contentPositions = ["left", "center", "right"];
+    const OUTLINE_AUTO_HIDE_BREAKPOINT = 760;
+    const OUTLINE_MIN_CENTER_WIDTH = 120;
+    const THEME_PREF_KEY = "md_viewer_theme_pref_v2";
+    const LEGACY_THEME_PREF_KEY = "md_viewer_theme_pref_v1";
     const THEME_PREF_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
     let currentStyle = "clear";
     let currentMode = "light";
+    let currentOutlinePosition = "left";
+    let currentContentPosition = "center";
     let hasLoadedMarkdown = false;
     let currentBaseName = "md_viewer";
     let themeBeforePrint = null;
@@ -935,8 +1008,12 @@
     const downloadHtmlBtnEl = document.getElementById("downloadHtmlBtn");
     const printBtnEl = document.getElementById("printBtn");
     const themeModalEl = document.getElementById("themeModal");
+    const workspaceEl = document.querySelector(".workspace");
+    const outlinePanelEl = document.querySelector(".outline-panel");
     const styleSelectEl = document.getElementById("styleSelect");
     const modeSelectEl = document.getElementById("modeSelect");
+    const outlinePositionSelectEl = document.getElementById("outlinePositionSelect");
+    const contentPositionSelectEl = document.getElementById("contentPositionSelect");
     const applyThemeBtnEl = document.getElementById("applyThemeBtn");
     const closeThemeBtnEl = document.getElementById("closeThemeBtn");
     const styleDescriptionTitleEl = document.getElementById("styleDescriptionTitle");
@@ -1250,12 +1327,94 @@
     function composeThemeId() {
       return `${currentMode}-${currentStyle}`;
     }
+    function isValidOutlinePosition(position) {
+      return outlinePositions.includes(position);
+    }
+    function isValidContentPosition(position) {
+      return contentPositions.includes(position);
+    }
 
     function applyTheme() {
       document.body.setAttribute("data-theme", composeThemeId());
       styleSelectEl.value = currentStyle;
       modeSelectEl.value = currentMode;
       renderStyleDescription();
+    }
+    function syncRuntimeLayout() {
+      const effectiveOutlineHidden = window.innerWidth <= OUTLINE_AUTO_HIDE_BREAKPOINT || currentOutlinePosition === "hidden";
+      const outlineVisible = !effectiveOutlineHidden;
+      const isContentLeft = currentContentPosition === "left";
+      const isContentRight = currentContentPosition === "right";
+      const isContentCenter = currentContentPosition === "center";
+      const workspaceStyles = window.getComputedStyle(workspaceEl);
+      const bodyStyles = window.getComputedStyle(document.body);
+      const gap = Number.parseFloat(workspaceStyles.getPropertyValue("--layout-gap")) || 0;
+      const baseOutlineWidth = Number.parseFloat(workspaceStyles.getPropertyValue("--outline-base-width")) || 300;
+      const contentMaxWidth = Number.parseFloat(bodyStyles.getPropertyValue("--content-width")) || 920;
+      const paddingLeft = Number.parseFloat(workspaceStyles.paddingLeft) || 0;
+      const paddingRight = Number.parseFloat(workspaceStyles.paddingRight) || 0;
+      const availableWidth = Math.max(0, workspaceEl.clientWidth - paddingLeft - paddingRight);
+
+      let outlineWidth = 0;
+      let contentWidth = Math.max(0, Math.min(contentMaxWidth, availableWidth));
+      let leftGutterWidth = 0;
+      let rightGutterWidth = 0;
+
+      outlinePanelEl.style.display = outlineVisible ? "" : "none";
+
+      if (!outlineVisible) {
+        contentEl.style.order = "1";
+        outlinePanelEl.style.order = "2";
+        contentWidth = Math.max(0, Math.min(contentMaxWidth, availableWidth));
+        if (isContentCenter) {
+          leftGutterWidth = Math.max(0, Math.floor((availableWidth - contentWidth) / 2));
+          rightGutterWidth = leftGutterWidth;
+        }
+      } else if (isContentCenter) {
+        const idealContent = Math.max(0, Math.min(contentMaxWidth, availableWidth));
+        let remainingSide = Math.max(0, Math.floor((availableWidth - idealContent) / 2));
+        if (remainingSide < OUTLINE_MIN_CENTER_WIDTH) {
+          const reservedForOutline = Math.min(OUTLINE_MIN_CENTER_WIDTH, Math.floor(availableWidth / 2));
+          contentWidth = Math.max(0, Math.min(idealContent, availableWidth - (reservedForOutline * 2)));
+          remainingSide = Math.max(0, Math.floor((availableWidth - contentWidth) / 2));
+        } else {
+          contentWidth = idealContent;
+        }
+        leftGutterWidth = remainingSide;
+        rightGutterWidth = remainingSide;
+        outlineWidth = Math.min(baseOutlineWidth, remainingSide);
+
+        if (currentOutlinePosition === "left") {
+          outlinePanelEl.style.order = "1";
+          contentEl.style.order = "2";
+        } else {
+          contentEl.style.order = "1";
+          outlinePanelEl.style.order = "2";
+        }
+      } else {
+        outlineWidth = Math.min(baseOutlineWidth, Math.max(0, availableWidth - gap));
+        contentWidth = Math.max(0, Math.min(contentMaxWidth, availableWidth - gap - outlineWidth));
+        if (currentOutlinePosition === "left") {
+          outlinePanelEl.style.order = "1";
+          contentEl.style.order = "2";
+        } else {
+          contentEl.style.order = "1";
+          outlinePanelEl.style.order = "2";
+        }
+      }
+
+      workspaceEl.style.justifyContent = isContentLeft ? "flex-start" : isContentRight ? "flex-end" : "center";
+      document.body.style.setProperty("--outline-resolved-width", `${outlineWidth.toFixed(2)}px`);
+      document.body.style.setProperty("--content-resolved-width", `${contentWidth.toFixed(2)}px`);
+      document.body.style.setProperty("--left-gutter-width", `${leftGutterWidth.toFixed(2)}px`);
+      document.body.style.setProperty("--right-gutter-width", `${rightGutterWidth.toFixed(2)}px`);
+    }
+    function applyLayout() {
+      document.body.setAttribute("data-outline-position", currentOutlinePosition);
+      document.body.setAttribute("data-content-position", currentContentPosition);
+      outlinePositionSelectEl.value = currentOutlinePosition;
+      contentPositionSelectEl.value = currentContentPosition;
+      syncRuntimeLayout();
     }
 
     function setDefaultThemeBySystem() {
@@ -1267,6 +1426,8 @@
       const payload = {
         style: currentStyle,
         mode: currentMode,
+        outlinePosition: currentOutlinePosition,
+        contentPosition: currentContentPosition,
         expiresAt: Date.now() + THEME_PREF_TTL_MS,
       };
       localStorage.setItem(THEME_PREF_KEY, JSON.stringify(payload));
@@ -1274,26 +1435,58 @@
 
     function restoreThemePreference() {
       const raw = localStorage.getItem(THEME_PREF_KEY);
-      if (!raw) return false;
+      if (raw) {
+        try {
+          const payload = JSON.parse(raw);
+          if (!payload || typeof payload !== "object") {
+            localStorage.removeItem(THEME_PREF_KEY);
+          } else if (typeof payload.expiresAt !== "number" || payload.expiresAt < Date.now()) {
+            localStorage.removeItem(THEME_PREF_KEY);
+          } else if (!themeStyles.some((item) => item.id === payload.style)) {
+            localStorage.removeItem(THEME_PREF_KEY);
+          } else if (!themeModes.some((item) => item.id === payload.mode)) {
+            localStorage.removeItem(THEME_PREF_KEY);
+          } else {
+            currentStyle = payload.style;
+            currentMode = payload.mode;
+            if (isValidOutlinePosition(payload.outlinePosition)) {
+              currentOutlinePosition = payload.outlinePosition;
+            }
+            if (isValidContentPosition(payload.contentPosition)) {
+              currentContentPosition = payload.contentPosition;
+            }
+            return true;
+          }
+        } catch {
+          localStorage.removeItem(THEME_PREF_KEY);
+        }
+      }
+
+      const legacyRaw = localStorage.getItem(LEGACY_THEME_PREF_KEY);
+      if (!legacyRaw) return false;
       try {
-        const payload = JSON.parse(raw);
+        const payload = JSON.parse(legacyRaw);
         if (!payload || typeof payload !== "object") return false;
         if (typeof payload.expiresAt !== "number" || payload.expiresAt < Date.now()) {
-          localStorage.removeItem(THEME_PREF_KEY);
+          localStorage.removeItem(LEGACY_THEME_PREF_KEY);
           return false;
         }
         if (!themeStyles.some((item) => item.id === payload.style)) return false;
         if (!themeModes.some((item) => item.id === payload.mode)) return false;
         currentStyle = payload.style;
         currentMode = payload.mode;
+        localStorage.removeItem(LEGACY_THEME_PREF_KEY);
+        saveThemePreference();
         return true;
       } catch {
-        localStorage.removeItem(THEME_PREF_KEY);
+        localStorage.removeItem(LEGACY_THEME_PREF_KEY);
         return false;
       }
     }
 
     function openThemeModal() {
+      applyTheme();
+      applyLayout();
       themeModalEl.classList.add("open");
       themeModalEl.setAttribute("aria-hidden", "false");
       renderStyleDescription();
@@ -1309,7 +1502,14 @@
       if (themeModes.some((item) => item.id === modeSelectEl.value)) {
         currentMode = modeSelectEl.value;
       }
+      if (isValidOutlinePosition(outlinePositionSelectEl.value)) {
+        currentOutlinePosition = outlinePositionSelectEl.value;
+      }
+      if (isValidContentPosition(contentPositionSelectEl.value)) {
+        currentContentPosition = contentPositionSelectEl.value;
+      }
       applyTheme();
+      applyLayout();
       saveThemePreference();
       closeThemeModal();
     }
@@ -1426,6 +1626,7 @@ ${pageBody}
     });
     window.addEventListener("beforeprint", handleBeforePrint);
     window.addEventListener("afterprint", handleAfterPrint);
+    window.addEventListener("resize", syncRuntimeLayout);
     printBtnEl.addEventListener("click", () => window.print());
 
     window.addEventListener("dragover", (ev) => {
@@ -1449,6 +1650,7 @@ ${pageBody}
       setDefaultThemeBySystem();
     }
     applyTheme();
+    applyLayout();
     buildOutline();
   </script>
 </body>
