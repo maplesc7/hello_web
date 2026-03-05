@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glass Timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --text: #f6f2ff;
+      --text-soft: rgba(246, 242, 255, 0.75);
+      --glass-bg: rgba(18, 14, 36, 0.46);
+      --glass-border: rgba(255, 255, 255, 0.22);
+      --shadow: 0 18px 40px rgba(8, 5, 26, 0.55), 0 4px 14px rgba(255, 94, 98, 0.18);
+      --accent-a: #7f5dff;
+      --accent-b: #ff2a89;
+      --accent-c: #ff8a36;
+      --focus: rgba(255, 192, 106, 0.85);
+      --bg-image: url("https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1800&q=80");
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      overflow: hidden;
+      background: #090712;
+      position: relative;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      background-image:
+        linear-gradient(130deg, rgba(8, 7, 20, 0.72), rgba(8, 7, 20, 0.5) 42%, rgba(8, 7, 20, 0.78)),
+        var(--bg-image);
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.04);
+      filter: saturate(1.1) brightness(0.66);
+      z-index: -3;
+    }
+
+    body::after {
+      background:
+        radial-gradient(circle at 15% 18%, rgba(130, 92, 255, 0.35), transparent 45%),
+        radial-gradient(circle at 84% 74%, rgba(255, 47, 153, 0.3), transparent 43%),
+        radial-gradient(circle at 58% 95%, rgba(255, 136, 62, 0.2), transparent 34%);
+      z-index: -2;
+    }
+
+    .timer-card {
+      width: min(94vw, 620px);
+      min-height: min(86vh, 730px);
+      border-radius: 30px;
+      border: 1px solid var(--glass-border);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      padding: clamp(24px, 4.8vw, 48px);
+      position: relative;
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .timer-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(130deg, rgba(127, 93, 255, 0.55), rgba(255, 42, 137, 0.45), rgba(255, 138, 54, 0.4));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .title {
+      margin: 0 0 10px;
+      font-family: "Orbitron", sans-serif;
+      letter-spacing: 0.04em;
+      font-size: clamp(1.7rem, 4vw, 2.5rem);
+      text-align: center;
+      text-shadow: 0 2px 12px rgba(255, 56, 123, 0.45);
+      width: min(74%, 430px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .subtitle {
+      margin: 0 0 32px;
+      color: var(--text-soft);
+      font-size: clamp(1rem, 2.2vw, 1.12rem);
+      text-align: center;
+      width: min(74%, 430px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: max-content max-content max-content max-content max-content;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(6px, 1.6vw, 12px);
+      margin-bottom: 28px;
+    }
+
+    .time-column {
+      display: grid;
+      justify-items: center;
+      gap: 13px;
+    }
+
+    .arrow-btn {
+      width: clamp(48px, 8.3vw, 62px);
+      height: clamp(42px, 7.4vw, 54px);
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.09);
+      color: var(--text);
+      font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .arrow-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 6px 14px rgba(20, 13, 42, 0.35);
+    }
+
+    .arrow-btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .arrow-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .time-input {
+      width: clamp(98px, 15.8vw, 132px);
+      height: clamp(82px, 13.6vw, 110px);
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(6, 8, 22, 0.34);
+      color: var(--text);
+      text-align: center;
+      font-family: "Orbitron", sans-serif;
+      font-size: clamp(1.95rem, 4.5vw, 2.9rem);
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      outline: none;
+      transition: box-shadow 140ms ease, border-color 140ms ease;
+    }
+
+    .time-input:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 4px rgba(255, 177, 69, 0.22);
+    }
+
+    .time-label {
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+    }
+
+    .separator {
+      font-family: "Orbitron", sans-serif;
+      font-size: clamp(2.1rem, 4.6vw, 3rem);
+      line-height: 1;
+      opacity: 0.86;
+      margin-top: 0;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 4px;
+      width: min(78%, 470px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .control-btn {
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      padding: 15px 12px;
+      font-weight: 600;
+      font-size: clamp(1rem, 2.2vw, 1.12rem);
+      cursor: pointer;
+      transition: transform 140ms ease, filter 140ms ease;
+      box-shadow: 0 7px 18px rgba(7, 6, 18, 0.38);
+    }
+
+    .control-btn:active {
+      transform: translateY(1px);
+    }
+
+    .start {
+      background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+    }
+
+    .pause {
+      background: linear-gradient(135deg, #3a3f7a, #6e3f8f);
+    }
+
+    .reset {
+      background: linear-gradient(135deg, #ff4b7f, var(--accent-c));
+    }
+
+    .control-btn:disabled {
+      cursor: not-allowed;
+      filter: grayscale(0.25) brightness(0.82);
+    }
+
+    .status {
+      margin-top: 20px;
+      min-height: 1.2em;
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .screen-flash {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255, 208, 161, 0.24), rgba(255, 196, 170, 0.12) 45%, rgba(255, 255, 255, 0.02) 75%);
+      opacity: 0;
+      z-index: 30;
+    }
+
+    .screen-flash.active {
+      animation: flash 2.6s ease;
+    }
+
+    @keyframes flash {
+      0% {
+        opacity: 0;
+      }
+      22% {
+        opacity: 0.78;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 12px;
+      }
+
+      .timer-card {
+        min-height: auto;
+        border-radius: 22px;
+        padding: 20px 14px 18px;
+      }
+
+      .title,
+      .subtitle,
+      .controls {
+        width: 100%;
+      }
+
+      .time-grid {
+        gap: 4px;
+      }
+
+      .time-input {
+        width: clamp(72px, 24vw, 96px);
+        height: clamp(72px, 22vw, 98px);
+      }
+
+      .arrow-btn {
+        width: clamp(40px, 14vw, 52px);
+        height: clamp(34px, 12vw, 46px);
+      }
+
+      .separator {
+        font-size: clamp(1.5rem, 6vw, 2rem);
+      }
+
+      .controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="timer-card" aria-label="タイマー">
+    <h1 class="title">GLASS TIMER</h1>
+    <p class="subtitle">時・分・秒を設定してスタート</p>
+
+    <section class="time-grid" aria-label="時分設定">
+      <div class="time-column">
+        <button class="arrow-btn" data-target="hours" data-action="inc" aria-label="時を増やす">▲</button>
+        <input id="hours" class="time-input" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="時" />
+        <button class="arrow-btn" data-target="hours" data-action="dec" aria-label="時を減らす">▼</button>
+        <div class="time-label">HOURS</div>
+      </div>
+
+      <div class="separator" aria-hidden="true">:</div>
+
+      <div class="time-column">
+        <button class="arrow-btn" data-target="minutes" data-action="inc" aria-label="分を増やす">▲</button>
+        <input id="minutes" class="time-input" type="text" inputmode="numeric" maxlength="2" value="30" aria-label="分" />
+        <button class="arrow-btn" data-target="minutes" data-action="dec" aria-label="分を減らす">▼</button>
+        <div class="time-label">MINUTES</div>
+      </div>
+
+      <div class="separator" aria-hidden="true">:</div>
+
+      <div class="time-column">
+        <button class="arrow-btn" data-target="seconds" data-action="inc" aria-label="秒を増やす">▲</button>
+        <input id="seconds" class="time-input" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="秒" />
+        <button class="arrow-btn" data-target="seconds" data-action="dec" aria-label="秒を減らす">▼</button>
+        <div class="time-label">SECONDS</div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="タイマー操作">
+      <button id="startPauseBtn" class="control-btn start">開始</button>
+      <button id="stopBtn" class="control-btn reset">停止</button>
+    </section>
+
+    <div id="status" class="status" aria-live="polite">待機中</div>
+  </main>
+
+  <div id="flash" class="screen-flash" aria-hidden="true"></div>
+
+  <script>
+    const MAX_HOURS = 99;
+    const MAX_MINUTES = 59;
+    const MAX_SECONDS = 59;
+    const NIGHT_BACKGROUNDS = [
+      "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1800&q=80",
+      "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1800&q=80",
+      "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1800&q=80",
+      "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?auto=format&fit=crop&w=1800&q=80",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1800&q=80"
+    ];
+
+    const hoursInput = document.getElementById("hours");
+    const minutesInput = document.getElementById("minutes");
+    const secondsInput = document.getElementById("seconds");
+    const startPauseBtn = document.getElementById("startPauseBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const statusEl = document.getElementById("status");
+    const flashEl = document.getElementById("flash");
+    const adjustButtons = Array.from(document.querySelectorAll(".arrow-btn"));
+
+    let remainingSeconds = 0;
+    let timerId = null;
+    let mode = "stopped";
+
+    function clamp(n, min, max) {
+      return Math.min(max, Math.max(min, n));
+    }
+
+    function applyRandomBackground() {
+      const index = Math.floor(Math.random() * NIGHT_BACKGROUNDS.length);
+      const picked = NIGHT_BACKGROUNDS[index];
+      document.documentElement.style.setProperty("--bg-image", `url("${picked}")`);
+    }
+
+    function pad2(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function parseField(input, max) {
+      const num = Number(String(input.value).replace(/\D/g, ""));
+      return Number.isFinite(num) ? clamp(num, 0, max) : 0;
+    }
+
+    function formatInputs(hours, minutes, seconds) {
+      hoursInput.value = pad2(hours);
+      minutesInput.value = pad2(minutes);
+      secondsInput.value = pad2(seconds);
+    }
+
+    function readInputs() {
+      const h = parseField(hoursInput, MAX_HOURS);
+      const m = parseField(minutesInput, MAX_MINUTES);
+      const s = parseField(secondsInput, MAX_SECONDS);
+      formatInputs(h, m, s);
+      return { h, m, s };
+    }
+
+    function setControlsByState() {
+      const isRunning = mode === "running";
+      const isPaused = mode === "paused";
+      const hasTime = remainingSeconds > 0;
+
+      startPauseBtn.disabled = !hasTime;
+      startPauseBtn.textContent = isRunning ? "一時停止" : isPaused ? "再開" : "開始";
+      stopBtn.disabled = !isRunning && !isPaused && !hasTime;
+
+      adjustButtons.forEach((btn) => {
+        btn.disabled = isRunning;
+      });
+      hoursInput.disabled = isRunning;
+      minutesInput.disabled = isRunning;
+      secondsInput.disabled = isRunning;
+      statusEl.textContent = isRunning ? "計測中..." : isPaused ? "一時停止中" : "停止中";
+    }
+
+    function secondsToHMS(totalSeconds) {
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      return { h, m, s };
+    }
+
+    function syncInputsWithRemaining() {
+      const { h, m, s } = secondsToHMS(remainingSeconds);
+      formatInputs(h, m, s);
+    }
+
+    function stopTimer() {
+      if (timerId !== null) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+      if (mode === "running") {
+        mode = "paused";
+      }
+      setControlsByState();
+    }
+
+    function hardStop() {
+      if (timerId !== null) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+      mode = "stopped";
+    }
+
+    function runCompletionEffect() {
+      flashEl.classList.remove("active");
+      void flashEl.offsetWidth;
+      flashEl.classList.add("active");
+      formatInputs(0, 0, 0);
+      mode = "stopped";
+      setControlsByState();
+      statusEl.textContent = "終了";
+    }
+
+    function onTick() {
+      if (remainingSeconds <= 0) {
+        stopTimer();
+        runCompletionEffect();
+        return;
+      }
+
+      remainingSeconds -= 1;
+
+      if (remainingSeconds <= 0) {
+        remainingSeconds = 0;
+        stopTimer();
+        runCompletionEffect();
+        return;
+      }
+
+      syncInputsWithRemaining();
+    }
+
+    function startTimer() {
+      if (mode === "stopped") {
+        const { h, m, s } = readInputs();
+        remainingSeconds = h * 3600 + m * 60 + s;
+      }
+      if (remainingSeconds <= 0) {
+        statusEl.textContent = "時間を設定してください";
+        return;
+      }
+
+      mode = "running";
+      setControlsByState();
+      timerId = setInterval(onTick, 1000);
+      syncInputsWithRemaining();
+    }
+
+    function stopAndReset() {
+      hardStop();
+      remainingSeconds = 0;
+      formatInputs(0, 30, 0);
+      statusEl.textContent = "停止中";
+      flashEl.classList.remove("active");
+      const { h, m, s } = readInputs();
+      remainingSeconds = h * 3600 + m * 60 + s;
+      setControlsByState();
+    }
+
+    function adjustValue(target, action) {
+      if (mode === "running") return;
+
+      const input =
+        target === "hours" ? hoursInput :
+        target === "minutes" ? minutesInput :
+        secondsInput;
+      const max =
+        target === "hours" ? MAX_HOURS :
+        target === "minutes" ? MAX_MINUTES :
+        MAX_SECONDS;
+      let value = parseField(input, max);
+      value += action === "inc" ? 1 : -1;
+
+      if (target === "minutes" || target === "seconds") {
+        if (value > max) value = 0;
+        if (value < 0) value = max;
+      } else {
+        value = clamp(value, 0, MAX_HOURS);
+      }
+
+      input.value = pad2(value);
+      const { h, m, s } = readInputs();
+      remainingSeconds = h * 3600 + m * 60 + s;
+      mode = "stopped";
+      setControlsByState();
+    }
+
+    function sanitizeInputField(input, max) {
+      const value = parseField(input, max);
+      input.value = pad2(value);
+      const { h, m, s } = readInputs();
+      remainingSeconds = h * 3600 + m * 60 + s;
+      mode = "stopped";
+      setControlsByState();
+    }
+
+    adjustButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        adjustValue(btn.dataset.target, btn.dataset.action);
+      });
+    });
+
+    [
+      { input: hoursInput, max: MAX_HOURS },
+      { input: minutesInput, max: MAX_MINUTES },
+      { input: secondsInput, max: MAX_SECONDS }
+    ].forEach(({ input, max }) => {
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "").slice(0, 2);
+      });
+      input.addEventListener("blur", () => {
+        sanitizeInputField(input, max);
+      });
+    });
+
+    startPauseBtn.addEventListener("click", () => {
+      if (mode === "running") {
+        stopTimer();
+        return;
+      }
+      startTimer();
+    });
+    stopBtn.addEventListener("click", stopAndReset);
+
+    applyRandomBackground();
+    const initial = readInputs();
+    remainingSeconds = initial.h * 3600 + initial.m * 60 + initial.s;
+    mode = "stopped";
+    setControlsByState();
+  </script>
+</body>
+</html>
