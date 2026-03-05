@@ -500,7 +500,7 @@
         <div id="dial" class="dial" style="--p: 0;">
           <div id="segRing" class="seg-ring" aria-hidden="true"></div>
           <p class="dial-brand">Monolith Timer</p>
-          <p id="timeText" class="time">05:00</p>
+          <p id="timeText" class="time">30:00</p>
         </div>
       </div>
 
@@ -556,8 +556,8 @@
 
       const state = {
         status: STATUS.STOPPED,
-        durationSec: 300,
-        remainingSec: 300,
+        durationSec: 1800,
+        remainingSec: 1800,
         intervalId: null,
         endAtMs: 0,
         toastTimer: null
@@ -811,7 +811,7 @@
       }
 
       function init() {
-        syncInputs(300);
+        syncInputs(1800);
         setupSegments();
         renderTime();
         setStatus(STATUS.STOPPED);
