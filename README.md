@@ -17,6 +17,11 @@
   - Monolith Timer（単体で動くカウントダウンタイマー）
   - ▶ 公開ページ: https://hello-web-er0.pages.dev/timer/
 
+- `timer2/`
+  - Glass Timer（時・分・秒対応のグラスモーフィズムタイマー）
+  - 夜景/夜空背景をランダム表示、開始/一時停止/再開トグル、停止で初期値（00:30:00）にリセット
+  - ▶ 公開ページ: https://hello-web-er0.pages.dev/timer2/
+
 - `tasks/`
   - 時刻自動記録型のタスクログ UI
   - ▶ 公開ページ: https://hello-web-er0.pages.dev/tasks/
