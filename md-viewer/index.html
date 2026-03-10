@@ -378,6 +378,9 @@
     }
 
     * { box-sizing: border-box; }
+    html {
+      scrollbar-gutter: stable;
+    }
     body {
       margin: 0;
       --content-resolved-width: min(var(--content-width), 100%);
@@ -423,6 +426,33 @@
       gap: 8px;
       flex-wrap: wrap;
     }
+    .toast {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      z-index: 30;
+      min-width: 280px;
+      max-width: min(560px, calc(100vw - 24px));
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, #cf5b5b 45%, var(--line) 55%);
+      background: color-mix(in srgb, var(--paper) 92%, #fff3f3 8%);
+      color: var(--text);
+      box-shadow: 0 10px 22px -18px rgba(20, 28, 40, 0.42);
+      font-size: 13px;
+      line-height: 1.35;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+      transform: translate(-50%, -10px);
+      transition: opacity var(--motion-speed) ease, transform var(--motion-speed) ease, visibility var(--motion-speed) ease;
+    }
+    .toast.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, 0);
+    }
     .theme-name {
       font-size: 13px;
       padding: 0 6px;
@@ -457,20 +487,23 @@
       overflow: visible;
     }
     .outline-panel {
-      position: sticky;
-      top: 70px;
+      position: relative;
       flex: 0 0 var(--outline-resolved-width, var(--outline-base-width));
       width: var(--outline-resolved-width, var(--outline-base-width));
       min-width: 0;
       z-index: 1;
     }
     .outline-panel-card {
+      position: fixed;
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: 14px;
       box-shadow: 0 10px 16px -12px rgba(16, 26, 42, 0.22);
-      padding: 18px 14px;
-      max-height: calc(100vh - 92px);
+      padding: 18px 12px;
+      top: var(--outline-fixed-top, 70px);
+      left: var(--outline-fixed-left, 20px);
+      width: var(--outline-resolved-width, var(--outline-base-width));
+      max-height: var(--outline-fixed-max-height, calc(100vh - 92px));
       overflow: auto;
       transition: all var(--motion-speed) ease;
     }
@@ -502,7 +535,7 @@
       color: var(--text);
       border-radius: 8px;
       padding: 6px 8px;
-      font-size: 13px;
+      font-size: 16px;
       line-height: 1.45;
       cursor: pointer;
       transition: background-color var(--motion-speed) ease, color var(--motion-speed) ease;
@@ -594,7 +627,7 @@
     h1, h2, h3, h4, h5, h6 {
       font-family: var(--font-head);
       line-height: 1.35;
-      margin-top: 1.4em;
+      margin-top: 0.55em;
       margin-bottom: 0.55em;
     }
     h1 { font-size: 2rem; border-bottom: 2px solid var(--line); padding-bottom: .35em; }
@@ -603,6 +636,40 @@
     p { margin: .75em 0; }
     ul, ol { padding-left: 1.45em; }
     li { margin: .35em 0; }
+    .task-list {
+      list-style: none;
+      padding-left: 0;
+      margin-left: 0;
+    }
+    .task-list-item {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1rem minmax(0, 1fr);
+      column-gap: 0.55em;
+      align-items: center;
+    }
+    .task-list-checkbox {
+      margin: 0;
+      inline-size: 1rem;
+      block-size: 1rem;
+      accent-color: var(--accent);
+      cursor: default;
+      flex: 0 0 auto;
+    }
+    .task-list-checkbox:disabled {
+      opacity: 1;
+      filter: none;
+    }
+    .task-list-text {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .task-list-item > .task-list,
+    .task-list-item > ul,
+    .task-list-item > ol {
+      grid-column: 2;
+      margin-top: 0.35em;
+    }
 
     code {
       font-family: Consolas, "Courier New", monospace;
@@ -773,32 +840,55 @@
       margin-top: 1.65em;
     }
 
-    .modal {
+    .theme-panel {
       position: fixed;
-      inset: 0;
+      top: 76px;
+      bottom: 16px;
       z-index: 20;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(16, 24, 32, 0.38);
-      padding: 16px;
+      width: min(360px, calc(100vw - 24px));
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
     }
-    .modal.open { display: flex; }
-    .modal-card {
-      width: min(520px, 100%);
+    .theme-panel[data-side="right"] {
+      right: 16px;
+      left: auto;
+    }
+    .theme-panel[data-side="left"] {
+      left: 16px;
+      right: auto;
+    }
+    .theme-panel.open {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+    }
+    .theme-panel-card {
+      height: 100%;
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: 12px;
       box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
       padding: 18px;
+      overflow: auto;
+    }
+    .theme-panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .theme-panel-heading {
+      min-width: 0;
     }
     .modal-title {
-      margin: 0 0 10px;
+      margin: 0 0 8px;
       font-size: 1.1rem;
       font-family: var(--font-head);
     }
     .modal-text {
-      margin: 0 0 14px;
+      margin: 0;
       font-size: 14px;
     }
     .modal-label {
@@ -820,11 +910,6 @@
     .modal-select option {
       background: var(--field-bg);
       color: var(--field-text);
-    }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
     }
     .style-description {
       border: 1px solid var(--line);
@@ -854,53 +939,38 @@
       color: var(--text);
       border-color: var(--line);
     }
-
-    @media print {
-      @page { size: A4; margin: 14mm; }
-      body {
-        background: #fff;
-        --paper: #ffffff;
-        --text: #111111;
-        --line: #d0d0d0;
-        --code-bg: #f5f5f5;
-        --quote-bg: #fafafa;
-        --quote-line: #9a9a9a;
-        --th-bg: #f2f2f2;
-        --accent: #0b57d0;
-        --field-bg: #ffffff;
-        --field-text: #111111;
-        color: var(--text);
-      }
-      .toolbar, .modal, .outline-panel { display: none !important; }
-      .workspace { display: block; padding: 0; }
-      .container {
-        margin: 0;
-        border: none;
-        box-shadow: none;
-        border-radius: 0;
-        max-width: none;
-        padding: 0;
-        color: var(--text);
-      }
-      p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, code, pre {
-        color: var(--text) !important;
-      }
-      a {
-        color: #0b57d0 !important;
-        text-decoration: none;
-      }
-      pre, blockquote, table { break-inside: avoid; }
+    .panel-close {
+      flex: 0 0 auto;
     }
+    button[aria-pressed="true"] {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+
+    @media (max-width: 760px) {
+      .theme-panel {
+        top: 68px;
+        bottom: 10px;
+        width: min(360px, calc(100vw - 20px));
+      }
+      .theme-panel[data-side="right"] {
+        right: 10px;
+      }
+      .theme-panel[data-side="left"] {
+        left: 10px;
+      }
+    }
+
   </style>
 </head>
 <body data-theme="light-clear" data-outline-position="left" data-content-position="center">
   <input id="mdFileInput" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden />
+  <div id="toast" class="toast" aria-live="polite" aria-hidden="true"></div>
 
   <div class="toolbar">
     <div id="fileName" class="filename">読み込みファイル: 未選択</div>
     <div class="toolbar-group">
       <button id="chooseFileBtn" type="button" aria-label="MarkdownまたはTextを選択">📄選択</button>
-      <button id="themeBtn" type="button" aria-label="デザインを変更">🎨デザイン</button>
+      <button id="themeBtn" type="button" aria-label="デザインを変更" aria-controls="themePanel" aria-expanded="false" aria-pressed="false">🎨デザイン</button>
       <button id="downloadHtmlBtn" type="button" aria-label="現在表示状態のHTMLを保存">💾HTML</button>
       <button id="printBtn" type="button" aria-label="印刷機能でPDF保存">🖨️PDF</button>
     </div>
@@ -924,10 +994,15 @@
     </main>
   </div>
 
-  <div id="themeModal" class="modal" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
-      <h2 id="themeModalTitle" class="modal-title">デザインを選択</h2>
-      <p class="modal-text">スタイルとモードを組み合わせてデザインを選択します。</p>
+  <aside id="themePanel" class="theme-panel" aria-hidden="true">
+    <div class="theme-panel-card" role="dialog" aria-modal="false" aria-labelledby="themePanelTitle">
+      <div class="theme-panel-header">
+        <div class="theme-panel-heading">
+          <h2 id="themePanelTitle" class="modal-title">デザインを選択</h2>
+          <p class="modal-text">スタイルとモードを組み合わせてデザインを選択します。</p>
+        </div>
+        <button id="closeThemeBtn" class="btn-secondary panel-close" type="button" aria-label="デザインパネルを閉じる">閉じる</button>
+      </div>
       <label class="modal-label" for="styleSelect">スタイル</label>
       <select id="styleSelect" class="modal-select">
         <option value="clear">クリア</option>
@@ -962,12 +1037,8 @@
         <p id="styleDescriptionTitle" class="style-description-title">クリア</p>
         <p id="styleDescriptionText" class="style-description-text">余計な装飾を抑え、情報を素直に読むための基準スタイルです。</p>
       </div>
-      <div class="modal-actions">
-        <button id="closeThemeBtn" class="btn-secondary" type="button">閉じる</button>
-        <button id="applyThemeBtn" type="button">適用</button>
-      </div>
     </div>
-  </div>
+  </aside>
 
   <script>
     const themeStyles = [
@@ -987,7 +1058,7 @@
     const outlinePositions = ["left", "right", "hidden"];
     const contentPositions = ["left", "center", "right"];
     const OUTLINE_AUTO_HIDE_BREAKPOINT = 760;
-    const OUTLINE_MIN_CENTER_WIDTH = 120;
+    const OUTLINE_MIN_WIDTH = 210;
     const THEME_PREF_KEY = "md_viewer_theme_pref_v2";
     const LEGACY_THEME_PREF_KEY = "md_viewer_theme_pref_v1";
     const THEME_PREF_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -997,24 +1068,26 @@
     let currentContentPosition = "center";
     let hasLoadedMarkdown = false;
     let currentBaseName = "md_viewer";
-    let themeBeforePrint = null;
+    let isThemePanelOpen = false;
+    let themePanelAnimation = null;
+    let toastTimer = null;
 
     const fileInputEl = document.getElementById("mdFileInput");
+    const toastEl = document.getElementById("toast");
     const chooseFileBtnEl = document.getElementById("chooseFileBtn");
     const fileNameEl = document.getElementById("fileName");
     const contentEl = document.getElementById("content");
     const outlineNavEl = document.getElementById("outlineNav");
     const themeBtnEl = document.getElementById("themeBtn");
     const downloadHtmlBtnEl = document.getElementById("downloadHtmlBtn");
-    const printBtnEl = document.getElementById("printBtn");
-    const themeModalEl = document.getElementById("themeModal");
+    const themePanelEl = document.getElementById("themePanel");
     const workspaceEl = document.querySelector(".workspace");
     const outlinePanelEl = document.querySelector(".outline-panel");
+    const outlinePanelCardEl = document.querySelector(".outline-panel-card");
     const styleSelectEl = document.getElementById("styleSelect");
     const modeSelectEl = document.getElementById("modeSelect");
     const outlinePositionSelectEl = document.getElementById("outlinePositionSelect");
     const contentPositionSelectEl = document.getElementById("contentPositionSelect");
-    const applyThemeBtnEl = document.getElementById("applyThemeBtn");
     const closeThemeBtnEl = document.getElementById("closeThemeBtn");
     const styleDescriptionTitleEl = document.getElementById("styleDescriptionTitle");
     const styleDescriptionTextEl = document.getElementById("styleDescriptionText");
@@ -1068,10 +1141,33 @@
     function inlineFormat(text) {
       let escaped = escapeHtml(text);
       escaped = escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+      escaped = escaped.replace(/~~([^~]+)~~/g, "<del>$1</del>");
       escaped = escaped.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
       escaped = escaped.replace(/\*([^*]+)\*/g, "<em>$1</em>");
       escaped = escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
       return escaped;
+    }
+    function parseTaskListItem(text) {
+      const match = text.match(/^\[( |x|X)\](?:\s+(.*))?$/);
+      if (!match) return null;
+      return {
+        checked: match[1].toLowerCase() === "x",
+        text: match[2] || "",
+      };
+    }
+    function getListOpenTag(type, variant) {
+      if (type === "ul" && variant === "task") {
+        return '<ul class="task-list">';
+      }
+      return `<${type}>`;
+    }
+    function parseBlockquoteLine(line) {
+      const match = line.match(/^\s*((?:>\s*)+)(.*)$/);
+      if (!match) return null;
+      return {
+        depth: (match[1].match(/>/g) || []).length,
+        text: match[2] || "",
+      };
     }
 
     function isTableSeparatorLine(line) {
@@ -1129,8 +1225,9 @@
       const out = [];
       let i = 0;
       let inCode = false;
+      let codeLines = [];
       const listStack = [];
-      let inBlockquote = false;
+      let blockquoteDepth = 0;
 
       function closeAllLists() {
         while (listStack.length > 0) {
@@ -1155,26 +1252,28 @@
         }
       }
       function handleListItem(type, indent, content) {
+        const task = type === "ul" ? parseTaskListItem(content) : null;
+        const variant = task ? "task" : "plain";
         closeListsToIndent(indent);
 
         let top = listStack[listStack.length - 1];
         if (!top) {
-          out.push(`<${type}>`);
-          listStack.push({ type, indent, liOpen: false });
+          out.push(getListOpenTag(type, variant));
+          listStack.push({ type, variant, indent, liOpen: false });
           top = listStack[listStack.length - 1];
         } else if (top.indent < indent) {
-          out.push(`<${type}>`);
-          listStack.push({ type, indent, liOpen: false });
+          out.push(getListOpenTag(type, variant));
+          listStack.push({ type, variant, indent, liOpen: false });
           top = listStack[listStack.length - 1];
-        } else if (top.indent === indent && top.type !== type) {
+        } else if (top.indent === indent && (top.type !== type || top.variant !== variant)) {
           if (top.liOpen) {
             out.push("</li>");
             top.liOpen = false;
           }
           out.push(`</${top.type}>`);
           listStack.pop();
-          out.push(`<${type}>`);
-          listStack.push({ type, indent, liOpen: false });
+          out.push(getListOpenTag(type, variant));
+          listStack.push({ type, variant, indent, liOpen: false });
           top = listStack[listStack.length - 1];
         }
 
@@ -1182,11 +1281,28 @@
           out.push("</li>");
           top.liOpen = false;
         }
-        out.push(`<li>${inlineFormat(content)}`);
+        if (task) {
+          const checkedAttr = task.checked ? " checked" : "";
+          out.push(
+            `<li class="task-list-item"><input class="task-list-checkbox" type="checkbox" disabled${checkedAttr} /><span class="task-list-text">${inlineFormat(task.text)}</span>`
+          );
+        } else {
+          out.push(`<li>${inlineFormat(content)}`);
+        }
         top.liOpen = true;
       }
-      function closeQuote() {
-        if (inBlockquote) { out.push("</blockquote>"); inBlockquote = false; }
+      function closeQuotesToDepth(targetDepth = 0) {
+        while (blockquoteDepth > targetDepth) {
+          out.push("</blockquote>");
+          blockquoteDepth -= 1;
+        }
+      }
+      function syncBlockquoteDepth(targetDepth) {
+        closeQuotesToDepth(targetDepth);
+        while (blockquoteDepth < targetDepth) {
+          out.push("<blockquote>");
+          blockquoteDepth += 1;
+        }
       }
 
       while (i < lines.length) {
@@ -1195,26 +1311,27 @@
 
         if (trimmed.startsWith("```")) {
           closeAllLists();
-          closeQuote();
+          closeQuotesToDepth();
           if (!inCode) {
             inCode = true;
-            out.push("<pre><code>");
+            codeLines = [];
           } else {
             inCode = false;
-            out.push("</code></pre>");
+            out.push(`<pre><code>${codeLines.join("\n")}</code></pre>`);
+            codeLines = [];
           }
           i += 1;
           continue;
         }
         if (inCode) {
-          out.push(escapeHtml(line));
+          codeLines.push(escapeHtml(line));
           i += 1;
           continue;
         }
 
         if (!trimmed) {
           closeAllLists();
-          closeQuote();
+          closeQuotesToDepth();
           out.push("");
           i += 1;
           continue;
@@ -1223,7 +1340,7 @@
         const plainHyphenLine = line.match(/^(\s*)__MDV_PLAIN_HYPHEN__(.*)$/);
         if (plainHyphenLine) {
           closeAllLists();
-          closeQuote();
+          closeQuotesToDepth();
           out.push(`<p>${inlineFormat(`${plainHyphenLine[1]}- ${plainHyphenLine[2]}`)}</p>`);
           i += 1;
           continue;
@@ -1231,7 +1348,7 @@
 
         if (i + 1 < lines.length && line.includes("|") && isTableSeparatorLine(lines[i + 1])) {
           closeAllLists();
-          closeQuote();
+          closeQuotesToDepth();
           const converted = convertTableBlock(lines, i);
           out.push(converted.html);
           i = converted.nextIndex;
@@ -1241,7 +1358,7 @@
         const heading = line.match(/^(#{1,6})\s+(.*)$/);
         if (heading) {
           closeAllLists();
-          closeQuote();
+          closeQuotesToDepth();
           const level = heading[1].length;
           out.push(`<h${level}>${inlineFormat(heading[2])}</h${level}>`);
           i += 1;
@@ -1250,7 +1367,7 @@
 
         if (/^---+$/.test(trimmed)) {
           closeAllLists();
-          closeQuote();
+          closeQuotesToDepth();
           out.push("<hr />");
           i += 1;
           continue;
@@ -1258,7 +1375,7 @@
 
         const ul = line.match(/^(\s*)[-*]\s+(.*)$/);
         if (ul) {
-          closeQuote();
+          closeQuotesToDepth();
           handleListItem("ul", ul[1].length, ul[2]);
           i += 1;
           continue;
@@ -1266,30 +1383,30 @@
 
         const ol = line.match(/^(\s*)\d+\.\s+(.*)$/);
         if (ol) {
-          closeQuote();
+          closeQuotesToDepth();
           handleListItem("ol", ol[1].length, ol[2]);
           i += 1;
           continue;
         }
 
-        const quote = line.match(/^\s*>\s?(.*)$/);
+        const quote = parseBlockquoteLine(line);
         if (quote) {
           closeAllLists();
-          if (!inBlockquote) { out.push("<blockquote>"); inBlockquote = true; }
-          out.push(`<p>${inlineFormat(quote[1])}</p>`);
+          syncBlockquoteDepth(quote.depth);
+          out.push(`<p>${inlineFormat(quote.text)}</p>`);
           i += 1;
           continue;
         }
 
         closeAllLists();
-        closeQuote();
+        closeQuotesToDepth();
         out.push(`<p>${inlineFormat(line)}</p>`);
         i += 1;
       }
 
       closeAllLists();
-      closeQuote();
-      if (inCode) out.push("</code></pre>");
+      closeQuotesToDepth();
+      if (inCode) out.push(`<pre><code>${codeLines.join("\n")}</code></pre>`);
       return out.join("\n");
     }
     function normalizeGoogleDocsMarkdown(text) {
@@ -1373,8 +1490,8 @@
       } else if (isContentCenter) {
         const idealContent = Math.max(0, Math.min(contentMaxWidth, availableWidth));
         let remainingSide = Math.max(0, Math.floor((availableWidth - idealContent) / 2));
-        if (remainingSide < OUTLINE_MIN_CENTER_WIDTH) {
-          const reservedForOutline = Math.min(OUTLINE_MIN_CENTER_WIDTH, Math.floor(availableWidth / 2));
+        if (remainingSide < OUTLINE_MIN_WIDTH) {
+          const reservedForOutline = Math.min(OUTLINE_MIN_WIDTH, Math.floor(availableWidth / 2));
           contentWidth = Math.max(0, Math.min(idealContent, availableWidth - (reservedForOutline * 2)));
           remainingSide = Math.max(0, Math.floor((availableWidth - contentWidth) / 2));
         } else {
@@ -1392,7 +1509,7 @@
           outlinePanelEl.style.order = "2";
         }
       } else {
-        outlineWidth = Math.min(baseOutlineWidth, Math.max(0, availableWidth - gap));
+        outlineWidth = Math.min(baseOutlineWidth, Math.max(OUTLINE_MIN_WIDTH, availableWidth - gap));
         contentWidth = Math.max(0, Math.min(contentMaxWidth, availableWidth - gap - outlineWidth));
         if (currentOutlinePosition === "left") {
           outlinePanelEl.style.order = "1";
@@ -1408,6 +1525,27 @@
       document.body.style.setProperty("--content-resolved-width", `${contentWidth.toFixed(2)}px`);
       document.body.style.setProperty("--left-gutter-width", `${leftGutterWidth.toFixed(2)}px`);
       document.body.style.setProperty("--right-gutter-width", `${rightGutterWidth.toFixed(2)}px`);
+      syncOutlinePanelCardPosition();
+    }
+    function syncOutlinePanelCardPosition() {
+      const outlineVisible = window.innerWidth > OUTLINE_AUTO_HIDE_BREAKPOINT && currentOutlinePosition !== "hidden";
+      if (!outlineVisible) {
+        outlinePanelCardEl.style.left = "";
+        outlinePanelCardEl.style.top = "";
+        outlinePanelCardEl.style.width = "";
+        outlinePanelCardEl.style.maxHeight = "";
+        return;
+      }
+
+      const panelRect = outlinePanelEl.getBoundingClientRect();
+      const contentRect = contentEl.getBoundingClientRect();
+      const topOffset = Math.max(16, Math.ceil(contentRect.top + window.scrollY));
+      const maxHeight = Math.max(120, Math.floor(window.innerHeight - topOffset - 20));
+
+      outlinePanelCardEl.style.left = `${Math.max(0, panelRect.left)}px`;
+      outlinePanelCardEl.style.top = `${topOffset}px`;
+      outlinePanelCardEl.style.width = `${Math.max(0, panelRect.width)}px`;
+      outlinePanelCardEl.style.maxHeight = `${maxHeight}px`;
     }
     function applyLayout() {
       document.body.setAttribute("data-outline-position", currentOutlinePosition);
@@ -1417,9 +1555,8 @@
       syncRuntimeLayout();
     }
 
-    function setDefaultThemeBySystem() {
-      const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-      currentMode = isDark ? "dark" : "light";
+    function setDefaultThemeMode() {
+      currentMode = "light";
     }
 
     function saveThemePreference() {
@@ -1484,16 +1621,115 @@
       }
     }
 
-    function openThemeModal() {
+    function getThemePanelSide() {
+      return currentOutlinePosition === "right" ? "left" : "right";
+    }
+    function getThemePanelOffset(side) {
+      const rect = themePanelEl.getBoundingClientRect();
+      const fallbackWidth = Math.min(360, Math.max(260, window.innerWidth - 24));
+      const travel = Math.max(rect.width || 0, fallbackWidth) + 32;
+      return side === "left" ? -travel : travel;
+    }
+    function stopThemePanelAnimation() {
+      if (themePanelAnimation) {
+        themePanelAnimation.cancel();
+        themePanelAnimation = null;
+      }
+    }
+    function setThemePanelOpenState(isOpen) {
+      themePanelEl.classList.toggle("open", isOpen);
+      themePanelEl.setAttribute("aria-hidden", isOpen ? "false" : "true");
+      themeBtnEl.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      themeBtnEl.setAttribute("aria-pressed", isOpen ? "true" : "false");
+      isThemePanelOpen = isOpen;
+    }
+    function syncThemePanelSide(options = {}) {
+      const { animate = false } = options;
+      const nextSide = getThemePanelSide();
+      const currentSide = themePanelEl.getAttribute("data-side");
+      if (currentSide === nextSide) return;
+
+      if (animate && isThemePanelOpen && currentSide) {
+        stopThemePanelAnimation();
+        const beforeRect = themePanelEl.getBoundingClientRect();
+        themePanelEl.setAttribute("data-side", nextSide);
+        const afterRect = themePanelEl.getBoundingClientRect();
+        const deltaX = beforeRect.left - afterRect.left;
+        if (deltaX !== 0) {
+          themePanelAnimation = themePanelEl.animate([
+            { transform: `translateX(${deltaX}px)` },
+            { transform: "translateX(0)" }
+          ], {
+            duration: 220,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            fill: "both",
+          });
+          themePanelAnimation.finished
+            .catch(() => {})
+            .finally(() => {
+              themePanelAnimation = null;
+              themePanelEl.style.transform = "";
+            });
+        }
+        return;
+      }
+
+      themePanelEl.setAttribute("data-side", nextSide);
+    }
+    function openThemePanel() {
       applyTheme();
       applyLayout();
-      themeModalEl.classList.add("open");
-      themeModalEl.setAttribute("aria-hidden", "false");
       renderStyleDescription();
+      stopThemePanelAnimation();
+      syncThemePanelSide();
+      setThemePanelOpenState(true);
+      const side = getThemePanelSide();
+      const offset = getThemePanelOffset(side);
+      themePanelAnimation = themePanelEl.animate([
+        { transform: `translateX(${offset}px)`, opacity: 0 },
+        { transform: "translateX(0)", opacity: 1 }
+      ], {
+        duration: 220,
+        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        fill: "both",
+      });
+      themePanelAnimation.finished
+        .catch(() => {})
+        .finally(() => {
+          themePanelAnimation = null;
+          themePanelEl.style.transform = "";
+          themePanelEl.style.opacity = "";
+        });
     }
-    function closeThemeModal() {
-      themeModalEl.classList.remove("open");
-      themeModalEl.setAttribute("aria-hidden", "true");
+    function closeThemePanel() {
+      if (!isThemePanelOpen) return;
+      stopThemePanelAnimation();
+      const side = themePanelEl.getAttribute("data-side") || getThemePanelSide();
+      const offset = getThemePanelOffset(side);
+      themePanelAnimation = themePanelEl.animate([
+        { transform: "translateX(0)", opacity: 1 },
+        { transform: `translateX(${offset}px)`, opacity: 0 }
+      ], {
+        duration: 190,
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        fill: "both",
+      });
+      themePanelAnimation.finished
+        .catch(() => {})
+        .finally(() => {
+          themePanelAnimation = null;
+          themePanelEl.style.transform = "";
+          themePanelEl.style.opacity = "";
+          setThemePanelOpenState(false);
+          syncThemePanelSide();
+        });
+    }
+    function toggleThemePanel() {
+      if (isThemePanelOpen) {
+        closeThemePanel();
+      } else {
+        openThemePanel();
+      }
     }
     function applyThemeFromSelect() {
       if (themeStyles.some((item) => item.id === styleSelectEl.value)) {
@@ -1510,8 +1746,9 @@
       }
       applyTheme();
       applyLayout();
+      syncThemePanelSide({ animate: true });
+      renderStyleDescription();
       saveThemePreference();
-      closeThemeModal();
     }
 
     function renderStyleDescription() {
@@ -1520,19 +1757,49 @@
       styleDescriptionTitleEl.textContent = `${modeLabel}・${targetStyle.label}`;
       styleDescriptionTextEl.textContent = targetStyle.text;
     }
+    function hideToast() {
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+      }
+      toastEl.classList.remove("open");
+      toastEl.setAttribute("aria-hidden", "true");
+    }
+    function showToast(message) {
+      if (!message) return;
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+      }
+      toastEl.textContent = message;
+      toastEl.classList.add("open");
+      toastEl.setAttribute("aria-hidden", "false");
+      toastTimer = window.setTimeout(() => {
+        hideToast();
+      }, 5000);
+    }
 
     async function loadSelectedMarkdownFile(file) {
-      const text = await file.text();
-      const normalizedText = normalizeGoogleDocsMarkdown(text);
-      const html = markdownToHtml(normalizedText);
-      contentEl.innerHTML = html;
-      buildOutline();
-      contentEl.classList.remove("initial-clickable");
-      document.body.classList.remove("drag-over-active");
-      currentBaseName = getBaseNameFromFileName(file.name);
-      document.title = currentBaseName;
-      fileNameEl.textContent = `読み込みファイル: ${file.name}`;
-      hasLoadedMarkdown = true;
+      try {
+        const text = await file.text();
+        const normalizedText = normalizeGoogleDocsMarkdown(text);
+        const html = markdownToHtml(normalizedText);
+        contentEl.innerHTML = html;
+        buildOutline();
+        contentEl.classList.remove("initial-clickable");
+        document.body.classList.remove("drag-over-active");
+        currentBaseName = getBaseNameFromFileName(file.name);
+        document.title = currentBaseName;
+        fileNameEl.textContent = `読み込みファイル: ${file.name}`;
+        hasLoadedMarkdown = true;
+        hideToast();
+        requestAnimationFrame(() => {
+          syncRuntimeLayout();
+        });
+      } catch {
+        document.body.classList.remove("drag-over-active");
+        showToast("このファイルは読み込めませんでした。Markdownまたはテキストを選んでください。");
+      }
     }
 
     function pickMarkdownFile(fileList) {
@@ -1553,6 +1820,16 @@
       // ツールバーやスクリプトを含まない、整形済み本文のみの静的HTMLを保存する。
       const styleEl = document.querySelector("style");
       const cssText = styleEl ? styleEl.textContent : "";
+      const exportCss = `
+    .export-shell {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 24px 20px;
+    }
+    .export-shell > .container {
+      margin: 0;
+    }`;
       const pageBody = contentEl.innerHTML;
       const themeId = composeThemeId();
       const title = escapeHtml(currentBaseName || "document");
@@ -1564,12 +1841,15 @@
   <title>${title}</title>
   <style>
 ${cssText}
+${exportCss}
   </style>
 </head>
 <body data-theme="${themeId}">
-  <main class="container">
+  <div class="export-shell">
+    <main class="container">
 ${pageBody}
-  </main>
+    </main>
+  </div>
 </body>
 </html>`;
       const blob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -1581,17 +1861,6 @@ ${pageBody}
       a.click();
       a.remove();
       URL.revokeObjectURL(sourceUrl);
-    }
-
-    function handleBeforePrint() {
-      themeBeforePrint = document.body.getAttribute("data-theme");
-      document.body.setAttribute("data-theme", "light-clear");
-    }
-
-    function handleAfterPrint() {
-      if (themeBeforePrint) {
-        document.body.setAttribute("data-theme", themeBeforePrint);
-      }
     }
 
     chooseFileBtnEl.addEventListener("click", () => {
@@ -1606,14 +1875,12 @@ ${pageBody}
       if (!hasLoadedMarkdown) fileInputEl.click();
     });
 
-    themeBtnEl.addEventListener("click", openThemeModal);
-    applyThemeBtnEl.addEventListener("click", applyThemeFromSelect);
-    closeThemeBtnEl.addEventListener("click", closeThemeModal);
-    styleSelectEl.addEventListener("change", renderStyleDescription);
-    modeSelectEl.addEventListener("change", renderStyleDescription);
-    themeModalEl.addEventListener("click", (ev) => {
-      if (ev.target === themeModalEl) closeThemeModal();
-    });
+    themeBtnEl.addEventListener("click", toggleThemePanel);
+    closeThemeBtnEl.addEventListener("click", closeThemePanel);
+    styleSelectEl.addEventListener("change", applyThemeFromSelect);
+    modeSelectEl.addEventListener("change", applyThemeFromSelect);
+    outlinePositionSelectEl.addEventListener("change", applyThemeFromSelect);
+    contentPositionSelectEl.addEventListener("change", applyThemeFromSelect);
     downloadHtmlBtnEl.addEventListener("click", downloadCurrentHtml);
     outlineNavEl.addEventListener("click", (ev) => {
       const trigger = ev.target.closest("button[data-target-id]");
@@ -1624,11 +1891,12 @@ ${pageBody}
       if (!targetHeading) return;
       targetHeading.scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    window.addEventListener("beforeprint", handleBeforePrint);
-    window.addEventListener("afterprint", handleAfterPrint);
     window.addEventListener("resize", syncRuntimeLayout);
-    printBtnEl.addEventListener("click", () => window.print());
-
+    window.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && isThemePanelOpen) {
+        closeThemePanel();
+      }
+    });
     window.addEventListener("dragover", (ev) => {
       ev.preventDefault();
       document.body.classList.add("drag-over-active");
@@ -1642,20 +1910,20 @@ ${pageBody}
       ev.preventDefault();
       document.body.classList.remove("drag-over-active");
       const file = pickMarkdownFile(ev.dataTransfer && ev.dataTransfer.files);
-      if (!file) return;
+      if (!file) {
+        showToast("対応しているのは .md / .markdown / .txt のみです。");
+        return;
+      }
       await loadSelectedMarkdownFile(file);
     });
 
     if (!restoreThemePreference()) {
-      setDefaultThemeBySystem();
+      setDefaultThemeMode();
     }
     applyTheme();
     applyLayout();
+    syncThemePanelSide();
     buildOutline();
   </script>
 </body>
 </html>
-
-
-
-
