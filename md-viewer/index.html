@@ -968,7 +968,7 @@
 
   </style>
 </head>
-<body data-theme="light-clear" data-outline-position="left" data-content-position="center">
+<body data-theme="light-clear" data-outline-position="left" data-content-position="center" data-opposite-gutter="keep">
   <input id="mdFileInput" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden />
   <div id="toast" class="toast" aria-live="polite" aria-hidden="true"></div>
 
@@ -1040,6 +1040,12 @@
         <option value="center">中央</option>
         <option value="right">右</option>
       </select>
+      <label class="modal-label" for="oppositeGutterSelect">アウトライン逆側ガター</label>
+      <select id="oppositeGutterSelect" class="modal-select">
+        <option value="keep">あり</option>
+        <option value="collapse">なし</option>
+      </select>
+      <p class="modal-note">本文位置が中央で、かつアウトラインを表示しているときだけ有効です。</p>
       <div id="styleDescription" class="style-description" aria-live="polite">
         <p id="styleDescriptionTitle" class="style-description-title">クリア</p>
         <p id="styleDescriptionText" class="style-description-text">余計な装飾を抑え、情報を素直に読むための基準スタイルです。</p>
@@ -1064,6 +1070,7 @@
     ];
     const outlinePositions = ["left", "right", "hidden"];
     const contentPositions = ["left", "center", "right"];
+    const oppositeGutterModes = ["keep", "collapse"];
     const OUTLINE_AUTO_HIDE_BREAKPOINT = 760;
     const OUTLINE_MIN_WIDTH = 242;
     const THEME_PREF_KEY = "md_viewer_theme_pref_v2";
@@ -1073,6 +1080,7 @@
     let currentMode = "light";
     let currentOutlinePosition = "left";
     let currentContentPosition = "center";
+    let currentOppositeGutterMode = "keep";
     let hasLoadedMarkdown = false;
     let currentBaseName = "md_viewer";
     let isThemePanelOpen = false;
@@ -1095,6 +1103,7 @@
     const modeSelectEl = document.getElementById("modeSelect");
     const outlinePositionSelectEl = document.getElementById("outlinePositionSelect");
     const contentPositionSelectEl = document.getElementById("contentPositionSelect");
+    const oppositeGutterSelectEl = document.getElementById("oppositeGutterSelect");
     const closeThemeBtnEl = document.getElementById("closeThemeBtn");
     const styleDescriptionTitleEl = document.getElementById("styleDescriptionTitle");
     const styleDescriptionTextEl = document.getElementById("styleDescriptionText");
@@ -1457,6 +1466,9 @@
     function isValidContentPosition(position) {
       return contentPositions.includes(position);
     }
+    function isValidOppositeGutterMode(mode) {
+      return oppositeGutterModes.includes(mode);
+    }
 
     function applyTheme() {
       document.body.setAttribute("data-theme", composeThemeId());
@@ -1496,24 +1508,45 @@
         }
       } else if (isContentCenter) {
         const idealContent = Math.max(0, Math.min(contentMaxWidth, availableWidth));
-        let remainingSide = Math.max(0, Math.floor((availableWidth - idealContent) / 2));
-        if (remainingSide < OUTLINE_MIN_WIDTH) {
-          const reservedForOutline = Math.min(OUTLINE_MIN_WIDTH, Math.floor(availableWidth / 2));
-          contentWidth = Math.max(0, Math.min(idealContent, availableWidth - (reservedForOutline * 2)));
-          remainingSide = Math.max(0, Math.floor((availableWidth - contentWidth) / 2));
+        if (currentOppositeGutterMode === "collapse") {
+          const reservedForOutline = Math.min(OUTLINE_MIN_WIDTH, availableWidth);
+          if (availableWidth - idealContent < OUTLINE_MIN_WIDTH) {
+            contentWidth = Math.max(0, Math.min(idealContent, availableWidth - reservedForOutline));
+          } else {
+            contentWidth = idealContent;
+          }
+          outlineWidth = Math.min(baseOutlineWidth, Math.max(0, availableWidth - contentWidth));
+          if (currentOutlinePosition === "left") {
+            leftGutterWidth = Math.max(0, availableWidth - contentWidth);
+            rightGutterWidth = 0;
+            outlinePanelEl.style.order = "1";
+            contentEl.style.order = "2";
+          } else {
+            leftGutterWidth = 0;
+            rightGutterWidth = Math.max(0, availableWidth - contentWidth);
+            contentEl.style.order = "1";
+            outlinePanelEl.style.order = "2";
+          }
         } else {
-          contentWidth = idealContent;
-        }
-        leftGutterWidth = remainingSide;
-        rightGutterWidth = remainingSide;
-        outlineWidth = Math.min(baseOutlineWidth, remainingSide);
+          let remainingSide = Math.max(0, Math.floor((availableWidth - idealContent) / 2));
+          if (remainingSide < OUTLINE_MIN_WIDTH) {
+            const reservedForOutline = Math.min(OUTLINE_MIN_WIDTH, Math.floor(availableWidth / 2));
+            contentWidth = Math.max(0, Math.min(idealContent, availableWidth - (reservedForOutline * 2)));
+            remainingSide = Math.max(0, Math.floor((availableWidth - contentWidth) / 2));
+          } else {
+            contentWidth = idealContent;
+          }
+          leftGutterWidth = remainingSide;
+          rightGutterWidth = remainingSide;
+          outlineWidth = Math.min(baseOutlineWidth, remainingSide);
 
-        if (currentOutlinePosition === "left") {
-          outlinePanelEl.style.order = "1";
-          contentEl.style.order = "2";
-        } else {
-          contentEl.style.order = "1";
-          outlinePanelEl.style.order = "2";
+          if (currentOutlinePosition === "left") {
+            outlinePanelEl.style.order = "1";
+            contentEl.style.order = "2";
+          } else {
+            contentEl.style.order = "1";
+            outlinePanelEl.style.order = "2";
+          }
         }
       } else {
         outlineWidth = Math.min(baseOutlineWidth, Math.max(OUTLINE_MIN_WIDTH, availableWidth - gap));
@@ -1557,8 +1590,10 @@
     function applyLayout() {
       document.body.setAttribute("data-outline-position", currentOutlinePosition);
       document.body.setAttribute("data-content-position", currentContentPosition);
+      document.body.setAttribute("data-opposite-gutter", currentOppositeGutterMode);
       outlinePositionSelectEl.value = currentOutlinePosition;
       contentPositionSelectEl.value = currentContentPosition;
+      oppositeGutterSelectEl.value = currentOppositeGutterMode;
       syncRuntimeLayout();
     }
 
@@ -1572,6 +1607,7 @@
         mode: currentMode,
         outlinePosition: currentOutlinePosition,
         contentPosition: currentContentPosition,
+        oppositeGutterMode: currentOppositeGutterMode,
         expiresAt: Date.now() + THEME_PREF_TTL_MS,
       };
       localStorage.setItem(THEME_PREF_KEY, JSON.stringify(payload));
@@ -1598,6 +1634,9 @@
             }
             if (isValidContentPosition(payload.contentPosition)) {
               currentContentPosition = payload.contentPosition;
+            }
+            if (isValidOppositeGutterMode(payload.oppositeGutterMode)) {
+              currentOppositeGutterMode = payload.oppositeGutterMode;
             }
             return true;
           }
@@ -1751,6 +1790,9 @@
       if (isValidContentPosition(contentPositionSelectEl.value)) {
         currentContentPosition = contentPositionSelectEl.value;
       }
+      if (isValidOppositeGutterMode(oppositeGutterSelectEl.value)) {
+        currentOppositeGutterMode = oppositeGutterSelectEl.value;
+      }
       applyTheme();
       applyLayout();
       syncThemePanelSide({ animate: true });
@@ -1888,6 +1930,7 @@ ${pageBody}
     modeSelectEl.addEventListener("change", applyThemeFromSelect);
     outlinePositionSelectEl.addEventListener("change", applyThemeFromSelect);
     contentPositionSelectEl.addEventListener("change", applyThemeFromSelect);
+    oppositeGutterSelectEl.addEventListener("change", applyThemeFromSelect);
     downloadHtmlBtnEl.addEventListener("click", downloadCurrentHtml);
     outlineNavEl.addEventListener("click", (ev) => {
       const trigger = ev.target.closest("button[data-target-id]");
