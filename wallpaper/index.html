@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Frozen Aurora Wireframe Wallpaper</title>
+  <style>
+    :root{
+      /* Glacier blue palette */
+      --ice-bg: #141b27;
+      --ice-deep: #0a1018;
+      --ice-mid: #202c3f;
+      --ice-ink: #d6e8f4;
+      --ice-sub: #7f93aa;
+      --ice-blue: #5f8fbc;
+      --ice-cyan: #83cbe7;
+      --ice-mint: #d4f4ff;
+
+      --ui-bg: rgba(20, 27, 39, 0.72);
+      --ui-bd: rgba(131, 203, 231, 0.24);
+      --ui-tx: rgba(214, 232, 244, 0.96);
+      --ui-sub: rgba(127, 147, 170, 0.92);
+      --btn-bg: rgba(32, 44, 63, 0.72);
+      --btn-bg2: rgba(40, 56, 80, 0.92);
+      --btn-bd: rgba(131, 203, 231, 0.32);
+      --shadow: 0 10px 30px rgba(0,0,0,0.40);
+    }
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: var(--ice-bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+    }
+    #wrap{
+      position: fixed;
+      inset: 0;
+    }
+    canvas{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .ui{
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      display: grid;
+      gap: 10px;
+      padding: 14px 14px 12px;
+      border-radius: 16px;
+      background: var(--ui-bg);
+      border: 1px solid var(--ui-bd);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      user-select: none;
+    }
+    .ui .title{
+      font-size: 13px;
+      letter-spacing: .02em;
+      color: var(--ui-tx);
+      line-height: 1.25;
+    }
+    .ui .subtitle{
+      font-size: 12px;
+      color: var(--ui-sub);
+      line-height: 1.35;
+    }
+    .ui .row{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 2px;
+    }
+    button{
+      appearance: none;
+      border: 1px solid var(--btn-bd);
+      background: linear-gradient(180deg, var(--btn-bg2), var(--btn-bg));
+      color: var(--ui-tx);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+      white-space: nowrap;
+    }
+    button:hover{
+      border-color: rgba(255,255,255,0.30);
+    }
+    button:active{
+      transform: translateY(1px);
+    }
+    .hint{
+      font-size: 11px;
+      color: rgba(255,255,255,0.55);
+      margin-top: 2px;
+    }
+    .badge{
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.78);
+    }
+    .topbar{
+      position: fixed;
+      right: 18px;
+      top: 18px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(10, 10, 16, 0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: rgba(255,255,255,0.70);
+      font-size: 12px;
+      letter-spacing: .02em;
+      user-select: none;
+    }
+    .topbar kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.85);
+      margin-left: 6px;
+    }
+
+    /* Light Flare - 光のフレア */
+    .light-flare {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, 
+        rgba(212, 244, 255, 0.18) 0%, 
+        rgba(131, 203, 231, 0.12) 26%, 
+        rgba(95, 143, 188, 0.06) 46%,
+        transparent 65%);
+      transform: translate(-50%, -50%);
+      filter: blur(50px);
+      pointer-events: none;
+      animation: pulse-flare 6s ease-in-out infinite;
+    }
+
+    @keyframes pulse-flare {
+      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    /* Light Rays - 光の筋 */
+    .light-rays {
+      position: absolute;
+      bottom: 42%;
+      left: 50%;
+      width: 140%;
+      height: 80%;
+      background: conic-gradient(from 0deg at 50% 100%,
+        transparent 0deg,
+        rgba(212, 244, 255, 0.035) 35deg,
+        transparent 45deg,
+        rgba(131, 203, 231, 0.028) 85deg,
+        transparent 95deg,
+        rgba(95, 143, 188, 0.03) 125deg,
+        transparent 135deg,
+        rgba(212, 244, 255, 0.018) 175deg,
+        transparent 185deg,
+        rgba(131, 203, 231, 0.03) 215deg,
+        transparent 225deg,
+        rgba(95, 143, 188, 0.026) 265deg,
+        transparent 275deg,
+        rgba(212, 244, 255, 0.018) 315deg,
+        transparent 325deg
+      );
+      transform: translate(-50%, 0);
+      mix-blend-mode: screen;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    /* Film Grain - フィルムグレイン */
+    .grain-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.05;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    /* Glow Particles - 浮遊粒子 */
+    .glow-particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--ice-cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 10px 2px rgba(131, 203, 231, 0.42);
+      pointer-events: none;
+    }
+
+    .glow-particle:nth-child(1) {
+      left: 20%; top: 30%;
+      animation: float1 12s infinite ease-in-out;
+    }
+    .glow-particle:nth-child(2) {
+      left: 75%; top: 25%;
+      animation: float2 15s infinite ease-in-out;
+    }
+    .glow-particle:nth-child(3) {
+      left: 50%; top: 40%;
+      animation: float3 18s infinite ease-in-out;
+    }
+    .glow-particle:nth-child(4),
+    .glow-particle:nth-child(5),
+    .glow-particle:nth-child(6) { display: none; }
+
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+      25% { transform: translate(15px, -25px); opacity: 0.7; }
+      50% { transform: translate(5px, -40px); opacity: 0.9; }
+      75% { transform: translate(-10px, -20px); opacity: 0.6; }
+    }
+
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0); opacity: 0.4; }
+      33% { transform: translate(-20px, -30px); opacity: 0.8; }
+      66% { transform: translate(10px, -50px); opacity: 0.7; }
+    }
+
+    @keyframes float3 {
+      0%, 100% { transform: translate(0, 0); opacity: 0.35; }
+      50% { transform: translate(8px, -35px); opacity: 0.85; }
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="c"></canvas>
+    
+    <!-- Visual Effects -->
+    <div class="light-flare"></div>
+    <div class="light-rays"></div>
+    <div class="grain-overlay"></div>
+    
+    <!-- Floating Particles -->
+    <div class="glow-particle"></div>
+    <div class="glow-particle"></div>
+    <div class="glow-particle"></div>
+    <div class="glow-particle"></div>
+    <div class="glow-particle"></div>
+    <div class="glow-particle"></div>
+  </div>
+
+  <div class="topbar">
+    Static render · Frozen Aurora
+    <kbd>R</kbd> で再描画
+  </div>
+
+  <div class="ui">
+    <div class="title">Frozen Aurora × Wireframe Grid</div>
+    <div class="subtitle">Glacier blue spectrum / 7-tone depth</div>
+    <div class="row">
+      <button id="btnPng">PNG(1920×1080) を保存</button>
+      <span class="badge" id="status">Ready</span>
+    </div>
+    <div class="hint">※ ノイズなし。レンダリングは静止（必要時のみ描画）。</div>
+  </div>
+
+  <!-- Three.js (ES Module版) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    // メインの初期化処理
+    function init() {
+      const canvas = document.getElementById("c");
+      const btnPng = document.getElementById("btnPng");
+      const statusEl = document.getElementById("status");
+
+    // ---------- Utils ----------
+    function clamp(x, a, b){ return Math.max(a, Math.min(b, x)); }
+    function lerp(a, b, t){ return a + (b - a) * t; }
+    function smoothstep(edge0, edge1, x){
+      const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+      return t * t * (3 - 2 * t);
+    }
+
+    function setStatus(text){
+      statusEl.textContent = text;
+    }
+
+    // ---------- Background Shader (Frozen aurora + subtle vignette) ----------
+    const bgScene = new THREE.Scene();
+    const bgCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    const bgMat = new THREE.ShaderMaterial({
+      uniforms: {
+        cTop:    { value: new THREE.Color("#233248") }, // upper sky
+        cMid:    { value: new THREE.Color("#141b27") }, // glacier night
+        cBot:    { value: new THREE.Color("#0d131d") }, // lower sky
+        cDeep:   { value: new THREE.Color("#070c12") }, // deeper
+        cAur1:   { value: new THREE.Color("#5f8fbc") }, // glacier blue
+        cAur2:   { value: new THREE.Color("#83cbe7") }, // bright cyan
+        cAur3:   { value: new THREE.Color("#d4f4ff") }  // ice highlight
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main(){
+          vUv = uv;
+          gl_Position = vec4(position.xy, 0.0, 1.0);
+        }
+      `,
+      fragmentShader: `
+        precision highp float;
+        varying vec2 vUv;
+        uniform vec3 cTop;
+        uniform vec3 cMid;
+        uniform vec3 cBot;
+        uniform vec3 cDeep;
+        uniform vec3 cAur1;
+        uniform vec3 cAur2;
+        uniform vec3 cAur3;
+
+        float sCurve(float x){
+          return x*x*(3.0 - 2.0*x);
+        }
+
+        float band(float y, float center, float width){
+          return 1.0 - smoothstep(0.0, 1.0, abs(y - center) / width);
+        }
+
+        void main(){
+          float y = clamp(vUv.y, 0.0, 1.0);
+
+          // 3-stop blend: bottom -> mid -> top
+          float t1 = sCurve(clamp((y - 0.00) / 0.52, 0.0, 1.0)); // bot->mid
+          vec3 cA = mix(cBot, cMid, t1);
+
+          float t2 = sCurve(clamp((y - 0.40) / 0.60, 0.0, 1.0)); // mid->top
+          vec3 cB = mix(cMid, cTop, t2);
+
+          vec3 col = mix(cA, cB, clamp((y - 0.30) / 0.70, 0.0, 1.0));
+
+          // Deepen bottom
+          col = mix(col, cDeep, sCurve(clamp((0.14 - y) / 0.14, 0.0, 1.0)) * 0.70);
+
+          // Glow band (upper sky)
+          float b1 = band(y, 0.72, 0.16);
+          float b2 = band(y, 0.60, 0.18);
+          float waves = sin(vUv.x * 8.0 + y * 6.5) * 0.5 + 0.5;
+          float ripple = sin(vUv.x * 18.0 - y * 12.0) * 0.5 + 0.5;
+          float aurora = (b1 * 0.8 + b2 * 0.6) * (0.55 + 0.45 * waves) * (0.65 + 0.35 * ripple);
+
+          vec3 aurCol = mix(cAur1, cAur2, waves);
+          aurCol = mix(aurCol, cAur3, ripple * 0.6);
+          col = mix(col, aurCol, aurora * 0.35);
+
+          // Subtle vignette
+          vec2 p = vUv * 2.0 - 1.0;
+          float v = 1.0 - smoothstep(0.40, 1.45, length(p));
+          col *= (0.72 + 0.28 * v);
+
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `,
+      depthTest: false,
+      depthWrite: false
+    });
+
+    const bgQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat);
+    bgScene.add(bgQuad);
+
+    // Add subtle stars
+    const starCount = 70;
+    const starGeom = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starCount * 3);
+    const starSizes = new Float32Array(starCount);
+    
+    for (let i = 0; i < starCount; i++) {
+      starPositions[i * 3] = (Math.random() - 0.5) * 2.5;
+      starPositions[i * 3 + 1] = Math.random() * 1.2 - 0.3;
+      starPositions[i * 3 + 2] = 0;
+      starSizes[i] = Math.random() * 1.5 + 0.5;
+    }
+    
+    starGeom.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    starGeom.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
+    
+    const starMat = new THREE.PointsMaterial({
+      color: 0xdbeefa,
+      size: 0.008,
+      transparent: true,
+      opacity: 0.30,
+      sizeAttenuation: false,
+      blending: THREE.AdditiveBlending
+    });
+    
+    const stars = new THREE.Points(starGeom, starMat);
+    bgScene.add(stars);
+
+    // ---------- Main Scene (Wireframe terrain) ----------
+    const scene = new THREE.Scene();
+
+    // Fog for depth
+    scene.fog = new THREE.Fog(new THREE.Color("#0a1018"), 140, 720);
+
+    const camera = new THREE.PerspectiveCamera(86, 16/9, 0.1, 1400);
+    camera.position.set(0, 58, 90);
+    camera.lookAt(0, 0, -220);
+
+    // Terrain size and resolution (wider for horizontal spread)
+    const WIDTH = 1300;          // X (wider) - かなり広め
+    const DEPTH = 900;           // Z (deeper) - 地平線まで
+    const SEGX = 420;
+    const SEGZ = 340;
+
+    const geom = new THREE.PlaneGeometry(WIDTH, DEPTH, SEGX, SEGZ);
+    geom.rotateX(-Math.PI / 2);
+    geom.translate(0, 0, -DEPTH * 0.45); // push to far horizon
+
+    // Random parameters for terrain generation
+    let randomParams = {
+      phase1: Math.random() * Math.PI * 2,
+      phase2: Math.random() * Math.PI * 2,
+      phase3: Math.random() * Math.PI * 2,
+      phase4: Math.random() * Math.PI * 2,
+      phase5: Math.random() * Math.PI * 2,
+      amp1: 18.0 + Math.random() * 8.0,
+      amp2: 10.0 + Math.random() * 6.0,
+      amp3: 7.0 + Math.random() * 5.0,
+      amp4: 14.0 + Math.random() * 6.0,
+      amp5: 9.0 + Math.random() * 4.0,
+      valleyAmp: 6.0 + Math.random() * 3.0
+    };
+
+    // Function to generate terrain with current random parameters
+    function generateTerrain() {
+      const pos = geom.attributes.position;
+      const v = new THREE.Vector3();
+
+      for (let i = 0; i < pos.count; i++){
+        v.fromBufferAttribute(pos, i);
+        const x = v.x;
+        const z = v.z;
+
+        // Distance factor for depth
+        const distFactor = clamp((-z) / (DEPTH * 0.65), 0, 1);
+        
+        // Rolling hills pattern (dramatic mountains and valleys with random phases)
+        const hill1 = Math.sin(x * 0.010 + randomParams.phase1) * randomParams.amp1;
+        const hill2 = Math.cos(x * 0.015 + z * 0.008 + randomParams.phase2) * randomParams.amp2;
+        const hill3 = Math.sin(x * 0.012 - z * 0.005 + randomParams.phase3) * randomParams.amp3;
+        const hill4 = Math.sin(x * 0.006 + z * 0.004 + randomParams.phase4) * randomParams.amp4;
+        const hill5 = Math.cos(x * 0.008 - z * 0.006 + randomParams.phase5) * randomParams.amp5;
+        
+        // Smooth longitudinal variation (deeper valleys)
+        const depthWave = Math.sin(z * 0.022) * 4.0 * (1.0 - distFactor * 0.6);
+        const valleyEffect = Math.cos(x * 0.006) * randomParams.valleyAmp;
+        
+        // Combine hills with dramatic variation
+        let h = (hill1 + hill2 + hill3 + hill4 + hill5 + valleyEffect) * (0.65 + distFactor * 0.45) + depthWave;
+        
+        // Lift and scale by distance (more dramatic)
+        h += (2.0 - distFactor * 2.6);
+        h *= (0.85 + distFactor * 0.35);
+
+        v.y = h;
+        pos.setXYZ(i, v.x, v.y, v.z);
+      }
+      pos.needsUpdate = true;
+    }
+
+    // Initial terrain generation
+    generateTerrain();
+
+    // Wireframe lines (main)
+    const glacierStops = [
+      { t: 0.00, color: new THREE.Color("#edf9ff") },
+      { t: 0.14, color: new THREE.Color("#d8f2ff") },
+      { t: 0.30, color: new THREE.Color("#bce9ff") },
+      { t: 0.46, color: new THREE.Color("#98ddfb") },
+      { t: 0.62, color: new THREE.Color("#74c9ec") },
+      { t: 0.80, color: new THREE.Color("#4f9fce") },
+      { t: 1.00, color: new THREE.Color("#315e97") }
+    ];
+    const wireHighlight = new THREE.Color("#f7fdff");
+
+    function sampleGlacier(t, target) {
+      const clamped = clamp(t, 0, 1);
+      for (let i = 1; i < glacierStops.length; i++) {
+        const prev = glacierStops[i - 1];
+        const next = glacierStops[i];
+        if (clamped <= next.t) {
+          const localT = (clamped - prev.t) / (next.t - prev.t);
+          return target.copy(prev.color).lerp(next.color, localT);
+        }
+      }
+      return target.copy(glacierStops[glacierStops.length - 1].color);
+    }
+
+    function applyWireGradient(lineGeometry) {
+      const pos = lineGeometry.attributes.position;
+      const colors = new Float32Array(pos.count * 3);
+      const c = new THREE.Color();
+
+      for (let i = 0; i < pos.count; i++) {
+        const y = pos.getY(i);
+        const z = pos.getZ(i);
+        const depthT = clamp((-z) / (DEPTH * 0.88), 0, 1);
+        const heightT = clamp((y + 30.0) / 58.0, 0, 1);
+        const shimmer = Math.sin(z * 0.010 + y * 0.12) * 0.025;
+        const mixT = clamp(depthT * 0.76 + heightT * 0.16 + shimmer, 0, 1);
+        sampleGlacier(mixT, c);
+        c.lerp(wireHighlight, 0.08);
+
+        colors[i * 3] = c.r;
+        colors[i * 3 + 1] = c.g;
+        colors[i * 3 + 2] = c.b;
+      }
+
+      lineGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+      return lineGeometry;
+    }
+
+    const wireGeom = applyWireGradient(new THREE.WireframeGeometry(geom));
+
+    const matMain = new THREE.LineBasicMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.62,
+      blending: THREE.AdditiveBlending
+    });
+
+    const matGlow = new THREE.LineBasicMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.14,
+      blending: THREE.AdditiveBlending
+    });
+
+    const linesMain = new THREE.LineSegments(wireGeom, matMain);
+    const linesGlow = new THREE.LineSegments(wireGeom, matGlow);
+    linesGlow.scale.set(1.0006, 1.0006, 1.0006);
+
+    scene.add(linesGlow);
+    scene.add(linesMain);
+
+    // ---------- Renderer ----------
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance",
+      preserveDrawingBuffer: false
+    });
+    renderer.autoClear = false;
+
+    function renderOnce(target){
+      target.clear(true, true, true);
+      target.render(bgScene, bgCam);
+      target.render(scene, camera);
+    }
+
+    function resizeAndRender(){
+      const w = Math.max(1, window.innerWidth);
+      const h = Math.max(1, window.innerHeight);
+
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, h, false);
+
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+
+      renderOnce(renderer);
+    }
+
+    window.addEventListener("resize", () => resizeAndRender(), { passive: true });
+
+    // Manual re-render with terrain regeneration
+    window.addEventListener("keydown", (e) => {
+      if ((e.key || "").toLowerCase() === "r"){
+        setStatus("Regenerating…");
+        
+        // Generate new random parameters
+        randomParams = {
+          phase1: Math.random() * Math.PI * 2,
+          phase2: Math.random() * Math.PI * 2,
+          phase3: Math.random() * Math.PI * 2,
+          phase4: Math.random() * Math.PI * 2,
+          phase5: Math.random() * Math.PI * 2,
+          amp1: 18.0 + Math.random() * 8.0,
+          amp2: 10.0 + Math.random() * 6.0,
+          amp3: 7.0 + Math.random() * 5.0,
+          amp4: 14.0 + Math.random() * 6.0,
+          amp5: 9.0 + Math.random() * 4.0,
+          valleyAmp: 6.0 + Math.random() * 3.0
+        };
+        
+        // Regenerate terrain
+        generateTerrain();
+        
+        // Recreate wireframe geometry
+        const newWireGeom = applyWireGradient(new THREE.WireframeGeometry(geom));
+        linesMain.geometry.dispose();
+        linesGlow.geometry.dispose();
+        linesMain.geometry = newWireGeom;
+        linesGlow.geometry = newWireGeom.clone();
+        
+        // Re-render
+        renderOnce(renderer);
+        setTimeout(() => setStatus("Ready"), 700);
+      }
+    });
+
+    // ---------- Export PNG 1920×1080 ----------
+    function exportPng1920(){
+      setStatus("Exporting…");
+
+      const W = 1920, H = 1080;
+
+      const off = document.createElement("canvas");
+      off.width = W; off.height = H;
+
+      const r = new THREE.WebGLRenderer({
+        canvas: off,
+        antialias: true,
+        alpha: false,
+        powerPreference: "high-performance",
+        preserveDrawingBuffer: true
+      });
+      r.autoClear = false;
+      r.setSize(W, H, false);
+      r.setPixelRatio(1);
+
+      const prevAspect = camera.aspect;
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+
+      r.clear(true, true, true);
+      r.render(bgScene, bgCam);
+      r.render(scene, camera);
+
+      camera.aspect = prevAspect;
+      camera.updateProjectionMatrix();
+
+      const url = off.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url;
+      
+      const now = new Date();
+      const timestamp = now.getFullYear() + 
+        String(now.getMonth() + 1).padStart(2, '0') + 
+        String(now.getDate()).padStart(2, '0') + 
+        String(now.getHours()).padStart(2, '0') + 
+        String(now.getMinutes()).padStart(2, '0') + 
+        String(now.getSeconds()).padStart(2, '0');
+      a.download = `frozen_aurora_wireframe_1920x1080_${timestamp}.png`;
+      
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      r.dispose();
+
+      setStatus("Saved");
+      setTimeout(() => setStatus("Ready"), 900);
+    }
+
+    btnPng.addEventListener("click", exportPng1920);
+
+    // First render
+    resizeAndRender();
+    }
+
+    // DOM読み込み完了後に初期化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
