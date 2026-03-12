@@ -31,6 +31,11 @@
   - デザイン切替（スタイル×ライト/ダーク）、PDF保存（印刷）、初回全画面ドラッグ&ドロップ対応
   - ▶ 公開ページ: https://hello-web-er0.pages.dev/md-viewer/
 
+- `wallpaper`/
+  - ワイヤーフレーム地形を描く静的な壁紙ジェネレーター
+  - 氷河ブルー系のグラデーション、`R` キーで再生成、PNG（1920×1080）保存に対応
+  - ▶ 公開ページ: https://hello-web-er0.pages.dev/wallpaper/
+
 ## 方針
 
 - なるべく単一 HTML で完結
