@@ -36,6 +36,12 @@
   - 氷河ブルー系のグラデーション、`R` キーで再生成、PNG（1920×1080）保存に対応
   - ▶ 公開ページ: https://hello-web-er0.pages.dev/wallpaper/
 
+
+- `wallpaper2`/
+  - 3案を切替できる先進的な壁紙ジェネレーター（Neon Flux Grid / Crystal Ring Array / Data Strata Ribbons）
+  - 開いた時点で描画、`R`/`1`/`2`/`3` で再生成・案切替、PNG（1920×1080）保存に対応
+  - ▶ 公開ページ: https://hello-web-er0.pages.dev/wallpaper2/
+
 ## 方針
 
 - なるべく単一 HTML で完結
