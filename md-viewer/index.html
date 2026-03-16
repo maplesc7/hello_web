@@ -678,6 +678,7 @@
       border-radius: 5px;
       padding: 0.14em 0.34em;
       font-size: .95em;
+      cursor: pointer;
     }
     pre {
       background: var(--code-bg);
@@ -685,6 +686,7 @@
       border-radius: 10px;
       padding: 14px;
       overflow-x: auto;
+      cursor: pointer;
     }
     pre code {
       border: none;
@@ -1428,7 +1430,19 @@
     function normalizeGoogleDocsMarkdown(text) {
       let normalized = text.replace(/\r\n?/g, "\n");
       normalized = normalized.replace(/^(\s*)\\-\s+(.*)$/gm, `$1${PLAIN_TEXT_HYPHEN_TOKEN}$2`);
+      const codeBlockSlots = [];
+      normalized = normalized.replace(/```[\s\S]*?```/g, (match) => {
+        codeBlockSlots.push(match);
+        return `__MDV_CODE_BLOCK_${codeBlockSlots.length - 1}__`;
+      });
+      const codeSpanSlots = [];
+      normalized = normalized.replace(/`[^`]+`/g, (match) => {
+        codeSpanSlots.push(match);
+        return `__MDV_CODE_SPAN_${codeSpanSlots.length - 1}__`;
+      });
       normalized = normalized.replace(/\\([\\`*_{}\[\]()#+\-.!|])/g, "$1");
+      normalized = normalized.replace(/__MDV_CODE_SPAN_(\d+)__/g, (_, idx) => codeSpanSlots[Number(idx)]);
+      normalized = normalized.replace(/__MDV_CODE_BLOCK_(\d+)__/g, (_, idx) => codeBlockSlots[Number(idx)]);
       return normalized;
     }
 
@@ -1820,6 +1834,17 @@
         clearTimeout(toastTimer);
         toastTimer = null;
       }
+      const wasOpen = toastEl.classList.contains("open");
+      if (wasOpen) {
+        toastEl.classList.remove("open");
+        toastTimer = window.setTimeout(() => {
+          toastEl.textContent = message;
+          toastEl.classList.add("open");
+          toastEl.setAttribute("aria-hidden", "false");
+          toastTimer = window.setTimeout(() => { hideToast(); }, 5000);
+        }, 250);
+        return;
+      }
       toastEl.textContent = message;
       toastEl.classList.add("open");
       toastEl.setAttribute("aria-hidden", "false");
@@ -1920,8 +1945,23 @@ ${pageBody}
       if (!file) return;
       await loadSelectedMarkdownFile(file);
     });
-    contentEl.addEventListener("click", () => {
-      if (!hasLoadedMarkdown) fileInputEl.click();
+    contentEl.addEventListener("click", async (ev) => {
+      if (!hasLoadedMarkdown) {
+        fileInputEl.click();
+        return;
+      }
+      let codeEl = ev.target.closest("pre code") || ev.target.closest("code");
+      if (!codeEl) {
+        const preEl = ev.target.closest("pre");
+        if (preEl) codeEl = preEl.querySelector("code");
+      }
+      if (!codeEl) return;
+      try {
+        await navigator.clipboard.writeText(codeEl.textContent);
+        showToast("コピーしました");
+      } catch {
+        showToast("コピーに失敗しました");
+      }
     });
 
     themeBtnEl.addEventListener("click", toggleThemePanel);
