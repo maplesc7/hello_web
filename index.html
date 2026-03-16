@@ -3,30 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Task Flow Log</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230f172a'/%3E%3Crect x='8' y='8' width='48' height='48' rx='11' fill='%2313274c' stroke='%237dd3fc' stroke-width='2.5'/%3E%3Cpath d='M20 33l8 8 16-19' stroke='%235be7ff' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <title>hello_web | README Sync Portal</title>
   <style>
     :root {
-      --task-ratio: 50;
-      --bg: #f7f7f8;
-      --bg-grad-1: #fdfdfe;
-      --bg-grad-2: #edf0f6;
-      --blob-1: rgba(182, 193, 214, 0.42);
-      --blob-2: rgba(149, 160, 186, 0.3);
-      --panel: rgba(255, 255, 255, 0.42);
-      --panel-strong: rgba(255, 255, 255, 0.56);
-      --text: #1a1a1a;
-      --muted: #6b7280;
-      --placeholder: rgba(75, 85, 99, 0.92);
-      --line: rgba(255, 255, 255, 0.48);
-      --btn-bg: rgba(20, 27, 42, 0.72);
-      --btn-text: #ffffff;
-      --accent: #2563eb;
+      --bg-0: #0b1220;
+      --bg-1: #0f1b34;
+      --bg-2: #13274c;
+      --glass: rgba(255, 255, 255, 0.12);
+      --glass-strong: rgba(255, 255, 255, 0.18);
+      --line: rgba(194, 229, 255, 0.26);
+      --text: #eaf4ff;
+      --muted: #b6cbe1;
+      --chip: rgba(122, 230, 255, 0.2);
+      --accent: #5be7ff;
       --accent-2: #7bffb6;
-      --overlay: rgba(9, 11, 19, 0.35);
-      --glass-shadow: 0 18px 36px rgba(17, 24, 39, 0.18);
-      --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-      --btn-glow: 0 10px 24px rgba(37, 99, 235, 0.28);
+      --shadow: 0 22px 48px rgba(0, 0, 0, 0.35);
+      --inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     * { box-sizing: border-box; }
@@ -34,895 +26,329 @@
     body {
       margin: 0;
       min-height: 100dvh;
-      background: var(--bg);
-      background-image: linear-gradient(145deg, var(--bg-grad-1), var(--bg-grad-2));
       color: var(--text);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      position: relative;
+      font-family: Inter, "Noto Sans JP", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 700px at -10% 110%, #294b77 0%, transparent 50%),
+                  radial-gradient(800px 500px at 110% -20%, #1f3f67 0%, transparent 50%),
+                  linear-gradient(145deg, var(--bg-2), var(--bg-1) 48%, var(--bg-0));
       overflow-x: hidden;
     }
 
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
-      filter: blur(12px);
-    }
-
-    body::before {
-      width: min(44vw, 540px);
-      aspect-ratio: 1;
-      left: -10vw;
-      top: 52vh;
-      background: radial-gradient(circle at 30% 30%, var(--blob-1), transparent 68%);
-    }
-
-    body::after {
-      width: min(40vw, 500px);
-      aspect-ratio: 1;
-      right: -8vw;
-      top: 8vh;
-      background: radial-gradient(circle at 40% 40%, var(--blob-2), transparent 70%);
-    }
-
-    .app {
-      width: 100%;
-      max-width: none;
-      margin: 0;
-      padding: 12px 18px;
-      position: relative;
-      z-index: 1;
-      height: 100dvh;
+    .wrap {
+      width: min(1120px, calc(100% - 28px));
+      margin: 22px auto 28px;
       display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 10px;
+      gap: 14px;
     }
 
-    .toolbar {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      width: fit-content;
-    }
-
-    .gear {
+    .glass {
       border: 1px solid var(--line);
-      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
-      color: var(--text);
-      border-radius: 8px;
-      min-width: 36px;
-      padding: 0 10px;
-      height: 36px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      backdrop-filter: blur(16px) saturate(130%);
-      -webkit-backdrop-filter: blur(16px) saturate(130%);
-      box-shadow: var(--glass-shadow), var(--glass-inset);
+      background: linear-gradient(135deg, var(--glass-strong), var(--glass));
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      box-shadow: var(--shadow), var(--inset);
+      border-radius: 16px;
     }
 
-    .clear {
-      border: 1px solid var(--line);
-      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
-      color: var(--text);
-      border-radius: 8px;
-      height: 38px;
-      padding: 0 14px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-      backdrop-filter: blur(14px) saturate(130%);
-      -webkit-backdrop-filter: blur(14px) saturate(130%);
-      box-shadow: var(--glass-shadow), var(--glass-inset);
-      transition: transform 0.25s ease;
-    }
-
-    .clear:hover {
-      transform: translateY(-2px);
-    }
-
-    .export {
-      border: 1px solid transparent;
-      background: linear-gradient(140deg, var(--accent), var(--accent-2));
-      color: var(--btn-text);
-      border-radius: 8px;
-      height: 38px;
-      padding: 0 14px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-      backdrop-filter: blur(14px) saturate(130%);
-      -webkit-backdrop-filter: blur(14px) saturate(130%);
-      box-shadow: var(--btn-glow);
-      transition: transform 0.25s ease;
-    }
-
-    .export:hover {
-      transform: translateY(-2px);
-    }
-
-    .work {
-      min-height: 0;
+    .hero {
+      padding: 18px;
       display: grid;
-      grid-template-rows: minmax(120px, calc(var(--task-ratio) * 1%)) 14px minmax(120px, 1fr);
-      gap: 0;
-    }
-
-    .task-pane,
-    .memo-pane {
-      min-height: 0;
-    }
-
-    .list {
-      border: 1px solid var(--line);
-      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
-      border-radius: 10px;
-      padding: 8px 10px;
-      height: 100%;
-      overflow-y: auto;
-      backdrop-filter: blur(18px) saturate(140%);
-      -webkit-backdrop-filter: blur(18px) saturate(140%);
-      box-shadow: var(--glass-shadow), var(--glass-inset);
-    }
-
-    .splitter {
-      cursor: ns-resize;
-      display: grid;
-      place-items: center;
-      user-select: none;
-      touch-action: none;
-    }
-
-    .splitter::before {
-      content: "";
-      width: 100%;
-      height: 2px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, transparent, var(--line), transparent);
-    }
-
-    .memo {
-      width: 100%;
-      height: 100%;
-      resize: none;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
-      color: var(--text);
-      padding: 10px 12px;
-      font: inherit;
-      line-height: 1.6;
-      overflow-y: auto;
-      backdrop-filter: blur(18px) saturate(140%);
-      -webkit-backdrop-filter: blur(18px) saturate(140%);
-      box-shadow: var(--glass-shadow), var(--glass-inset);
-    }
-
-    .memo::placeholder {
-      color: var(--muted);
-    }
-
-    input::placeholder {
-      color: var(--placeholder);
-      opacity: 1;
-    }
-
-    .row {
-      display: flex;
-      align-items: baseline;
-      min-height: 30px;
-      line-height: 1.6;
-      white-space: pre;
-      width: 100%;
-    }
-
-    .indent {
-      color: var(--text);
-      user-select: none;
-    }
-
-    .status {
-      cursor: pointer;
-      user-select: none;
+      gap: 12px;
     }
 
     .title {
-      flex: 1;
-      min-width: 1ch;
-      outline: none;
-      display: inline-block;
+      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      font-weight: 700;
+      letter-spacing: .02em;
     }
 
-    .title:empty::before {
-      content: "";
-      display: inline-block;
-      width: 1ch;
-    }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      display: none;
-      place-items: center;
-      background: var(--overlay);
-      z-index: 4;
-    }
-
-    .modal.open { display: grid; }
-
-    .panel {
-      width: 420px;
-      max-width: calc(100vw - 32px);
-      border: 1px solid var(--line);
-      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
-      border-radius: 12px;
-      padding: 14px;
-      backdrop-filter: blur(20px) saturate(140%);
-      -webkit-backdrop-filter: blur(20px) saturate(140%);
-      box-shadow: var(--glass-shadow), var(--glass-inset);
-    }
-
-    .head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .close {
-      border: 1px solid var(--line);
-      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
-      color: var(--text);
-      border-radius: 8px;
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      font: inherit;
-      backdrop-filter: blur(12px) saturate(130%);
-      -webkit-backdrop-filter: blur(12px) saturate(130%);
-    }
-
-    .field { margin-bottom: 12px; }
-
-    .label {
-      display: block;
-      margin-bottom: 6px;
+    .sub {
       color: var(--muted);
-      font-size: 13px;
+      font-size: .95rem;
+      line-height: 1.55;
     }
 
-    select, input {
-      width: 100%;
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button, .btn-link {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: linear-gradient(135deg, var(--panel-strong), var(--panel));
+      background: linear-gradient(140deg, rgba(91, 231, 255, 0.26), rgba(123, 255, 182, 0.2));
       color: var(--text);
-      padding: 8px 10px;
       font: inherit;
-      backdrop-filter: blur(10px) saturate(130%);
-      -webkit-backdrop-filter: blur(10px) saturate(130%);
+      border-radius: 11px;
+      padding: 8px 12px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px;
+    }
+
+    .pane {
+      min-height: 420px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .pane h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: .02em;
+    }
+
+    .muted { color: var(--muted); font-size: .85rem; }
+
+    .md {
+      display: grid;
+      gap: 10px;
+      line-height: 1.7;
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+
+    .md h1, .md h2, .md h3 { margin: 12px 0 2px; line-height: 1.3; }
+    .md h1 { font-size: 1.2rem; }
+    .md h2 { font-size: 1.05rem; }
+    .md h3 { font-size: 0.98rem; }
+    .md ul { margin: 0; padding-left: 1.2rem; }
+    .md p { margin: 0; }
+    .md code {
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 7px;
+      padding: 0 6px;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: .88em;
+    }
+    .md a { color: #95ecff; }
+
+    .cards {
+      display: grid;
+      gap: 8px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.07);
+      border-radius: 12px;
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .card .name { font-weight: 700; }
+    .card .desc { color: var(--muted); font-size: .9rem; }
+    .card .links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--chip);
+      border-radius: 999px;
+      font-size: .78rem;
+      padding: 4px 8px;
+      color: #dcf8ff;
+    }
+
+    .raw {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(0,0,0,.24);
+      color: #d8ebff;
+      padding: 10px;
+      max-height: 260px;
+      overflow: auto;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: .83rem;
+      line-height: 1.55;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .status {
+      justify-self: start;
+      font-size: .8rem;
+      color: #d6f6ff;
+      border: 1px solid rgba(255,255,255,.2);
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.24);
+    }
+
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+      .pane { min-height: auto; }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="toolbar">
-      <button class="export" id="export" type="button">全出力</button>
-      <button class="clear" id="clear" type="button">クリア</button>
-      <button class="gear" id="gear" type="button" aria-label="設定">設定</button>
-    </div>
+  <main class="wrap">
+    <section class="hero glass">
+      <div class="title">hello_web README Sync Portal</div>
+      <div class="sub">このページは <code>README.md</code> を読み込み、内容を自動反映します。READMEだけ更新しても、ここで機能説明とリンク導線を維持できます（グラスモーフィズムのデモも兼用）。</div>
+      <div class="actions">
+        <button id="reloadBtn" type="button">🔄 READMEを再読込</button>
+        <button id="toggleRawBtn" type="button">🧾 Raw Markdown表示</button>
+        <a class="btn-link" href="./README.md" target="_blank" rel="noreferrer noopener">📄 README.md を開く</a>
+      </div>
+      <div id="status" class="status">Loading…</div>
+    </section>
 
-    <div class="work" id="work">
-      <div class="task-pane">
-        <div class="list" id="list"></div>
-      </div>
-      <div class="splitter" id="splitter" role="separator" aria-label="タスクとメモの高さを調整" aria-orientation="horizontal"></div>
-      <div class="memo-pane">
-        <textarea class="memo" id="memo" placeholder="メモ専用エリアです。ここは時刻や完了状態の管理を行わず、自由に記録できます。"></textarea>
-      </div>
-    </div>
-  </div>
+    <section class="layout">
+      <article class="pane glass">
+        <h2>README Preview</h2>
+        <div class="muted">見やすいHTML表示（簡易Markdownパーサ）</div>
+        <div id="mdView" class="md"></div>
+        <pre id="rawView" class="raw"></pre>
+      </article>
 
-  <div class="modal" id="modal" aria-hidden="true">
-    <div class="panel">
-      <div class="head">
-        <strong>設定</strong>
-        <button class="close" id="close" type="button">×</button>
-      </div>
-      <div class="field">
-        <label class="label" for="fontPreset">フォント</label>
-        <select id="fontPreset">
-          <option value="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">システム等幅</option>
-          <option value="Consolas, 'Courier New', monospace">Consolas</option>
-          <option value="Menlo, Monaco, monospace">Menlo</option>
-          <option value="custom">カスタム</option>
-        </select>
-      </div>
-      <div class="field">
-        <label class="label" for="fontCustom">カスタム font-family</label>
-        <input id="fontCustom" type="text" placeholder="例: 'Fira Code', monospace" />
-      </div>
-      <div class="field">
-        <label class="label" for="colorMode">カラーモード</label>
-        <select id="colorMode">
-          <option value="auroraGlass">Aurora Glass</option>
-          <option value="light">ライト</option>
-          <option value="dark">ダーク</option>
-          <option value="icebergLight">Icebergライト</option>
-          <option value="icebergDark">Icebergダーク</option>
-        </select>
-      </div>
-    </div>
-  </div>
+      <aside class="pane glass">
+        <h2>Tools & Links</h2>
+        <div class="muted">READMEの「いま入っているもの」から抽出</div>
+        <div id="cards" class="cards"></div>
+      </aside>
+    </section>
+  </main>
 
   <script>
-    const listEl = document.getElementById('list');
-    const workEl = document.getElementById('work');
-    const splitterEl = document.getElementById('splitter');
-    const exportBtn = document.getElementById('export');
-    const clearBtn = document.getElementById('clear');
-    const gearBtn = document.getElementById('gear');
-    const modalEl = document.getElementById('modal');
-    const closeBtn = document.getElementById('close');
-    const fontPresetEl = document.getElementById('fontPreset');
-    const fontCustomEl = document.getElementById('fontCustom');
-    const colorModeEl = document.getElementById('colorMode');
-    const SETTINGS_KEY = 'tasklog_ui_settings_v1';
-    const CONTENT_KEY = 'tasklog_content_v1';
-    const CONTENT_TTL_MS = 365 * 24 * 60 * 60 * 1000;
-    const SAVE_DEBOUNCE_MS = 800;
-    const FULL_WIDTH_SPACE = '　';
-    const SPLIT_MIN = 20;
-    const SPLIT_MAX = 80;
-    let saveTimer = null;
+    const README_PATH = './README.md';
+    const statusEl = document.getElementById('status');
+    const mdViewEl = document.getElementById('mdView');
+    const rawViewEl = document.getElementById('rawView');
+    const cardsEl = document.getElementById('cards');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const toggleRawBtn = document.getElementById('toggleRawBtn');
 
-    const THEMES = {
-      auroraGlass: {
-        '--bg': '#091226', '--bg-grad-1': '#13274c', '--bg-grad-2': '#091226', '--blob-1': 'rgba(91, 231, 255, 0.28)',
-        '--blob-2': 'rgba(123, 255, 182, 0.24)', '--panel': 'rgba(255, 255, 255, 0.1)', '--panel-strong': 'rgba(255, 255, 255, 0.16)',
-        '--text': '#eaf4ff', '--muted': '#b8c7df', '--placeholder': 'rgba(214, 231, 255, 0.92)', '--line': 'rgba(255, 255, 255, 0.24)', '--btn-bg': 'rgba(91, 231, 255, 0.9)',
-        '--btn-text': '#041126', '--accent': '#5be7ff', '--accent-2': '#7bffb6', '--overlay': 'rgba(3, 8, 22, 0.56)',
-        '--glass-shadow': '0 24px 48px rgba(2, 8, 22, 0.45)', '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.18)',
-        '--btn-glow': '0 10px 24px rgba(91, 231, 255, 0.35)'
-      },
-      light: {
-        '--bg': '#f7f7f8', '--bg-grad-1': '#fdfdfe', '--bg-grad-2': '#edf0f6', '--blob-1': 'rgba(182, 193, 214, 0.42)',
-        '--blob-2': 'rgba(149, 160, 186, 0.3)', '--panel': 'rgba(255, 255, 255, 0.42)', '--panel-strong': 'rgba(255, 255, 255, 0.56)',
-        '--text': '#1a1a1a', '--muted': '#6b7280', '--placeholder': 'rgba(75, 85, 99, 0.92)', '--line': 'rgba(255, 255, 255, 0.48)', '--btn-bg': 'rgba(20, 27, 42, 0.72)',
-        '--btn-text': '#ffffff', '--accent': '#2563eb', '--accent-2': '#60a5fa', '--overlay': 'rgba(9, 11, 19, 0.35)', '--glass-shadow': '0 18px 36px rgba(17, 24, 39, 0.18)',
-        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.45)', '--btn-glow': '0 10px 24px rgba(37, 99, 235, 0.28)'
-      },
-      dark: {
-        '--bg': '#111318', '--bg-grad-1': '#161b25', '--bg-grad-2': '#0e1219', '--blob-1': 'rgba(101, 124, 163, 0.32)',
-        '--blob-2': 'rgba(75, 105, 143, 0.24)', '--panel': 'rgba(38, 45, 61, 0.46)', '--panel-strong': 'rgba(45, 54, 72, 0.6)',
-        '--text': '#e5e7eb', '--muted': '#9ca3af', '--placeholder': 'rgba(214, 224, 240, 0.86)', '--line': 'rgba(183, 197, 221, 0.22)', '--btn-bg': 'rgba(227, 234, 245, 0.74)',
-        '--btn-text': '#111827', '--accent': '#60a5fa', '--accent-2': '#93c5fd', '--overlay': 'rgba(0, 0, 0, 0.55)', '--glass-shadow': '0 22px 42px rgba(0, 0, 0, 0.45)',
-        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.14)', '--btn-glow': '0 10px 24px rgba(96, 165, 250, 0.28)'
-      },
-      icebergLight: {
-        '--bg': '#e8eef5', '--bg-grad-1': '#f2f7fc', '--bg-grad-2': '#dce6f2', '--blob-1': 'rgba(157, 183, 211, 0.4)',
-        '--blob-2': 'rgba(133, 161, 193, 0.34)', '--panel': 'rgba(246, 251, 255, 0.44)', '--panel-strong': 'rgba(252, 254, 255, 0.58)',
-        '--text': '#1f2d3d', '--muted': '#607186', '--placeholder': 'rgba(72, 91, 114, 0.9)', '--line': 'rgba(255, 255, 255, 0.5)', '--btn-bg': 'rgba(62, 126, 182, 0.76)',
-        '--btn-text': '#ffffff', '--accent': '#2c5f8f', '--accent-2': '#5f8fc2', '--overlay': 'rgba(34, 55, 78, 0.32)', '--glass-shadow': '0 18px 34px rgba(44, 77, 110, 0.22)',
-        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.5)', '--btn-glow': '0 10px 24px rgba(44, 95, 143, 0.26)'
-      },
-      icebergDark: {
-        '--bg': '#161821', '--bg-grad-1': '#1d2232', '--bg-grad-2': '#131620', '--blob-1': 'rgba(141, 160, 189, 0.28)',
-        '--blob-2': 'rgba(167, 180, 201, 0.22)', '--panel': 'rgba(34, 40, 58, 0.46)', '--panel-strong': 'rgba(43, 51, 72, 0.62)',
-        '--text': '#c6c8d1', '--muted': '#8e95b5', '--placeholder': 'rgba(199, 209, 228, 0.84)', '--line': 'rgba(201, 210, 228, 0.24)', '--btn-bg': 'rgba(132, 160, 198, 0.78)',
-        '--btn-text': '#161821', '--accent': '#a093c7', '--accent-2': '#8ab7df', '--overlay': 'rgba(0, 0, 0, 0.6)', '--glass-shadow': '0 24px 44px rgba(0, 0, 0, 0.48)',
-        '--glass-inset': 'inset 0 1px 0 rgba(255, 255, 255, 0.16)', '--btn-glow': '0 10px 24px rgba(160, 147, 199, 0.26)'
-      }
-    };
-
-    function hhmmNow() {
-      const d = new Date();
-      const h = String(d.getHours()).padStart(2, '0');
-      const m = String(d.getMinutes()).padStart(2, '0');
-      return h + m;
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     }
 
-    function rowPrefix(row) {
-      const start = row.dataset.start;
-      if (row.dataset.done === '1') {
-        return '✅' + start + '-' + row.dataset.end + FULL_WIDTH_SPACE;
-      }
-      return '🟨' + start + '-' + FULL_WIDTH_SPACE;
+    function inlineFormat(text) {
+      const escaped = escapeHtml(text);
+      const withCode = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
+      return withCode.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noreferrer noopener">$1</a>');
     }
 
-    function renderRow(row) {
-      row.querySelector('.indent').textContent = FULL_WIDTH_SPACE.repeat(Number(row.dataset.indent || 0));
-      row.querySelector('.status').textContent = rowPrefix(row);
-    }
+    function markdownToHtml(markdown) {
+      const lines = markdown.split('\n');
+      let html = '';
+      let inList = false;
 
-    function placeCaretEnd(el) {
-      el.focus();
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-
-    function caretOffset(el) {
-      const sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0) return (el.textContent || '').length;
-      const range = sel.getRangeAt(0);
-      if (!el.contains(range.startContainer)) return (el.textContent || '').length;
-      const pre = range.cloneRange();
-      pre.selectNodeContents(el);
-      pre.setEnd(range.startContainer, range.startOffset);
-      return pre.toString().length;
-    }
-
-    function placeCaretOffset(el, offset) {
-      el.focus();
-      const text = el.textContent || '';
-      const target = Math.max(0, Math.min(offset, text.length));
-      const range = document.createRange();
-      range.selectNodeContents(el);
-
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-      let node = null;
-      let remaining = target;
-      while ((node = walker.nextNode())) {
-        const len = node.textContent.length;
-        if (remaining <= len) {
-          range.setStart(node, remaining);
-          range.collapse(true);
-          const sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(range);
-          return;
+      const closeList = () => {
+        if (inList) {
+          html += '</ul>';
+          inList = false;
         }
-        remaining -= len;
-      }
-
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-
-    function createRow(afterRow, focusTitle, indentLevel = 0, state = null) {
-      const row = document.createElement('div');
-      row.className = 'row';
-      row.dataset.start = typeof state?.start === 'string' ? state.start : hhmmNow();
-      row.dataset.end = typeof state?.end === 'string' ? state.end : '';
-      row.dataset.done = state?.done === '1' ? '1' : '0';
-      row.dataset.indent = String(Number.isFinite(state?.indent) ? Math.max(0, state.indent) : indentLevel);
-
-      const indent = document.createElement('span');
-      indent.className = 'indent';
-
-      const status = document.createElement('span');
-      status.className = 'status';
-
-      const title = document.createElement('span');
-      title.className = 'title';
-      title.contentEditable = 'true';
-      title.spellcheck = false;
-      title.textContent = typeof state?.title === 'string' ? state.title : '';
-
-      row.append(indent, status, title);
-      if (afterRow && afterRow.parentNode === listEl) {
-        afterRow.insertAdjacentElement('afterend', row);
-      } else {
-        listEl.appendChild(row);
-      }
-
-      renderRow(row);
-      if (focusTitle) placeCaretEnd(title);
-      return row;
-    }
-
-    function serializeRows() {
-      return Array.from(listEl.querySelectorAll('.row')).map((row) => ({
-        start: row.dataset.start || hhmmNow(),
-        end: row.dataset.end || '',
-        done: row.dataset.done === '1' ? '1' : '0',
-        indent: Math.max(0, Number(row.dataset.indent || 0)),
-        title: row.querySelector('.title')?.textContent || ''
-      }));
-    }
-
-    function isInitialEmptyState(rows, memoText) {
-      if ((memoText || '') !== '') return false;
-      if (!Array.isArray(rows) || rows.length !== 1) return false;
-      const row = rows[0];
-      return row.done === '0' && row.end === '' && row.indent === 0 && row.title === '';
-    }
-
-    function saveContentNow() {
-      const rows = serializeRows();
-      const memoText = memoEl.value || '';
-      if (isInitialEmptyState(rows, memoText)) {
-        try {
-          localStorage.removeItem(CONTENT_KEY);
-        } catch (_) {}
-        return;
-      }
-
-      const payload = {
-        version: 1,
-        savedAt: Date.now(),
-        memo: memoText,
-        rows
       };
-      try {
-        localStorage.setItem(CONTENT_KEY, JSON.stringify(payload));
-      } catch (_) {}
-    }
 
-    function scheduleSaveContent() {
-      if (saveTimer) clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
-        saveTimer = null;
-        saveContentNow();
-      }, SAVE_DEBOUNCE_MS);
-    }
-
-    function clearSavedContent() {
-      if (saveTimer) {
-        clearTimeout(saveTimer);
-        saveTimer = null;
-      }
-      try {
-        localStorage.removeItem(CONTENT_KEY);
-      } catch (_) {}
-    }
-
-    function loadContent() {
-      try {
-        const raw = localStorage.getItem(CONTENT_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object') return null;
-
-        const savedAt = Number(parsed.savedAt);
-        if (!Number.isFinite(savedAt)) return null;
-        if (Date.now() - savedAt > CONTENT_TTL_MS) {
-          localStorage.removeItem(CONTENT_KEY);
-          return null;
+      for (const line of lines) {
+        if (/^###\s+/.test(line)) {
+          closeList();
+          html += `<h3>${inlineFormat(line.replace(/^###\s+/, ''))}</h3>`;
+          continue;
         }
-
-        const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
-        const normalizedRows = rows
-          .map((r) => ({
-            start: typeof r?.start === 'string' ? r.start : hhmmNow(),
-            end: typeof r?.end === 'string' ? r.end : '',
-            done: r?.done === '1' ? '1' : '0',
-            indent: Math.max(0, Number(r?.indent || 0)),
-            title: typeof r?.title === 'string' ? r.title : ''
-          }));
-
-        return {
-          memo: typeof parsed.memo === 'string' ? parsed.memo : '',
-          rows: normalizedRows
-        };
-      } catch (_) {
-        return null;
-      }
-    }
-
-    function resetTaskMemoToInitial() {
-      listEl.innerHTML = '';
-      memoEl.value = '';
-      createRow(null, false);
-    }
-
-    function restoreOrInitContent() {
-      const loaded = loadContent();
-      if (!loaded || loaded.rows.length === 0) {
-        resetTaskMemoToInitial();
-        return;
-      }
-
-      listEl.innerHTML = '';
-      memoEl.value = loaded.memo;
-      for (const row of loaded.rows) {
-        createRow(null, false, 0, row);
-      }
-    }
-
-    function lineText(row) {
-      const indent = FULL_WIDTH_SPACE.repeat(Number(row.dataset.indent || 0));
-      const title = row.querySelector('.title').textContent || '';
-      return indent + rowPrefix(row) + title;
-    }
-
-    async function copyText(text) {
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch (_) {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        ta.remove();
-      }
-    }
-
-    function toggleRowState(row) {
-      if (!row) return;
-      if (row.dataset.done === '1') {
-        row.dataset.done = '0';
-        row.dataset.end = '';
-      } else {
-        row.dataset.done = '1';
-        row.dataset.end = hhmmNow();
-      }
-      renderRow(row);
-      scheduleSaveContent();
-    }
-
-    function setTaskRatio(percent) {
-      const clamped = Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, percent));
-      document.documentElement.style.setProperty('--task-ratio', String(clamped));
-      splitterEl.setAttribute('aria-valuenow', String(Math.round(clamped)));
-    }
-
-    function initSplitResize() {
-      let dragging = false;
-
-      splitterEl.addEventListener('pointerdown', (e) => {
-        dragging = true;
-        splitterEl.setPointerCapture(e.pointerId);
-      });
-
-      splitterEl.addEventListener('pointermove', (e) => {
-        if (!dragging) return;
-        const rect = workEl.getBoundingClientRect();
-        const usable = rect.height - splitterEl.offsetHeight;
-        if (usable <= 0) return;
-        const top = e.clientY - rect.top - splitterEl.offsetHeight / 2;
-        setTaskRatio((top / usable) * 100);
-      });
-
-      splitterEl.addEventListener('pointerup', (e) => {
-        dragging = false;
-        splitterEl.releasePointerCapture(e.pointerId);
-      });
-
-      splitterEl.addEventListener('pointercancel', (e) => {
-        dragging = false;
-        if (splitterEl.hasPointerCapture(e.pointerId)) {
-          splitterEl.releasePointerCapture(e.pointerId);
+        if (/^##\s+/.test(line)) {
+          closeList();
+          html += `<h2>${inlineFormat(line.replace(/^##\s+/, ''))}</h2>`;
+          continue;
         }
-      });
-    }
-
-    listEl.addEventListener('click', (e) => {
-      const status = e.target.closest('.status');
-      if (status) {
-        toggleRowState(status.closest('.row'));
-        return;
-      }
-
-      const title = e.target.closest('.title');
-      if (title) {
-        return;
-      }
-
-      const row = e.target.closest('.row');
-      if (row) {
-        placeCaretEnd(row.querySelector('.title'));
-        return;
-      }
-
-      const last = listEl.querySelector('.row:last-child');
-      if (last) placeCaretEnd(last.querySelector('.title'));
-    });
-
-    listEl.addEventListener('keydown', (e) => {
-      const title = e.target.closest('.title');
-      if (!title) return;
-      const row = title.closest('.row');
-      if (!row) return;
-
-      if (e.altKey && String(e.key).toLowerCase() === 'c') {
-        e.preventDefault();
-        toggleRowState(row);
-        return;
-      }
-
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        createRow(row, true, Number(row.dataset.indent || 0));
-        scheduleSaveContent();
-        return;
-      }
-
-      if (e.key === 'ArrowLeft') {
-        const offset = caretOffset(title);
-        if (offset === 0) {
-          const prev = row.previousElementSibling;
-          if (prev && prev.classList.contains('row')) {
-            e.preventDefault();
-            placeCaretEnd(prev.querySelector('.title'));
+        if (/^#\s+/.test(line)) {
+          closeList();
+          html += `<h1>${inlineFormat(line.replace(/^#\s+/, ''))}</h1>`;
+          continue;
+        }
+        if (/^\s*-\s+/.test(line)) {
+          if (!inList) {
+            html += '<ul>';
+            inList = true;
           }
+          html += `<li>${inlineFormat(line.replace(/^\s*-\s+/, ''))}</li>`;
+          continue;
         }
-        return;
-      }
 
-      if (e.key === 'ArrowRight') {
-        const offset = caretOffset(title);
-        const len = (title.textContent || '').length;
-        if (offset >= len) {
-          const next = row.nextElementSibling;
-          if (next && next.classList.contains('row')) {
-            e.preventDefault();
-            placeCaretOffset(next.querySelector('.title'), 0);
-          }
-        }
-        return;
-      }
-
-      if (e.key === 'ArrowUp') {
-        const prev = row.previousElementSibling;
-        if (prev && prev.classList.contains('row')) {
-          e.preventDefault();
-          const offset = caretOffset(title);
-          placeCaretOffset(prev.querySelector('.title'), offset);
-        }
-        return;
-      }
-
-      if (e.key === 'ArrowDown') {
-        const next = row.nextElementSibling;
-        if (next && next.classList.contains('row')) {
-          e.preventDefault();
-          const offset = caretOffset(title);
-          placeCaretOffset(next.querySelector('.title'), offset);
-        }
-        return;
-      }
-
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        const n = Number(row.dataset.indent || 0);
-        row.dataset.indent = String(e.shiftKey ? Math.max(0, n - 1) : n + 1);
-        renderRow(row);
-        scheduleSaveContent();
-        return;
-      }
-
-      if (e.key === 'Backspace') {
-        const text = title.textContent || '';
-        if (text.length === 0) {
-          e.preventDefault();
-          const prev = row.previousElementSibling;
-          row.remove();
-          scheduleSaveContent();
-          if (prev && prev.classList.contains('row')) {
-            placeCaretEnd(prev.querySelector('.title'));
-          }
+        closeList();
+        if (line.trim() === '') {
+          html += '<p></p>';
+        } else {
+          html += `<p>${inlineFormat(line)}</p>`;
         }
       }
-    });
 
-    listEl.addEventListener('input', (e) => {
-      if (e.target.closest('.title')) scheduleSaveContent();
-    });
-
-    memoEl.addEventListener('input', () => {
-      scheduleSaveContent();
-    });
-
-    exportBtn.addEventListener('click', async () => {
-      const rows = Array.from(listEl.querySelectorAll('.row'));
-      const out = rows.map(lineText).join('\n');
-      await copyText(out);
-      listEl.innerHTML = '';
-      createRow(null, false);
-      scheduleSaveContent();
-    });
-
-    clearBtn.addEventListener('click', () => {
-      clearSavedContent();
-      resetTaskMemoToInitial();
-    });
-
-    function applyTheme(mode) {
-      const vars = THEMES[mode] || THEMES.auroraGlass;
-      for (const [k, v] of Object.entries(vars)) {
-        document.documentElement.style.setProperty(k, v);
-      }
+      closeList();
+      return html;
     }
 
-    function applyFont() {
-      const preset = fontPresetEl.value;
-      const font = preset === 'custom'
-        ? (fontCustomEl.value.trim() || "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace")
-        : preset;
-      document.body.style.fontFamily = font;
+    function extractTools(markdown) {
+      const lines = markdown.split('\n');
+      const tools = [];
+      let i = 0;
+      while (i < lines.length) {
+        const m = lines[i].match(/^\s*-\s+`([^`]+)`\/?\s*$/);
+        if (!m) { i += 1; continue; }
+
+        const tool = { name: m[1], desc: [], links: [] };
+        i += 1;
+        while (i < lines.length && /^\s{2,}-\s+/.test(lines[i])) {
+          const item = lines[i].replace(/^\s{2,}-\s+/, '').trim();
+          tool.desc.push(item);
+          const u = item.match(/https?:\/\/[^\s)]+/g);
+          if (u) tool.links.push(...u);
+          i += 1;
+        }
+        tools.push(tool);
+      }
+      return tools;
     }
 
-    function saveSettings() {
-      const settings = {
-        colorMode: colorModeEl.value,
-        fontPreset: fontPresetEl.value,
-        fontCustom: fontCustomEl.value
-      };
+    function renderCards(tools) {
+      if (!tools.length) {
+        cardsEl.innerHTML = '<div class="card"><div class="name">No tools found</div><div class="desc">READMEの箇条書き構造を確認してください。</div></div>';
+        return;
+      }
+
+      cardsEl.innerHTML = tools.map((tool) => {
+        const desc = tool.desc.slice(0, 2).map((d) => `<div class="desc">${inlineFormat(d)}</div>`).join('');
+        const links = [...new Set(tool.links)].map((u) => `<a class="chip" href="${u}" target="_blank" rel="noreferrer noopener">公開ページ</a>`).join('');
+        const local = `<a class="chip" href="./${tool.name.replace(/\/$/, '')}/">./${tool.name}</a>`;
+        return `<section class="card"><div class="name">${escapeHtml(tool.name)}</div>${desc}<div class="links">${local}${links}</div></section>`;
+      }).join('');
+    }
+
+    async function loadReadme() {
+      statusEl.textContent = 'Loading README…';
       try {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-      } catch (_) {}
-    }
+        const res = await fetch(`${README_PATH}?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const markdown = await res.text();
 
-    function loadSettings() {
-      const defaults = {
-        colorMode: 'auroraGlass',
-        fontPreset: "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace",
-        fontCustom: ''
-      };
-      try {
-        const raw = localStorage.getItem(SETTINGS_KEY);
-        if (!raw) return defaults;
-        const parsed = JSON.parse(raw);
-        return {
-          colorMode: typeof parsed.colorMode === 'string' ? parsed.colorMode : defaults.colorMode,
-          fontPreset: typeof parsed.fontPreset === 'string' ? parsed.fontPreset : defaults.fontPreset,
-          fontCustom: typeof parsed.fontCustom === 'string' ? parsed.fontCustom : defaults.fontCustom
-        };
-      } catch (_) {
-        return defaults;
+        mdViewEl.innerHTML = markdownToHtml(markdown);
+        rawViewEl.textContent = markdown;
+        renderCards(extractTools(markdown));
+        statusEl.textContent = `README synced (${new Date().toLocaleTimeString('ja-JP')})`;
+      } catch (error) {
+        mdViewEl.innerHTML = '<p>READMEの読み込みに失敗しました。静的ホスティングで同一ディレクトリ配信されているか確認してください。</p>';
+        cardsEl.innerHTML = '';
+        statusEl.textContent = `Load failed: ${error.message}`;
       }
     }
 
-    gearBtn.addEventListener('click', () => {
-      modalEl.classList.add('open');
-      modalEl.setAttribute('aria-hidden', 'false');
+    reloadBtn.addEventListener('click', loadReadme);
+    toggleRawBtn.addEventListener('click', () => {
+      rawViewEl.style.display = rawViewEl.style.display === 'block' ? 'none' : 'block';
     });
 
-    closeBtn.addEventListener('click', () => {
-      modalEl.classList.remove('open');
-      modalEl.setAttribute('aria-hidden', 'true');
-    });
-
-    modalEl.addEventListener('click', (e) => {
-      if (e.target === modalEl) {
-        modalEl.classList.remove('open');
-        modalEl.setAttribute('aria-hidden', 'true');
-      }
-    });
-
-    colorModeEl.addEventListener('change', () => {
-      applyTheme(colorModeEl.value);
-      saveSettings();
-    });
-
-    fontPresetEl.addEventListener('change', () => {
-      applyFont();
-      saveSettings();
-    });
-
-    fontCustomEl.addEventListener('input', () => {
-      if (fontPresetEl.value === 'custom') applyFont();
-      saveSettings();
-    });
-
-    window.addEventListener('beforeunload', () => {
-      saveContentNow();
-    });
-
-    const settings = loadSettings();
-    colorModeEl.value = THEMES[settings.colorMode] ? settings.colorMode : 'auroraGlass';
-    fontCustomEl.value = settings.fontCustom;
-    const presetExists = Array.from(fontPresetEl.options).some((o) => o.value === settings.fontPreset);
-    fontPresetEl.value = presetExists ? settings.fontPreset : fontPresetEl.options[0].value;
-
-    applyTheme(colorModeEl.value);
-    applyFont();
-    setTaskRatio(50);
-    initSplitResize();
-    restoreOrInitContent();
+    loadReadme();
   </script>
 </body>
 </html>
