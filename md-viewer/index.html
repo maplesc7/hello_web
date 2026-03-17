@@ -92,8 +92,6 @@
     body[data-theme$="-focus"] {
       --content-width: 980px;
       --content-padding: 34px 44px;
-      --font-body: "Verdana", "Yu Gothic UI", Meiryo, sans-serif;
-      --font-head: "Trebuchet MS", "Yu Gothic UI", Meiryo, sans-serif;
     }
     body[data-theme="light-focus"] {
       --bg-top: #f1f7f6;
@@ -215,8 +213,6 @@
     }
 
     body[data-theme$="-editorial"] {
-      --font-body: "Yu Mincho", "Hiragino Mincho ProN", serif;
-      --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
       --content-width: 920px;
       --body-line-height: 2;
     }
@@ -336,9 +332,15 @@
       --content-width: 920px;
       --content-padding: 40px 42px;
       --body-line-height: 2.05;
-      --font-body: "Yu Mincho", "Hiragino Mincho ProN", serif;
-      --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
       --motion-speed: 220ms;
+    }
+    body[data-font-mode="proportional"] {
+      --font-body: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+      --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
+    }
+    body[data-font-mode="monospace"] {
+      --font-body: "BIZ UDGothic", "MS Gothic", monospace;
+      --font-head: "BIZ UDGothic", "MS Gothic", monospace;
     }
     body[data-theme="light-reading"] {
       --bg-top: #fdfcf9;
@@ -585,7 +587,7 @@
       grid-template-columns: var(--left-gutter-width, 0px) var(--content-resolved-width, min(var(--content-width), 100%)) var(--right-gutter-width, 0px);
       column-gap: 0;
       row-gap: 0;
-      justify-content: stretch;
+      justify-content: center;
       align-items: start;
     }
     body[data-content-position="center"] .container {
@@ -601,6 +603,13 @@
       grid-column: 3;
       justify-self: start;
       align-self: start;
+    }
+    body[data-content-position="center"] .outline-panel-card {
+      position: sticky;
+      top: 76px;
+      left: auto;
+      width: 100%;
+      max-height: calc(100vh - 96px);
     }
 
     @media (max-width: 1080px) {
@@ -970,7 +979,7 @@
 
   </style>
 </head>
-<body data-theme="light-clear" data-outline-position="left" data-content-position="center" data-opposite-gutter="keep">
+<body data-theme="light-clear" data-font-mode="monospace" data-content-width-mode="standard" data-outline-position="left" data-content-position="center" data-opposite-gutter="keep">
   <input id="mdFileInput" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden />
   <div id="toast" class="toast" aria-live="polite" aria-hidden="true"></div>
 
@@ -1008,7 +1017,7 @@
       <div class="theme-panel-header">
         <div class="theme-panel-heading">
           <h2 id="themePanelTitle" class="modal-title">デザインを選択</h2>
-          <p class="modal-text">スタイルとモードを組み合わせてデザインを選択します。</p>
+          <p class="modal-text">スタイル・モード・フォントを組み合わせてデザインを選択します。</p>
         </div>
         <button id="closeThemeBtn" class="btn-secondary panel-close" type="button" aria-label="デザインパネルを閉じる">閉じる</button>
       </div>
@@ -1023,10 +1032,19 @@
         <option value="adaptive">アダプティブ・コントラスト</option>
         <option value="reading">フォーカス・リーディング</option>
       </select>
+      <div id="styleDescription" class="style-description" aria-live="polite">
+        <p id="styleDescriptionTitle" class="style-description-title">クリア</p>
+        <p id="styleDescriptionText" class="style-description-text">余計な装飾を抑え、情報を素直に読むための基準スタイルです。</p>
+      </div>
       <label class="modal-label" for="modeSelect">モード</label>
       <select id="modeSelect" class="modal-select">
         <option value="light">ライト</option>
         <option value="dark">ダーク</option>
+      </select>
+      <label class="modal-label" for="fontSelect">フォント</label>
+      <select id="fontSelect" class="modal-select">
+        <option value="proportional">プロポーショナル</option>
+        <option value="monospace">等幅</option>
       </select>
       <label class="modal-label" for="outlinePositionSelect">アウトライン位置</label>
       <select id="outlinePositionSelect" class="modal-select">
@@ -1042,16 +1060,18 @@
         <option value="center">中央</option>
         <option value="right">右</option>
       </select>
+      <label class="modal-label" for="contentWidthModeSelect">表示幅</label>
+      <select id="contentWidthModeSelect" class="modal-select">
+        <option value="standard">標準</option>
+        <option value="full">全幅</option>
+      </select>
+      <p class="modal-note">全幅では本文を表示領域いっぱいまで広げ、アウトライン設定は適用しません。</p>
       <label class="modal-label" for="oppositeGutterSelect">アウトライン逆側ガター</label>
       <select id="oppositeGutterSelect" class="modal-select">
         <option value="keep">あり</option>
         <option value="collapse">なし</option>
       </select>
-      <p class="modal-note">本文位置が中央で、かつアウトラインを表示しているときだけ有効です。</p>
-      <div id="styleDescription" class="style-description" aria-live="polite">
-        <p id="styleDescriptionTitle" class="style-description-title">クリア</p>
-        <p id="styleDescriptionText" class="style-description-text">余計な装飾を抑え、情報を素直に読むための基準スタイルです。</p>
-      </div>
+      <p class="modal-note">本文位置が中央で、かつアウトラインを表示しているときだけ有効です。幅に余裕がある間は本文を中央に保ち、足りなくなったら逆側ガターを先に詰めます。</p>
     </div>
   </aside>
 
@@ -1070,6 +1090,11 @@
       { id: "light", label: "ライト" },
       { id: "dark", label: "ダーク" },
     ];
+    const themeFonts = [
+      { id: "proportional", label: "プロポーショナル" },
+      { id: "monospace", label: "等幅" },
+    ];
+    const contentWidthModes = ["standard", "full"];
     const outlinePositions = ["left", "right", "hidden"];
     const contentPositions = ["left", "center", "right"];
     const oppositeGutterModes = ["keep", "collapse"];
@@ -1080,6 +1105,8 @@
     const THEME_PREF_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
     let currentStyle = "clear";
     let currentMode = "light";
+    let currentFontMode = "monospace";
+    let currentContentWidthMode = "standard";
     let currentOutlinePosition = "left";
     let currentContentPosition = "center";
     let currentOppositeGutterMode = "keep";
@@ -1103,8 +1130,10 @@
     const outlinePanelCardEl = document.querySelector(".outline-panel-card");
     const styleSelectEl = document.getElementById("styleSelect");
     const modeSelectEl = document.getElementById("modeSelect");
+    const fontSelectEl = document.getElementById("fontSelect");
     const outlinePositionSelectEl = document.getElementById("outlinePositionSelect");
     const contentPositionSelectEl = document.getElementById("contentPositionSelect");
+    const contentWidthModeSelectEl = document.getElementById("contentWidthModeSelect");
     const oppositeGutterSelectEl = document.getElementById("oppositeGutterSelect");
     const closeThemeBtnEl = document.getElementById("closeThemeBtn");
     const styleDescriptionTitleEl = document.getElementById("styleDescriptionTitle");
@@ -1480,18 +1509,32 @@
     function isValidContentPosition(position) {
       return contentPositions.includes(position);
     }
+    function isValidContentWidthMode(mode) {
+      return contentWidthModes.includes(mode);
+    }
+    function isValidFontMode(mode) {
+      return themeFonts.some((item) => item.id === mode);
+    }
     function isValidOppositeGutterMode(mode) {
       return oppositeGutterModes.includes(mode);
     }
 
     function applyTheme() {
       document.body.setAttribute("data-theme", composeThemeId());
+      document.body.setAttribute("data-font-mode", currentFontMode);
       styleSelectEl.value = currentStyle;
       modeSelectEl.value = currentMode;
+      fontSelectEl.value = currentFontMode;
       renderStyleDescription();
     }
+    function syncLayoutControlState() {
+      const isFullWidth = currentContentWidthMode === "full";
+      outlinePositionSelectEl.disabled = isFullWidth;
+      oppositeGutterSelectEl.disabled = isFullWidth;
+    }
     function syncRuntimeLayout() {
-      const effectiveOutlineHidden = window.innerWidth <= OUTLINE_AUTO_HIDE_BREAKPOINT || currentOutlinePosition === "hidden";
+      const isFullWidth = currentContentWidthMode === "full";
+      const effectiveOutlineHidden = isFullWidth || window.innerWidth <= OUTLINE_AUTO_HIDE_BREAKPOINT || currentOutlinePosition === "hidden";
       const outlineVisible = !effectiveOutlineHidden;
       const isContentLeft = currentContentPosition === "left";
       const isContentRight = currentContentPosition === "right";
@@ -1512,7 +1555,13 @@
 
       outlinePanelEl.style.display = outlineVisible ? "" : "none";
 
-      if (!outlineVisible) {
+      if (isFullWidth) {
+        contentEl.style.order = "1";
+        outlinePanelEl.style.order = "2";
+        contentWidth = Math.max(0, availableWidth);
+        leftGutterWidth = 0;
+        rightGutterWidth = 0;
+      } else if (!outlineVisible) {
         contentEl.style.order = "1";
         outlinePanelEl.style.order = "2";
         contentWidth = Math.max(0, Math.min(contentMaxWidth, availableWidth));
@@ -1522,27 +1571,37 @@
         }
       } else if (isContentCenter) {
         const idealContent = Math.max(0, Math.min(contentMaxWidth, availableWidth));
+        const totalSideSpace = Math.max(0, availableWidth - idealContent);
         if (currentOppositeGutterMode === "collapse") {
-          const reservedForOutline = Math.min(OUTLINE_MIN_WIDTH, availableWidth);
-          if (availableWidth - idealContent < OUTLINE_MIN_WIDTH) {
-            contentWidth = Math.max(0, Math.min(idealContent, availableWidth - reservedForOutline));
-          } else {
+          if (totalSideSpace >= OUTLINE_MIN_WIDTH * 2) {
+            const remainingSide = Math.max(0, Math.floor(totalSideSpace / 2));
             contentWidth = idealContent;
-          }
-          outlineWidth = Math.min(baseOutlineWidth, Math.max(0, availableWidth - contentWidth));
-          if (currentOutlinePosition === "left") {
-            leftGutterWidth = Math.max(0, availableWidth - contentWidth);
-            rightGutterWidth = 0;
-            outlinePanelEl.style.order = "1";
-            contentEl.style.order = "2";
+            outlineWidth = Math.min(baseOutlineWidth, remainingSide);
+            leftGutterWidth = remainingSide;
+            rightGutterWidth = remainingSide;
+          } else if (totalSideSpace >= OUTLINE_MIN_WIDTH) {
+            contentWidth = idealContent;
+            outlineWidth = Math.min(baseOutlineWidth, OUTLINE_MIN_WIDTH);
+            if (currentOutlinePosition === "left") {
+              leftGutterWidth = outlineWidth;
+              rightGutterWidth = Math.max(0, totalSideSpace - outlineWidth);
+            } else {
+              leftGutterWidth = Math.max(0, totalSideSpace - outlineWidth);
+              rightGutterWidth = outlineWidth;
+            }
           } else {
-            leftGutterWidth = 0;
-            rightGutterWidth = Math.max(0, availableWidth - contentWidth);
-            contentEl.style.order = "1";
-            outlinePanelEl.style.order = "2";
+            outlineWidth = Math.min(baseOutlineWidth, OUTLINE_MIN_WIDTH);
+            contentWidth = Math.max(0, Math.min(idealContent, availableWidth - outlineWidth));
+            if (currentOutlinePosition === "left") {
+              leftGutterWidth = outlineWidth;
+              rightGutterWidth = 0;
+            } else {
+              leftGutterWidth = 0;
+              rightGutterWidth = outlineWidth;
+            }
           }
         } else {
-          let remainingSide = Math.max(0, Math.floor((availableWidth - idealContent) / 2));
+          let remainingSide = Math.max(0, Math.floor(totalSideSpace / 2));
           if (remainingSide < OUTLINE_MIN_WIDTH) {
             const reservedForOutline = Math.min(OUTLINE_MIN_WIDTH, Math.floor(availableWidth / 2));
             contentWidth = Math.max(0, Math.min(idealContent, availableWidth - (reservedForOutline * 2)));
@@ -1550,17 +1609,17 @@
           } else {
             contentWidth = idealContent;
           }
+          outlineWidth = Math.min(baseOutlineWidth, remainingSide);
           leftGutterWidth = remainingSide;
           rightGutterWidth = remainingSide;
-          outlineWidth = Math.min(baseOutlineWidth, remainingSide);
+        }
 
-          if (currentOutlinePosition === "left") {
-            outlinePanelEl.style.order = "1";
-            contentEl.style.order = "2";
-          } else {
-            contentEl.style.order = "1";
-            outlinePanelEl.style.order = "2";
-          }
+        if (currentOutlinePosition === "left") {
+          outlinePanelEl.style.order = "1";
+          contentEl.style.order = "2";
+        } else {
+          contentEl.style.order = "1";
+          outlinePanelEl.style.order = "2";
         }
       } else {
         outlineWidth = Math.min(baseOutlineWidth, Math.max(OUTLINE_MIN_WIDTH, availableWidth - gap));
@@ -1582,8 +1641,16 @@
       syncOutlinePanelCardPosition();
     }
     function syncOutlinePanelCardPosition() {
-      const outlineVisible = window.innerWidth > OUTLINE_AUTO_HIDE_BREAKPOINT && currentOutlinePosition !== "hidden";
+      const outlineVisible = currentContentWidthMode !== "full" && window.innerWidth > OUTLINE_AUTO_HIDE_BREAKPOINT && currentOutlinePosition !== "hidden";
       if (!outlineVisible) {
+        outlinePanelCardEl.style.left = "";
+        outlinePanelCardEl.style.top = "";
+        outlinePanelCardEl.style.width = "";
+        outlinePanelCardEl.style.maxHeight = "";
+        return;
+      }
+
+      if (currentContentPosition === "center") {
         outlinePanelCardEl.style.left = "";
         outlinePanelCardEl.style.top = "";
         outlinePanelCardEl.style.width = "";
@@ -1602,12 +1669,15 @@
       outlinePanelCardEl.style.maxHeight = `${maxHeight}px`;
     }
     function applyLayout() {
+      document.body.setAttribute("data-content-width-mode", currentContentWidthMode);
       document.body.setAttribute("data-outline-position", currentOutlinePosition);
       document.body.setAttribute("data-content-position", currentContentPosition);
       document.body.setAttribute("data-opposite-gutter", currentOppositeGutterMode);
+      contentWidthModeSelectEl.value = currentContentWidthMode;
       outlinePositionSelectEl.value = currentOutlinePosition;
       contentPositionSelectEl.value = currentContentPosition;
       oppositeGutterSelectEl.value = currentOppositeGutterMode;
+      syncLayoutControlState();
       syncRuntimeLayout();
     }
 
@@ -1619,6 +1689,8 @@
       const payload = {
         style: currentStyle,
         mode: currentMode,
+        fontMode: currentFontMode,
+        contentWidthMode: currentContentWidthMode,
         outlinePosition: currentOutlinePosition,
         contentPosition: currentContentPosition,
         oppositeGutterMode: currentOppositeGutterMode,
@@ -1643,6 +1715,8 @@
           } else {
             currentStyle = payload.style;
             currentMode = payload.mode;
+            currentFontMode = isValidFontMode(payload.fontMode) ? payload.fontMode : "monospace";
+            currentContentWidthMode = isValidContentWidthMode(payload.contentWidthMode) ? payload.contentWidthMode : "standard";
             if (isValidOutlinePosition(payload.outlinePosition)) {
               currentOutlinePosition = payload.outlinePosition;
             }
@@ -1672,6 +1746,8 @@
         if (!themeModes.some((item) => item.id === payload.mode)) return false;
         currentStyle = payload.style;
         currentMode = payload.mode;
+        currentFontMode = "monospace";
+        currentContentWidthMode = "standard";
         localStorage.removeItem(LEGACY_THEME_PREF_KEY);
         saveThemePreference();
         return true;
@@ -1798,11 +1874,17 @@
       if (themeModes.some((item) => item.id === modeSelectEl.value)) {
         currentMode = modeSelectEl.value;
       }
+      if (themeFonts.some((item) => item.id === fontSelectEl.value)) {
+        currentFontMode = fontSelectEl.value;
+      }
       if (isValidOutlinePosition(outlinePositionSelectEl.value)) {
         currentOutlinePosition = outlinePositionSelectEl.value;
       }
       if (isValidContentPosition(contentPositionSelectEl.value)) {
         currentContentPosition = contentPositionSelectEl.value;
+      }
+      if (isValidContentWidthMode(contentWidthModeSelectEl.value)) {
+        currentContentWidthMode = contentWidthModeSelectEl.value;
       }
       if (isValidOppositeGutterMode(oppositeGutterSelectEl.value)) {
         currentOppositeGutterMode = oppositeGutterSelectEl.value;
@@ -1810,7 +1892,6 @@
       applyTheme();
       applyLayout();
       syncThemePanelSide({ animate: true });
-      renderStyleDescription();
       saveThemePreference();
     }
 
@@ -1918,7 +1999,7 @@ ${cssText}
 ${exportCss}
   </style>
 </head>
-<body data-theme="${themeId}">
+<body data-theme="${themeId}" data-font-mode="${currentFontMode}" data-content-width-mode="${currentContentWidthMode}">
   <div class="export-shell">
     <main class="container">
 ${pageBody}
@@ -1968,8 +2049,10 @@ ${pageBody}
     closeThemeBtnEl.addEventListener("click", closeThemePanel);
     styleSelectEl.addEventListener("change", applyThemeFromSelect);
     modeSelectEl.addEventListener("change", applyThemeFromSelect);
+    fontSelectEl.addEventListener("change", applyThemeFromSelect);
     outlinePositionSelectEl.addEventListener("change", applyThemeFromSelect);
     contentPositionSelectEl.addEventListener("change", applyThemeFromSelect);
+    contentWidthModeSelectEl.addEventListener("change", applyThemeFromSelect);
     oppositeGutterSelectEl.addEventListener("change", applyThemeFromSelect);
     downloadHtmlBtnEl.addEventListener("click", downloadCurrentHtml);
     outlineNavEl.addEventListener("click", (ev) => {
