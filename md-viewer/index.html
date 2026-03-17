@@ -980,13 +980,13 @@
   </style>
 </head>
 <body data-theme="light-clear" data-font-mode="monospace" data-content-width-mode="standard" data-outline-position="left" data-content-position="center" data-opposite-gutter="keep">
-  <input id="mdFileInput" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden />
   <div id="toast" class="toast" aria-live="polite" aria-hidden="true"></div>
 
   <div class="toolbar">
     <div id="fileName" class="filename">読み込みファイル: 未選択</div>
     <div class="toolbar-group">
       <button id="chooseFileBtn" type="button" aria-label="MarkdownまたはTextを選択">📄選択</button>
+      <button id="reloadFileBtn" type="button" aria-label="現在のMarkdownまたはTextを再読み込み" disabled>🔄再読み込み</button>
       <button id="themeBtn" type="button" aria-label="デザインを変更" aria-controls="themePanel" aria-expanded="false" aria-pressed="false">🎨デザイン</button>
       <button id="downloadHtmlBtn" type="button" aria-label="現在表示状態のHTMLを保存">💾HTML</button>
       <button id="printBtn" type="button" aria-label="印刷機能でPDF保存">🖨️PDF</button>
@@ -1006,7 +1006,7 @@
     <main id="content" class="container initial-clickable">
       <div class="empty">
         <p>Markdownファイルを選択するとここに表示されます。</p>
-        <p>最初に「Markdownを選択」を押すか、ページへドラッグ＆ドロップしてください（.md/.markdown/.txt）。</p>
+        <p>最初に「選択」を押すか、この領域をクリックするか、ページへドラッグ＆ドロップしてください（.md/.markdown/.txt）。</p>
         <p class="empty-note">このツールで読み込んだ Markdown ファイルは、お使いのブラウザ内でのみ処理されます。ファイル内容は外部へ送信されず、サーバーへのアップロードも行いません。</p>
       </div>
     </main>
@@ -1100,6 +1100,7 @@
     const oppositeGutterModes = ["keep", "collapse"];
     const OUTLINE_AUTO_HIDE_BREAKPOINT = 760;
     const OUTLINE_MIN_WIDTH = 242;
+    const AUTO_RELOAD_INTERVAL_MS = 5000;
     const THEME_PREF_KEY = "md_viewer_theme_pref_v2";
     const LEGACY_THEME_PREF_KEY = "md_viewer_theme_pref_v1";
     const THEME_PREF_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -1111,14 +1112,17 @@
     let currentContentPosition = "center";
     let currentOppositeGutterMode = "keep";
     let hasLoadedMarkdown = false;
+    let currentFileHandle = null;
     let currentBaseName = "md_viewer";
     let isThemePanelOpen = false;
     let themePanelAnimation = null;
     let toastTimer = null;
+    let autoReloadTimer = null;
+    let isMarkdownReloading = false;
 
-    const fileInputEl = document.getElementById("mdFileInput");
     const toastEl = document.getElementById("toast");
     const chooseFileBtnEl = document.getElementById("chooseFileBtn");
+    const reloadFileBtnEl = document.getElementById("reloadFileBtn");
     const fileNameEl = document.getElementById("fileName");
     const contentEl = document.getElementById("content");
     const outlineNavEl = document.getElementById("outlineNav");
@@ -1934,7 +1938,46 @@
       }, 5000);
     }
 
-    async function loadSelectedMarkdownFile(file) {
+    function updateReloadButtonState() {
+      const enabled = currentFileHandle !== null;
+      reloadFileBtnEl.disabled = !enabled;
+      reloadFileBtnEl.setAttribute("aria-disabled", enabled ? "false" : "true");
+    }
+
+    function canUseMarkdownFilePicker() {
+      return typeof window.showOpenFilePicker === "function" && window.isSecureContext;
+    }
+
+    function canUseMarkdownDropHandle() {
+      return typeof DataTransferItem !== "undefined"
+        && typeof DataTransferItem.prototype.getAsFileSystemHandle === "function"
+        && window.isSecureContext;
+    }
+
+    function isSupportedMarkdownFileName(fileName) {
+      const lower = (fileName || "").toLowerCase();
+      return lower.endsWith(".md") || lower.endsWith(".markdown") || lower.endsWith(".txt");
+    }
+
+    async function withMarkdownReloadLock(task) {
+      if (isMarkdownReloading) return false;
+      isMarkdownReloading = true;
+      try {
+        return await task();
+      } finally {
+        isMarkdownReloading = false;
+      }
+    }
+
+    function startAutoReloadTimer() {
+      if (autoReloadTimer !== null) return;
+      autoReloadTimer = window.setInterval(() => {
+        if (!currentFileHandle) return;
+        void reloadMarkdownFromCurrentHandle({ silentWhenMissing: true });
+      }, AUTO_RELOAD_INTERVAL_MS);
+    }
+
+    async function loadMarkdownFile(file) {
       try {
         const text = await file.text();
         const normalizedText = normalizeGoogleDocsMarkdown(text);
@@ -1942,7 +1985,6 @@
         contentEl.innerHTML = html;
         buildOutline();
         contentEl.classList.remove("initial-clickable");
-        document.body.classList.remove("drag-over-active");
         currentBaseName = getBaseNameFromFileName(file.name);
         document.title = currentBaseName;
         fileNameEl.textContent = `読み込みファイル: ${file.name}`;
@@ -1951,19 +1993,113 @@
         requestAnimationFrame(() => {
           syncRuntimeLayout();
         });
+        return true;
       } catch {
-        document.body.classList.remove("drag-over-active");
         showToast("このファイルは読み込めませんでした。Markdownまたはテキストを選んでください。");
+        return false;
       }
     }
 
-    function pickMarkdownFile(fileList) {
-      if (!fileList || fileList.length === 0) return null;
-      const files = Array.from(fileList);
-      return files.find((file) => {
-        const lower = (file.name || "").toLowerCase();
-        return lower.endsWith(".md") || lower.endsWith(".markdown") || lower.endsWith(".txt");
-      }) || null;
+    async function loadMarkdownFromHandle(handle) {
+      if (!handle) return false;
+      return withMarkdownReloadLock(async () => {
+        try {
+          const file = await handle.getFile();
+          if (!isSupportedMarkdownFileName(file.name)) {
+            showToast("対応しているのは .md / .markdown / .txt のみです。");
+            return false;
+          }
+          const loaded = await loadMarkdownFile(file);
+          if (!loaded) {
+            currentFileHandle = null;
+            updateReloadButtonState();
+            return false;
+          }
+          currentFileHandle = handle;
+          updateReloadButtonState();
+          return true;
+        } catch {
+          currentFileHandle = null;
+          updateReloadButtonState();
+          showToast("ファイルの再読み込みに失敗しました。選択し直してください。");
+          return false;
+        }
+      });
+    }
+
+    async function reloadMarkdownFromCurrentHandle(options = {}) {
+      const { silentWhenMissing = false } = options;
+      if (!currentFileHandle) {
+        if (!silentWhenMissing) {
+          showToast("再読み込みできるファイルがありません。");
+        }
+        return false;
+      }
+      return loadMarkdownFromHandle(currentFileHandle);
+    }
+
+    async function openMarkdownFilePicker() {
+      if (!canUseMarkdownFilePicker()) {
+        showToast("この環境では再読み込み対応のファイル選択を利用できません。Chrome の対応環境で開いてください。");
+        return;
+      }
+      try {
+        const handles = await window.showOpenFilePicker({
+          multiple: false,
+          excludeAcceptAllOption: true,
+          types: [
+            {
+              description: "Markdown またはテキスト",
+              accept: {
+                "text/markdown": [".md", ".markdown"],
+                "text/plain": [".txt"],
+              },
+            },
+          ],
+        });
+        const handle = handles && handles[0];
+        if (!handle) return;
+        await loadMarkdownFromHandle(handle);
+      } catch (error) {
+        if (error && error.name === "AbortError") return;
+        showToast("ファイル選択を開始できませんでした。Chrome の対応環境で開いてください。");
+      }
+    }
+
+    async function loadMarkdownFromDrop(event) {
+      try {
+        if (!canUseMarkdownDropHandle()) {
+          showToast("この環境ではドラッグ＆ドロップ読込を利用できません。Chrome の対応環境で開いてください。");
+          return;
+        }
+        const items = Array.from(event.dataTransfer?.items || []);
+        if (items.length === 0) {
+          showToast("ドロップされた項目を認識できませんでした。");
+          return;
+        }
+        const handlePromises = items
+          .filter((item) => item.kind === "file")
+          .map((item) => item.getAsFileSystemHandle());
+        if (handlePromises.length === 0) {
+          showToast("対応しているのは .md / .markdown / .txt のみです。");
+          return;
+        }
+        const handles = await Promise.all(handlePromises);
+        const fileHandle = handles.find((handle) => {
+          return handle
+            && handle.kind === "file"
+            && isSupportedMarkdownFileName(handle.name);
+        });
+        if (!fileHandle) {
+          showToast("対応しているのは .md / .markdown / .txt のみです。");
+          return;
+        }
+        await loadMarkdownFromHandle(fileHandle);
+      } catch {
+        showToast("ドラッグ＆ドロップされたファイルを読み込めませんでした。");
+      } finally {
+        document.body.classList.remove("drag-over-active");
+      }
     }
 
     function getBaseNameFromFileName(fileName) {
@@ -2018,17 +2154,15 @@ ${pageBody}
       URL.revokeObjectURL(sourceUrl);
     }
 
-    chooseFileBtnEl.addEventListener("click", () => {
-      fileInputEl.click();
+    chooseFileBtnEl.addEventListener("click", async () => {
+      await openMarkdownFilePicker();
     });
-    fileInputEl.addEventListener("change", async () => {
-      const file = fileInputEl.files && fileInputEl.files[0];
-      if (!file) return;
-      await loadSelectedMarkdownFile(file);
+    reloadFileBtnEl.addEventListener("click", async () => {
+      await reloadMarkdownFromCurrentHandle();
     });
     contentEl.addEventListener("click", async (ev) => {
       if (!hasLoadedMarkdown) {
-        fileInputEl.click();
+        await openMarkdownFilePicker();
         return;
       }
       let codeEl = ev.target.closest("pre code") || ev.target.closest("code");
@@ -2081,18 +2215,14 @@ ${pageBody}
     });
     window.addEventListener("drop", async (ev) => {
       ev.preventDefault();
-      document.body.classList.remove("drag-over-active");
-      const file = pickMarkdownFile(ev.dataTransfer && ev.dataTransfer.files);
-      if (!file) {
-        showToast("対応しているのは .md / .markdown / .txt のみです。");
-        return;
-      }
-      await loadSelectedMarkdownFile(file);
+      await loadMarkdownFromDrop(ev);
     });
 
     if (!restoreThemePreference()) {
       setDefaultThemeMode();
     }
+    updateReloadButtonState();
+    startAutoReloadTimer();
     applyTheme();
     applyLayout();
     syncThemePanelSide();
