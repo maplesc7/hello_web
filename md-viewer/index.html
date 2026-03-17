@@ -1113,6 +1113,7 @@
     let currentOppositeGutterMode = "keep";
     let hasLoadedMarkdown = false;
     let currentFileHandle = null;
+    let lastLoadedNormalizedText = null;
     let currentBaseName = "md_viewer";
     let isThemePanelOpen = false;
     let themePanelAnimation = null;
@@ -1981,13 +1982,20 @@
       try {
         const text = await file.text();
         const normalizedText = normalizeGoogleDocsMarkdown(text);
+        const fileBaseName = getBaseNameFromFileName(file.name);
+        const isSameContent = hasLoadedMarkdown && normalizedText === lastLoadedNormalizedText;
+        currentBaseName = fileBaseName;
+        document.title = currentBaseName;
+        fileNameEl.textContent = `読み込みファイル: ${file.name}`;
+        if (isSameContent) {
+          hideToast();
+          return true;
+        }
         const html = markdownToHtml(normalizedText);
         contentEl.innerHTML = html;
         buildOutline();
         contentEl.classList.remove("initial-clickable");
-        currentBaseName = getBaseNameFromFileName(file.name);
-        document.title = currentBaseName;
-        fileNameEl.textContent = `読み込みファイル: ${file.name}`;
+        lastLoadedNormalizedText = normalizedText;
         hasLoadedMarkdown = true;
         hideToast();
         requestAnimationFrame(() => {
