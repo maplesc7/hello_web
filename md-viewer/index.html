@@ -389,6 +389,7 @@
       --outline-resolved-width: 300px;
       --left-gutter-width: 0px;
       --right-gutter-width: 0px;
+      --outline-sticky-top: 76px;
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
       color: var(--text);
       font-family: var(--font-body);
@@ -489,23 +490,24 @@
       overflow: visible;
     }
     .outline-panel {
-      position: relative;
+      position: sticky;
       flex: 0 0 var(--outline-resolved-width, var(--outline-base-width));
       width: var(--outline-resolved-width, var(--outline-base-width));
       min-width: 0;
+      align-self: flex-start;
+      top: var(--outline-sticky-top);
       z-index: 1;
     }
     .outline-panel-card {
-      position: fixed;
+      position: relative;
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: 14px;
       box-shadow: 0 10px 16px -12px rgba(16, 26, 42, 0.22);
       padding: 18px 12px;
-      top: var(--outline-fixed-top, 70px);
-      left: var(--outline-fixed-left, 20px);
-      width: var(--outline-resolved-width, var(--outline-base-width));
-      max-height: var(--outline-fixed-max-height, calc(100vh - 92px));
+      left: auto;
+      width: 100%;
+      max-height: calc(100vh - var(--outline-sticky-top) - 20px);
       overflow: auto;
       transition: all var(--motion-speed) ease;
     }
@@ -604,14 +606,6 @@
       justify-self: start;
       align-self: start;
     }
-    body[data-content-position="center"] .outline-panel-card {
-      position: sticky;
-      top: 76px;
-      left: auto;
-      width: 100%;
-      max-height: calc(100vh - 96px);
-    }
-
     @media (max-width: 1080px) {
       .workspace {
         --layout-gap: 18px;
@@ -1133,6 +1127,7 @@
     const workspaceEl = document.querySelector(".workspace");
     const outlinePanelEl = document.querySelector(".outline-panel");
     const outlinePanelCardEl = document.querySelector(".outline-panel-card");
+    const toolbarEl = document.querySelector(".toolbar");
     const styleSelectEl = document.getElementById("styleSelect");
     const modeSelectEl = document.getElementById("modeSelect");
     const fontSelectEl = document.getElementById("fontSelect");
@@ -1643,35 +1638,14 @@
       document.body.style.setProperty("--content-resolved-width", `${contentWidth.toFixed(2)}px`);
       document.body.style.setProperty("--left-gutter-width", `${leftGutterWidth.toFixed(2)}px`);
       document.body.style.setProperty("--right-gutter-width", `${rightGutterWidth.toFixed(2)}px`);
-      syncOutlinePanelCardPosition();
+      syncOutlineStickyOffset();
     }
-    function syncOutlinePanelCardPosition() {
-      const outlineVisible = currentContentWidthMode !== "full" && window.innerWidth > OUTLINE_AUTO_HIDE_BREAKPOINT && currentOutlinePosition !== "hidden";
-      if (!outlineVisible) {
-        outlinePanelCardEl.style.left = "";
-        outlinePanelCardEl.style.top = "";
-        outlinePanelCardEl.style.width = "";
-        outlinePanelCardEl.style.maxHeight = "";
-        return;
-      }
-
-      if (currentContentPosition === "center") {
-        outlinePanelCardEl.style.left = "";
-        outlinePanelCardEl.style.top = "";
-        outlinePanelCardEl.style.width = "";
-        outlinePanelCardEl.style.maxHeight = "";
-        return;
-      }
-
-      const panelRect = outlinePanelEl.getBoundingClientRect();
-      const contentRect = contentEl.getBoundingClientRect();
-      const topOffset = Math.max(16, Math.ceil(contentRect.top + window.scrollY));
-      const maxHeight = Math.max(120, Math.floor(window.innerHeight - topOffset - 20));
-
-      outlinePanelCardEl.style.left = `${Math.max(0, panelRect.left)}px`;
-      outlinePanelCardEl.style.top = `${topOffset}px`;
-      outlinePanelCardEl.style.width = `${Math.max(0, panelRect.width)}px`;
-      outlinePanelCardEl.style.maxHeight = `${maxHeight}px`;
+    function syncOutlineStickyOffset() {
+      const workspaceStyles = window.getComputedStyle(workspaceEl);
+      const workspacePaddingTop = Number.parseFloat(workspaceStyles.paddingTop) || 0;
+      const toolbarHeight = toolbarEl ? toolbarEl.getBoundingClientRect().height : 0;
+      const stickyTop = Math.max(16, Math.ceil(toolbarHeight + workspacePaddingTop));
+      document.body.style.setProperty("--outline-sticky-top", `${stickyTop}px`);
     }
     function applyLayout() {
       document.body.setAttribute("data-content-width-mode", currentContentWidthMode);
