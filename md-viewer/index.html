@@ -30,6 +30,8 @@
       --motion-speed: 180ms;
       --page-overlay: none;
       --page-overlay-opacity: 0;
+      --page-overlay-size: 3px 3px;
+      --page-overlay-repeat: no-repeat;
       --body-line-height: 1.9;
     }
 
@@ -58,6 +60,8 @@
       --motion-speed: 180ms;
       --page-overlay: none;
       --page-overlay-opacity: 0;
+      --page-overlay-size: 3px 3px;
+      --page-overlay-repeat: no-repeat;
       --body-line-height: 1.9;
     }
 
@@ -86,15 +90,40 @@
       --motion-speed: 180ms;
       --page-overlay: none;
       --page-overlay-opacity: 0;
+      --page-overlay-size: 3px 3px;
+      --page-overlay-repeat: no-repeat;
       --body-line-height: 1.9;
+    }
+
+    body[data-theme="light-clear"] {
+      --bg-top: #edf3fa;
+      --bg-bottom: #ecf2f9;
+      --page-overlay:
+        radial-gradient(circle at 34% 18%, rgba(147, 189, 239, 0.18) 0, rgba(147, 189, 239, 0.1) 18%, transparent 46%),
+        radial-gradient(circle at 70% 78%, rgba(204, 220, 247, 0.16) 0, rgba(204, 220, 247, 0.08) 16%, transparent 42%),
+        radial-gradient(circle at 52% 12%, rgba(255, 255, 255, 0.34) 0, transparent 32%);
+      --page-overlay-opacity: 1;
+      --page-overlay-size: auto, auto, auto;
+      --page-overlay-repeat: no-repeat, no-repeat, no-repeat;
+    }
+    body[data-theme="dark-clear"] {
+      --bg-top: #151c26;
+      --bg-bottom: #141b25;
+      --page-overlay:
+        radial-gradient(circle at 34% 18%, rgba(74, 129, 201, 0.2) 0, rgba(74, 129, 201, 0.1) 18%, transparent 46%),
+        radial-gradient(circle at 72% 78%, rgba(59, 91, 140, 0.18) 0, rgba(59, 91, 140, 0.08) 16%, transparent 42%),
+        radial-gradient(circle at 50% 10%, rgba(120, 172, 255, 0.08) 0, transparent 32%);
+      --page-overlay-opacity: 1;
+      --page-overlay-size: auto, auto, auto;
+      --page-overlay-repeat: no-repeat, no-repeat, no-repeat;
     }
 
     body[data-theme$="-aurora"] {
       --motion-speed: 230ms;
     }
     body[data-theme="light-aurora"] {
-      --bg-top: #e6f2ff;
-      --bg-bottom: #ebe9ff;
+      --bg-top: #e7eefb;
+      --bg-bottom: #e6edfa;
       --paper: rgba(255, 255, 255, 0.88);
       --text: #213049;
       --accent: #2976cf;
@@ -109,10 +138,17 @@
       --button-border: #2562ad;
       --field-bg: rgba(255, 255, 255, 0.92);
       --field-text: #213049;
+      --page-overlay:
+        radial-gradient(circle at 34% 18%, rgba(132, 186, 255, 0.24) 0, rgba(132, 186, 255, 0.14) 18%, transparent 48%),
+        radial-gradient(circle at 68% 72%, rgba(193, 157, 255, 0.18) 0, rgba(193, 157, 255, 0.1) 16%, transparent 42%),
+        radial-gradient(circle at 52% 12%, rgba(146, 231, 255, 0.12) 0, transparent 34%);
+      --page-overlay-opacity: 1;
+      --page-overlay-size: auto, auto, auto;
+      --page-overlay-repeat: no-repeat, no-repeat, no-repeat;
     }
     body[data-theme="dark-aurora"] {
-      --bg-top: #0d1630;
-      --bg-bottom: #120d28;
+      --bg-top: #10182d;
+      --bg-bottom: #11192c;
       --paper: rgba(19, 29, 47, 0.86);
       --text: #dce8fb;
       --accent: #72a9ff;
@@ -127,16 +163,22 @@
       --button-border: #5a8dd8;
       --field-bg: rgba(27, 39, 60, 0.94);
       --field-text: #dce8fb;
+      --page-overlay:
+        radial-gradient(circle at 32% 18%, rgba(83, 132, 228, 0.28) 0, rgba(83, 132, 228, 0.16) 18%, transparent 48%),
+        radial-gradient(circle at 74% 76%, rgba(122, 93, 214, 0.2) 0, rgba(122, 93, 214, 0.1) 16%, transparent 42%),
+        radial-gradient(circle at 54% 10%, rgba(84, 206, 255, 0.12) 0, transparent 34%);
+      --page-overlay-opacity: 1;
+      --page-overlay-size: auto, auto, auto;
+      --page-overlay-repeat: no-repeat, no-repeat, no-repeat;
     }
     body[data-theme$="-paper"] {
       --body-line-height: 2;
       --motion-speed: 140ms;
-      --page-overlay: radial-gradient(circle at 20% 20%, rgba(73, 56, 38, 0.025) 0, rgba(73, 56, 38, 0.025) 1px, transparent 1px);
-      --page-overlay-opacity: 0.22;
+      --page-overlay-opacity: 1;
     }
     body[data-theme="light-paper"] {
-      --bg-top: #f4efe6;
-      --bg-bottom: #ebe4d8;
+      --bg-top: #f1ebe1;
+      --bg-bottom: #efe8de;
       --paper: #fffdf8;
       --text: #2a2622;
       --accent: #6f4b3e;
@@ -151,10 +193,16 @@
       --button-border: #7d5947;
       --field-bg: #fffaf2;
       --field-text: #2a2622;
+      --page-overlay:
+        radial-gradient(circle at 36% 18%, rgba(255, 246, 228, 0.48) 0, rgba(255, 246, 228, 0.18) 18%, transparent 46%),
+        radial-gradient(circle at 72% 78%, rgba(212, 182, 154, 0.14) 0, rgba(212, 182, 154, 0.07) 16%, transparent 42%),
+        radial-gradient(circle at 20% 20%, rgba(73, 56, 38, 0.028) 0, rgba(73, 56, 38, 0.028) 1px, transparent 1px);
+      --page-overlay-size: auto, auto, 3px 3px;
+      --page-overlay-repeat: no-repeat, no-repeat, repeat;
     }
     body[data-theme="dark-paper"] {
-      --bg-top: #1c1916;
-      --bg-bottom: #141210;
+      --bg-top: #1a1714;
+      --bg-bottom: #191613;
       --paper: #221f1b;
       --text: #ece3d6;
       --accent: #c59a6c;
@@ -169,6 +217,12 @@
       --button-border: #a57d58;
       --field-bg: #2a2520;
       --field-text: #ece3d6;
+      --page-overlay:
+        radial-gradient(circle at 34% 18%, rgba(120, 89, 61, 0.18) 0, rgba(120, 89, 61, 0.08) 18%, transparent 46%),
+        radial-gradient(circle at 72% 78%, rgba(78, 61, 45, 0.16) 0, rgba(78, 61, 45, 0.06) 16%, transparent 42%),
+        radial-gradient(circle at 20% 20%, rgba(240, 226, 204, 0.03) 0, rgba(240, 226, 204, 0.03) 1px, transparent 1px);
+      --page-overlay-size: auto, auto, 3px 3px;
+      --page-overlay-repeat: no-repeat, no-repeat, repeat;
     }
 
     body[data-font-mode="proportional"] {
@@ -204,7 +258,8 @@
       inset: 0;
       pointer-events: none;
       background-image: var(--page-overlay);
-      background-size: 3px 3px;
+      background-size: var(--page-overlay-size);
+      background-repeat: var(--page-overlay-repeat);
       opacity: var(--page-overlay-opacity);
       z-index: -1;
     }
@@ -433,6 +488,7 @@
       line-height: 1.35;
       margin-top: 0.55em;
       margin-bottom: 0.55em;
+      scroll-margin-top: calc(var(--outline-sticky-top) + 12px);
     }
     h1 { font-size: 2rem; border-bottom: 2px solid var(--line); padding-bottom: .35em; }
     h2 { font-size: 1.55rem; border-bottom: 1px solid var(--line); padding-bottom: .25em; }
