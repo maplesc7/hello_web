@@ -89,54 +89,12 @@
       --body-line-height: 1.9;
     }
 
-    body[data-theme$="-focus"] {
-      --content-width: 980px;
-      --content-padding: 34px 44px;
-    }
-    body[data-theme="light-focus"] {
-      --bg-top: #f1f7f6;
-      --bg-bottom: #e5efee;
-      --paper: #fcfffe;
-      --text: #1d3432;
-      --accent: #176d63;
-      --line: #c9deda;
-      --code-bg: #edf6f5;
-      --quote-bg: #eef7f6;
-      --quote-line: #62a89f;
-      --th-bg: #edf8f6;
-      --toolbar-bg: rgba(241, 247, 246, 0.9);
-      --toolbar-text: #224543;
-      --toolbar-border: #c9deda;
-      --button-border: #14584f;
-      --field-bg: #ffffff;
-      --field-text: #1d3432;
-    }
-    body[data-theme="dark-focus"] {
-      --bg-top: #0f1b1a;
-      --bg-bottom: #0a1212;
-      --paper: #142422;
-      --text: #dbefed;
-      --accent: #37b6a6;
-      --line: #295250;
-      --code-bg: #0d1b1a;
-      --quote-bg: #132826;
-      --quote-line: #59b2a8;
-      --th-bg: #1a322f;
-      --toolbar-bg: rgba(15, 27, 26, 0.92);
-      --toolbar-text: #cde5e2;
-      --toolbar-border: #295250;
-      --button-border: #2f988c;
-      --field-bg: #17312f;
-      --field-text: #dbefed;
-    }
-
     body[data-theme$="-aurora"] {
-      --content-padding: 36px 40px;
       --motion-speed: 230ms;
     }
     body[data-theme="light-aurora"] {
-      --bg-top: #eef7ff;
-      --bg-bottom: #f0f0ff;
+      --bg-top: #e6f2ff;
+      --bg-bottom: #ebe9ff;
       --paper: rgba(255, 255, 255, 0.88);
       --text: #213049;
       --accent: #2976cf;
@@ -153,8 +111,8 @@
       --field-text: #213049;
     }
     body[data-theme="dark-aurora"] {
-      --bg-top: #101a2c;
-      --bg-bottom: #121022;
+      --bg-top: #0d1630;
+      --bg-bottom: #120d28;
       --paper: rgba(19, 29, 47, 0.86);
       --text: #dce8fb;
       --accent: #72a9ff;
@@ -170,170 +128,49 @@
       --field-bg: rgba(27, 39, 60, 0.94);
       --field-text: #dce8fb;
     }
-
-    body[data-theme$="-motion"] {
-      --motion-speed: 110ms;
-      --content-padding: 34px 42px;
-    }
-    body[data-theme="light-motion"] {
-      --bg-top: #fff8f2;
-      --bg-bottom: #f4f7ff;
-      --paper: #fffefd;
-      --text: #2f2a38;
-      --accent: #f05a42;
-      --line: #e5d9d5;
-      --code-bg: #fff3ef;
-      --quote-bg: #fff6f2;
-      --quote-line: #f39080;
-      --th-bg: #fff2ec;
-      --toolbar-bg: rgba(255, 248, 243, 0.9);
-      --toolbar-text: #473a45;
-      --toolbar-border: #e9d7cf;
-      --button-border: #d24b35;
-      --field-bg: #ffffff;
-      --field-text: #332b39;
-    }
-    body[data-theme="dark-motion"] {
-      --bg-top: #221515;
-      --bg-bottom: #17131e;
-      --paper: #221e2d;
-      --text: #f6e7e3;
-      --accent: #ff7e67;
-      --line: #4f3940;
-      --code-bg: #1a1623;
-      --quote-bg: #2a1f2b;
-      --quote-line: #ff9d8d;
-      --th-bg: #2a222f;
-      --toolbar-bg: rgba(31, 22, 30, 0.92);
-      --toolbar-text: #f3dbd4;
-      --toolbar-border: #503840;
-      --button-border: #dd6f5c;
-      --field-bg: #2c2130;
-      --field-text: #f6e7e3;
-    }
-
-    body[data-theme$="-editorial"] {
-      --content-width: 920px;
+    body[data-theme$="-paper"] {
       --body-line-height: 2;
+      --motion-speed: 140ms;
+      --page-overlay: radial-gradient(circle at 20% 20%, rgba(73, 56, 38, 0.025) 0, rgba(73, 56, 38, 0.025) 1px, transparent 1px);
+      --page-overlay-opacity: 0.22;
     }
-    body[data-theme="light-editorial"] {
-      --bg-top: #fbf8f4;
-      --bg-bottom: #f2ece3;
-      --paper: #fffdf9;
-      --text: #2f2a24;
-      --accent: #8f5d20;
-      --line: #e8dcc9;
-      --code-bg: #f8f1e8;
-      --quote-bg: #fbf4ea;
-      --quote-line: #cda878;
-      --th-bg: #f7efdf;
-      --toolbar-bg: rgba(251, 247, 240, 0.92);
-      --toolbar-text: #4b3f33;
-      --toolbar-border: #e8dcc9;
-      --button-border: #764d1b;
-      --field-bg: #fffdf9;
-      --field-text: #2f2a24;
+    body[data-theme="light-paper"] {
+      --bg-top: #f4efe6;
+      --bg-bottom: #ebe4d8;
+      --paper: #fffdf8;
+      --text: #2a2622;
+      --accent: #6f4b3e;
+      --line: #d9cfbf;
+      --code-bg: #f3eee4;
+      --quote-bg: #f7f2ea;
+      --quote-line: #b69072;
+      --th-bg: #f2ece2;
+      --toolbar-bg: rgba(244, 239, 230, 0.9);
+      --toolbar-text: #3b332c;
+      --toolbar-border: #d8ccb8;
+      --button-border: #7d5947;
+      --field-bg: #fffaf2;
+      --field-text: #2a2622;
     }
-    body[data-theme="dark-editorial"] {
-      --bg-top: #1d1813;
-      --bg-bottom: #15110d;
-      --paper: #241d16;
-      --text: #f1e6d7;
-      --accent: #d79a4b;
-      --line: #4d3d2d;
-      --code-bg: #1b140f;
-      --quote-bg: #2a2118;
-      --quote-line: #bf9158;
-      --th-bg: #2d241a;
-      --toolbar-bg: rgba(31, 24, 18, 0.92);
-      --toolbar-text: #eadac5;
-      --toolbar-border: #4d3d2d;
-      --button-border: #b8813d;
-      --field-bg: #2b2118;
-      --field-text: #f1e6d7;
-    }
-
-    body[data-theme$="-grain"] {
-      --page-overlay: radial-gradient(circle at 20% 20%, rgba(0, 0, 0, 0.035) 0, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
-      --page-overlay-opacity: 0.3;
-    }
-    body[data-theme="light-grain"] {
-      --bg-top: #f8f7f4;
-      --bg-bottom: #efede8;
-      --paper: #fffefb;
-      --text: #2a3139;
-      --accent: #596a85;
-      --line: #d9dedf;
-      --code-bg: #f3f5f4;
-      --quote-bg: #f7f8f8;
-      --quote-line: #8d99ad;
-      --th-bg: #f2f5f6;
-      --toolbar-bg: rgba(247, 247, 244, 0.92);
-      --toolbar-text: #404a58;
-      --toolbar-border: #d7dddf;
-      --button-border: #4f6079;
-      --field-bg: #ffffff;
-      --field-text: #2a3139;
-    }
-    body[data-theme="dark-grain"] {
-      --bg-top: #141619;
-      --bg-bottom: #101114;
-      --paper: #1a1d22;
-      --text: #e2e7ed;
-      --accent: #8da0bc;
-      --line: #30353e;
-      --code-bg: #12151a;
-      --quote-bg: #1a1f27;
-      --quote-line: #7f8da1;
-      --th-bg: #202530;
-      --toolbar-bg: rgba(19, 21, 25, 0.92);
-      --toolbar-text: #d8dee7;
-      --toolbar-border: #323844;
-      --button-border: #70839f;
-      --field-bg: #20252d;
-      --field-text: #e2e7ed;
+    body[data-theme="dark-paper"] {
+      --bg-top: #1c1916;
+      --bg-bottom: #141210;
+      --paper: #221f1b;
+      --text: #ece3d6;
+      --accent: #c59a6c;
+      --line: #4a4137;
+      --code-bg: #2a2520;
+      --quote-bg: #29241f;
+      --quote-line: #9a7551;
+      --th-bg: #2c2721;
+      --toolbar-bg: rgba(28, 25, 22, 0.92);
+      --toolbar-text: #e7ddcf;
+      --toolbar-border: #463d34;
+      --button-border: #a57d58;
+      --field-bg: #2a2520;
+      --field-text: #ece3d6;
     }
 
-    body[data-theme$="-adaptive"] {
-      --motion-speed: 150ms;
-    }
-    body[data-theme="light-adaptive"] {
-      --bg-top: #ffffff;
-      --bg-bottom: #eef2f8;
-      --paper: #ffffff;
-      --text: #131c2a;
-      --accent: #005ecb;
-      --code-bg: #eef4ff;
-      --quote-bg: #f2f7ff;
-      --quote-line: #4d8bda;
-      --th-bg: #edf3ff;
-      --toolbar-bg: rgba(255, 255, 255, 0.95);
-      --toolbar-text: #1c2d44;
-      --field-bg: #ffffff;
-      --field-text: #131c2a;
-    }
-    body[data-theme="dark-adaptive"] {
-      --bg-top: #0b1018;
-      --bg-bottom: #070a10;
-      --paper: #0f1622;
-      --text: #f5f8ff;
-      --accent: #5aa4ff;
-      --code-bg: #111b2a;
-      --quote-bg: #122033;
-      --quote-line: #6daeff;
-      --th-bg: #16243a;
-      --toolbar-bg: rgba(9, 14, 22, 0.95);
-      --toolbar-text: #e6efff;
-      --field-bg: #111b2a;
-      --field-text: #f5f8ff;
-    }
-
-    body[data-theme$="-reading"] {
-      --content-width: 920px;
-      --content-padding: 40px 42px;
-      --body-line-height: 2.05;
-      --motion-speed: 220ms;
-    }
     body[data-font-mode="proportional"] {
       --font-body: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
       --font-head: "BIZ UDPGothic", "Yu Gothic UI", Meiryo, sans-serif;
@@ -341,42 +178,6 @@
     body[data-font-mode="monospace"] {
       --font-body: "BIZ UDGothic", "MS Gothic", monospace;
       --font-head: "BIZ UDGothic", "MS Gothic", monospace;
-    }
-    body[data-theme="light-reading"] {
-      --bg-top: #fdfcf9;
-      --bg-bottom: #f3f1eb;
-      --paper: #fffefc;
-      --text: #2b2a26;
-      --accent: #6b6f76;
-      --line: #dfddd7;
-      --code-bg: #f6f4ee;
-      --quote-bg: #f7f5ef;
-      --quote-line: #a29e93;
-      --th-bg: #f6f3ec;
-      --toolbar-bg: rgba(253, 252, 249, 0.94);
-      --toolbar-text: #4a4842;
-      --toolbar-border: #e0ddd5;
-      --button-border: #5f6268;
-      --field-bg: #fffefc;
-      --field-text: #2b2a26;
-    }
-    body[data-theme="dark-reading"] {
-      --bg-top: #161513;
-      --bg-bottom: #11100f;
-      --paper: #1e1c1a;
-      --text: #efe9dd;
-      --accent: #b9b2a4;
-      --line: #3a3631;
-      --code-bg: #171513;
-      --quote-bg: #24211e;
-      --quote-line: #8f887a;
-      --th-bg: #262320;
-      --toolbar-bg: rgba(21, 19, 18, 0.94);
-      --toolbar-text: #e6ddd0;
-      --toolbar-border: #3a3631;
-      --button-border: #9f988b;
-      --field-bg: #25211e;
-      --field-text: #efe9dd;
     }
 
     * { box-sizing: border-box; }
@@ -745,7 +546,12 @@
       box-shadow: 0 12px 20px -14px rgba(34, 73, 130, 0.28);
     }
     body[data-theme$="-aurora"] h1 {
-      background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #ff7fbd 45%));
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--accent) 86%, #7fd6ff 14%) 0%,
+        color-mix(in srgb, var(--accent) 52%, #8ee8ff 48%) 46%,
+        color-mix(in srgb, var(--accent) 50%, #ff7fbd 50%) 100%
+      );
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -754,101 +560,44 @@
     body[data-theme$="-aurora"] .toolbar {
       backdrop-filter: blur(18px) saturate(1.06);
     }
-
-    body[data-theme$="-motion"] button {
-      transition: transform var(--motion-speed) ease, filter var(--motion-speed) ease;
+    body[data-theme$="-aurora"] code {
+      border-color: color-mix(in srgb, var(--accent) 34%, var(--line) 66%);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
     }
-    body[data-theme$="-motion"] button:hover {
-      transform: translateY(-1px) scale(1.01);
+    body[data-theme$="-aurora"] pre {
+      border-color: color-mix(in srgb, var(--accent) 30%, var(--line) 70%);
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent),
+        0 12px 24px -20px rgba(53, 109, 201, 0.42);
     }
-    body[data-theme$="-motion"] button:active {
-      transform: scale(0.98);
+    body[data-theme$="-paper"] .container {
+      border-radius: 8px;
+      border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+      box-shadow: 0 12px 22px -18px rgba(59, 43, 28, 0.34);
     }
-    body[data-theme$="-motion"] .container {
-      box-shadow: 0 12px 20px -14px rgba(72, 36, 40, 0.3);
+    body[data-theme$="-paper"] .outline-panel-card {
+      border-radius: 8px;
+      border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+      box-shadow: 0 10px 18px -16px rgba(59, 43, 28, 0.28);
     }
-    body[data-theme$="-motion"] .outline-panel-card {
-      box-shadow: 0 10px 16px -12px rgba(72, 36, 40, 0.24);
+    body[data-theme$="-paper"] .toolbar {
+      backdrop-filter: blur(6px) saturate(1.01);
     }
-    body[data-theme$="-motion"] h2 {
-      border-bottom-width: 2px;
-    }
-
-    body[data-theme$="-editorial"] .container {
-      border-radius: 6px;
-      box-shadow: 0 12px 20px -14px rgba(56, 40, 22, 0.3);
-    }
-    body[data-theme$="-editorial"] .outline-panel-card {
-      border-radius: 6px;
-      box-shadow: 0 10px 16px -12px rgba(56, 40, 22, 0.22);
-    }
-    body[data-theme$="-editorial"] h1,
-    body[data-theme$="-editorial"] h2 {
+    body[data-theme$="-paper"] h1,
+    body[data-theme$="-paper"] h2 {
       letter-spacing: 0.02em;
-      border-bottom-style: double;
-      border-bottom-width: 3px;
+      border-bottom-color: color-mix(in srgb, var(--line) 92%, transparent);
     }
-    body[data-theme$="-editorial"] p:first-of-type::first-letter {
-      font-size: 2.1em;
-      line-height: 0.9;
-      float: left;
-      margin-right: 0.08em;
-      font-weight: 700;
-      color: var(--accent);
+    body[data-theme$="-paper"] blockquote {
+      border-left-width: 3px;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--quote-bg) 92%, transparent), transparent);
     }
-
-    body[data-theme$="-grain"] .container {
-      border-style: dashed;
-      border-width: 1px;
-      box-shadow: 0 12px 20px -14px rgba(40, 46, 58, 0.28);
+    body[data-theme$="-paper"] th,
+    body[data-theme$="-paper"] td {
+      border-color: color-mix(in srgb, var(--line) 92%, transparent);
     }
-    body[data-theme$="-grain"] .outline-panel-card {
-      border-style: dashed;
-      border-width: 1px;
-      box-shadow: 0 10px 16px -12px rgba(40, 46, 58, 0.22);
-    }
-    body[data-theme$="-grain"] table tbody tr:nth-child(even) td {
-      background: color-mix(in srgb, var(--th-bg) 35%, transparent);
-    }
-    body[data-theme$="-grain"] hr {
-      border: none;
-      border-top: 1px dashed var(--line);
-    }
-
-    body[data-theme$="-adaptive"] .container,
-    body[data-theme$="-adaptive"] th,
-    body[data-theme$="-adaptive"] td,
-    body[data-theme$="-adaptive"] code,
-    body[data-theme$="-adaptive"] pre {
-      border-width: 2px;
-    }
-    body[data-theme$="-adaptive"] a {
-      text-decoration: underline;
-      text-underline-offset: 0.18em;
-      font-weight: 600;
-    }
-    body[data-theme$="-adaptive"] button {
-      font-weight: 600;
-    }
-
-    body[data-theme$="-reading"] .container {
-      border-radius: 10px;
-      box-shadow: 0 12px 20px -14px rgba(24, 24, 24, 0.28);
-      border-left: 4px solid var(--line);
-    }
-    body[data-theme$="-reading"] .outline-panel-card {
-      border-radius: 10px;
-      box-shadow: 0 10px 16px -12px rgba(24, 24, 24, 0.22);
-      border-left: 4px solid var(--line);
-    }
-    body[data-theme$="-reading"] p,
-    body[data-theme$="-reading"] li {
-      font-size: 1.04rem;
-    }
-    body[data-theme$="-reading"] h1,
-    body[data-theme$="-reading"] h2,
-    body[data-theme$="-reading"] h3 {
-      margin-top: 1.65em;
+    body[data-theme$="-paper"] hr {
+      border-top: 1px solid color-mix(in srgb, var(--line) 92%, transparent);
     }
 
     .theme-panel {
@@ -1011,20 +760,15 @@
       <div class="theme-panel-header">
         <div class="theme-panel-heading">
           <h2 id="themePanelTitle" class="modal-title">デザインを選択</h2>
-          <p class="modal-text">スタイル・モード・フォントを組み合わせてデザインを選択します。</p>
+          <p class="modal-text">クリア・ペーパー・オーロラ・グラスを、ライト・ダーク・フォント設定と組み合わせて選択します。</p>
         </div>
         <button id="closeThemeBtn" class="btn-secondary panel-close" type="button" aria-label="デザインパネルを閉じる">閉じる</button>
       </div>
       <label class="modal-label" for="styleSelect">スタイル</label>
       <select id="styleSelect" class="modal-select">
         <option value="clear">クリア</option>
-        <option value="focus">フォーカス</option>
+        <option value="paper">ペーパー</option>
         <option value="aurora">オーロラ・グラス</option>
-        <option value="motion">モーション・アクセント</option>
-        <option value="editorial">エディトリアル</option>
-        <option value="grain">グレイン・テクスチャ</option>
-        <option value="adaptive">アダプティブ・コントラスト</option>
-        <option value="reading">フォーカス・リーディング</option>
       </select>
       <div id="styleDescription" class="style-description" aria-live="polite">
         <p id="styleDescriptionTitle" class="style-description-title">クリア</p>
@@ -1072,13 +816,8 @@
   <script>
     const themeStyles = [
       { id: "clear", label: "クリア" },
-      { id: "focus", label: "フォーカス" },
+      { id: "paper", label: "ペーパー" },
       { id: "aurora", label: "オーロラ・グラス" },
-      { id: "motion", label: "モーション・アクセント" },
-      { id: "editorial", label: "エディトリアル" },
-      { id: "grain", label: "グレイン・テクスチャ" },
-      { id: "adaptive", label: "アダプティブ・コントラスト" },
-      { id: "reading", label: "フォーカス・リーディング" },
     ];
     const themeModes = [
       { id: "light", label: "ライト" },
@@ -1144,33 +883,13 @@
         label: "クリア",
         text: "余計な装飾を抑え、Markdownの構造を素直に追える標準スタイルです。"
       },
-      focus: {
-        label: "フォーカス",
-        text: "余白と行送りを広めに取り、長文でも視線移動を安定させる読書寄りのスタイルです。"
+      paper: {
+        label: "ペーパー",
+        text: "紙面の静けさと文書の読みやすさを優先し、引継資料や手順書を落ち着いて読めるよう整えたスタイルです。"
       },
       aurora: {
         label: "オーロラ・グラス",
         text: "半透明レイヤーと柔らかな発光を使い、最新UIらしい奥行きと軽さを加えるスタイルです。"
-      },
-      motion: {
-        label: "モーション・アクセント",
-        text: "ホバーや押下の反応を明確にして、操作感とテンポの良さを強めるアクティブなスタイルです。"
-      },
-      editorial: {
-        label: "エディトリアル",
-        text: "タイポグラフィに強弱をつけ、雑誌的な見出しの存在感と読み物感を強めるスタイルです。"
-      },
-      grain: {
-        label: "グレイン・テクスチャ",
-        text: "微細な質感と穏やかなコントラストで、無機質さを抑えた落ち着いた紙面風スタイルです。"
-      },
-      adaptive: {
-        label: "アダプティブ・コントラスト",
-        text: "境界線と文字コントラストを強調し、表やコードを見落としにくくする視認性重視スタイルです。"
-      },
-      reading: {
-        label: "フォーカス・リーディング",
-        text: "行長を抑え、行間を深く取り、長時間の精読に合わせた集中読書スタイルです。"
       }
     };
 
@@ -1185,14 +904,99 @@
         .replace(/'/g, "&#39;");
     }
 
+    function createHtmlTokenStore() {
+      const tokens = [];
+      return {
+        stash(html) {
+          const token = `__MDV_HTML_TOKEN_${tokens.length}__`;
+          tokens.push(html);
+          return token;
+        },
+        restore(text) {
+          return text.replace(/__MDV_HTML_TOKEN_(\d+)__/g, (_, index) => tokens[Number(index)] || "");
+        },
+      };
+    }
+
+    function countChar(text, target) {
+      let count = 0;
+      for (const char of text) {
+        if (char === target) count += 1;
+      }
+      return count;
+    }
+
+    function splitTrailingUrlSuffix(url) {
+      const asciiBracketPairs = {
+        ")": "(",
+        "]": "[",
+        "}": "{",
+      };
+      const fullWidthBracketPairs = {
+        "）": "（",
+        "］": "［",
+        "｝": "｛",
+        "〉": "〈",
+        "》": "《",
+        "」": "「",
+        "』": "『",
+        "】": "【",
+      };
+      let main = url;
+      let suffix = "";
+      while (main) {
+        const lastChar = main.slice(-1);
+        if (/[.,!?;:、。'"`]/.test(lastChar)) {
+          suffix = lastChar + suffix;
+          main = main.slice(0, -1);
+          continue;
+        }
+        if (asciiBracketPairs[lastChar]) {
+          const openChar = asciiBracketPairs[lastChar];
+          if (countChar(main, lastChar) > countChar(main, openChar)) {
+            suffix = lastChar + suffix;
+            main = main.slice(0, -1);
+            continue;
+          }
+          break;
+        }
+        if (fullWidthBracketPairs[lastChar]) {
+          const openChar = fullWidthBracketPairs[lastChar];
+          if (countChar(main, lastChar) > countChar(main, openChar)) {
+            suffix = lastChar + suffix;
+            main = main.slice(0, -1);
+            continue;
+          }
+          break;
+        }
+        break;
+      }
+      return { url: main, suffix };
+    }
+
+    function normalizeAutoLinkHref(url) {
+      if (/^https?:\/\//i.test(url)) return url;
+      return `https://${url}`;
+    }
+
+    function linkifyPlainUrls(text) {
+      return text.replace(/(?:https?:\/\/|www\.)[^\s<]+/g, (rawUrl) => {
+        const { url, suffix } = splitTrailingUrlSuffix(rawUrl);
+        if (!url) return rawUrl;
+        return `<a href="${normalizeAutoLinkHref(url)}" target="_blank" rel="noopener noreferrer">${url}</a>${suffix}`;
+      });
+    }
+
     function inlineFormat(text) {
+      const tokenStore = createHtmlTokenStore();
       let escaped = escapeHtml(text);
-      escaped = escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+      escaped = escaped.replace(/`([^`]+)`/g, (_, code) => tokenStore.stash(`<code>${code}</code>`));
+      escaped = escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => tokenStore.stash(`<a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`));
       escaped = escaped.replace(/~~([^~]+)~~/g, "<del>$1</del>");
       escaped = escaped.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
       escaped = escaped.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-      escaped = escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-      return escaped;
+      escaped = linkifyPlainUrls(escaped);
+      return tokenStore.restore(escaped);
     }
     function parseTaskListItem(text) {
       const match = text.match(/^\[( |x|X)\](?:\s+(.*))?$/);
@@ -1503,6 +1307,9 @@
     function composeThemeId() {
       return `${currentMode}-${currentStyle}`;
     }
+    function normalizeStyleId(styleId) {
+      return themeStyles.some((item) => item.id === styleId) ? styleId : "clear";
+    }
     function isValidOutlinePosition(position) {
       return outlinePositions.includes(position);
     }
@@ -1687,12 +1494,10 @@
             localStorage.removeItem(THEME_PREF_KEY);
           } else if (typeof payload.expiresAt !== "number" || payload.expiresAt < Date.now()) {
             localStorage.removeItem(THEME_PREF_KEY);
-          } else if (!themeStyles.some((item) => item.id === payload.style)) {
-            localStorage.removeItem(THEME_PREF_KEY);
           } else if (!themeModes.some((item) => item.id === payload.mode)) {
             localStorage.removeItem(THEME_PREF_KEY);
           } else {
-            currentStyle = payload.style;
+            currentStyle = normalizeStyleId(payload.style);
             currentMode = payload.mode;
             currentFontMode = isValidFontMode(payload.fontMode) ? payload.fontMode : "monospace";
             currentContentWidthMode = isValidContentWidthMode(payload.contentWidthMode) ? payload.contentWidthMode : "standard";
@@ -1721,9 +1526,8 @@
           localStorage.removeItem(LEGACY_THEME_PREF_KEY);
           return false;
         }
-        if (!themeStyles.some((item) => item.id === payload.style)) return false;
         if (!themeModes.some((item) => item.id === payload.mode)) return false;
-        currentStyle = payload.style;
+        currentStyle = normalizeStyleId(payload.style);
         currentMode = payload.mode;
         currentFontMode = "monospace";
         currentContentWidthMode = "standard";
