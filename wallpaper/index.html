@@ -6,30 +6,34 @@
   <title>Frozen Aurora Wireframe Wallpaper</title>
   <style>
     :root{
-      /* Glacier blue palette */
-      --ice-bg: #141b27;
-      --ice-deep: #0a1018;
-      --ice-mid: #202c3f;
-      --ice-ink: #d6e8f4;
-      --ice-sub: #7f93aa;
-      --ice-blue: #5f8fbc;
-      --ice-cyan: #83cbe7;
-      --ice-mint: #d4f4ff;
+      --ice-bg-rgb: 20 27 39;
+      --ice-deep-rgb: 10 16 24;
+      --ice-mid-rgb: 32 44 63;
+      --ice-ink-rgb: 214 232 244;
+      --ice-sub-rgb: 127 147 170;
+      --ice-blue-rgb: 95 143 188;
+      --ice-cyan-rgb: 131 203 231;
+      --ice-mint-rgb: 212 244 255;
 
-      --ui-bg: rgba(20, 27, 39, 0.72);
-      --ui-bd: rgba(131, 203, 231, 0.24);
-      --ui-tx: rgba(214, 232, 244, 0.96);
-      --ui-sub: rgba(127, 147, 170, 0.92);
-      --btn-bg: rgba(32, 44, 63, 0.72);
-      --btn-bg2: rgba(40, 56, 80, 0.92);
-      --btn-bd: rgba(131, 203, 231, 0.32);
-      --shadow: 0 10px 30px rgba(0,0,0,0.40);
+      --ui-bg-rgb: 20 27 39;
+      --ui-bd-rgb: 131 203 231;
+      --ui-tx-rgb: 214 232 244;
+      --ui-sub-rgb: 127 147 170;
+      --btn-bg-rgb: 32 44 63;
+      --btn-bg2-rgb: 40 56 80;
+      --btn-bd-rgb: 131 203 231;
+      --shadow-rgb: 0 0 0;
+
+      --flare-1-rgb: 212 244 255;
+      --flare-2-rgb: 131 203 231;
+      --flare-3-rgb: 95 143 188;
+      --particle-rgb: 131 203 231;
     }
     html, body {
       margin: 0;
       height: 100%;
       overflow: hidden;
-      background: var(--ice-bg);
+      background: rgb(var(--ice-bg-rgb));
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
     }
     #wrap{
@@ -51,9 +55,9 @@
       gap: 10px;
       padding: 14px 14px 12px;
       border-radius: 16px;
-      background: var(--ui-bg);
-      border: 1px solid var(--ui-bd);
-      box-shadow: var(--shadow);
+      background: rgb(var(--ui-bg-rgb) / 0.72);
+      border: 1px solid rgb(var(--ui-bd-rgb) / 0.24);
+      box-shadow: 0 10px 30px rgb(var(--shadow-rgb) / 0.40);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       user-select: none;
@@ -61,31 +65,66 @@
     .ui .title{
       font-size: 13px;
       letter-spacing: .02em;
-      color: var(--ui-tx);
+      color: rgb(var(--ui-tx-rgb) / 0.96);
       line-height: 1.25;
     }
     .ui .subtitle{
       font-size: 12px;
-      color: var(--ui-sub);
+      color: rgb(var(--ui-sub-rgb) / 0.92);
       line-height: 1.35;
     }
     .ui .row{
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
       align-items: center;
       margin-top: 2px;
     }
+    .field{
+      display: grid;
+      gap: 6px;
+      min-width: 170px;
+    }
+    .field span{
+      font-size: 11px;
+      letter-spacing: .03em;
+      color: rgb(var(--ui-sub-rgb) / 0.90);
+    }
+    .field input{
+      appearance: none;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid rgb(var(--btn-bd-rgb) / 0.36);
+      background: rgb(var(--ice-deep-rgb) / 0.52);
+      color: rgb(var(--ui-tx-rgb) / 0.96);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .field input::placeholder{
+      color: rgb(var(--ui-sub-rgb) / 0.72);
+    }
+    .field input:focus{
+      border-color: rgb(var(--ice-mint-rgb) / 0.52);
+      box-shadow: 0 0 0 4px rgb(var(--ice-cyan-rgb) / 0.12);
+      background: rgb(var(--ice-deep-rgb) / 0.64);
+    }
     button{
       appearance: none;
-      border: 1px solid var(--btn-bd);
-      background: linear-gradient(180deg, var(--btn-bg2), var(--btn-bg));
-      color: var(--ui-tx);
+      border: 1px solid rgb(var(--btn-bd-rgb) / 0.32);
+      background: linear-gradient(180deg, rgb(var(--btn-bg2-rgb) / 0.92), rgb(var(--btn-bg-rgb) / 0.72));
+      color: rgb(var(--ui-tx-rgb) / 0.96);
       padding: 10px 12px;
       border-radius: 12px;
       font-size: 13px;
       cursor: pointer;
       transition: transform .08s ease, background .15s ease, border-color .15s ease;
       white-space: nowrap;
+    }
+    .grow{
+      flex: 1 1 100%;
     }
     button:hover{
       border-color: rgba(255,255,255,0.30);
@@ -140,10 +179,10 @@
       left: 50%;
       width: 260px;
       height: 260px;
-      background: radial-gradient(circle, 
-        rgba(212, 244, 255, 0.18) 0%, 
-        rgba(131, 203, 231, 0.12) 26%, 
-        rgba(95, 143, 188, 0.06) 46%,
+      background: radial-gradient(circle,
+        rgb(var(--flare-1-rgb) / 0.18) 0%,
+        rgb(var(--flare-2-rgb) / 0.12) 26%,
+        rgb(var(--flare-3-rgb) / 0.06) 46%,
         transparent 65%);
       transform: translate(-50%, -50%);
       filter: blur(50px);
@@ -165,19 +204,19 @@
       height: 80%;
       background: conic-gradient(from 0deg at 50% 100%,
         transparent 0deg,
-        rgba(212, 244, 255, 0.035) 35deg,
+        rgb(var(--flare-1-rgb) / 0.035) 35deg,
         transparent 45deg,
-        rgba(131, 203, 231, 0.028) 85deg,
+        rgb(var(--flare-2-rgb) / 0.028) 85deg,
         transparent 95deg,
-        rgba(95, 143, 188, 0.03) 125deg,
+        rgb(var(--flare-3-rgb) / 0.03) 125deg,
         transparent 135deg,
-        rgba(212, 244, 255, 0.018) 175deg,
+        rgb(var(--flare-1-rgb) / 0.018) 175deg,
         transparent 185deg,
-        rgba(131, 203, 231, 0.03) 215deg,
+        rgb(var(--flare-2-rgb) / 0.03) 215deg,
         transparent 225deg,
-        rgba(95, 143, 188, 0.026) 265deg,
+        rgb(var(--flare-3-rgb) / 0.026) 265deg,
         transparent 275deg,
-        rgba(212, 244, 255, 0.018) 315deg,
+        rgb(var(--flare-1-rgb) / 0.018) 315deg,
         transparent 325deg
       );
       transform: translate(-50%, 0);
@@ -201,9 +240,9 @@
       position: absolute;
       width: 2px;
       height: 2px;
-      background: var(--ice-cyan);
+      background: rgb(var(--particle-rgb));
       border-radius: 50%;
-      box-shadow: 0 0 10px 2px rgba(131, 203, 231, 0.42);
+      box-shadow: 0 0 10px 2px rgb(var(--particle-rgb) / 0.42);
       pointer-events: none;
     }
 
@@ -269,10 +308,17 @@
     <div class="title">Frozen Aurora × Wireframe Grid</div>
     <div class="subtitle">Glacier blue spectrum / 7-tone depth</div>
     <div class="row">
-      <button id="btnPng">PNG(1920×1080) を保存</button>
-      <span class="badge" id="status">Ready</span>
+      <label class="field">
+        <span>基準カラーコード</span>
+        <input id="colorInput" type="text" placeholder="#e6b422" maxlength="7" autocomplete="off" spellcheck="false" aria-label="基準カラーコード" />
+      </label>
+      <button id="btnRegenerate">再生成</button>
     </div>
-    <div class="hint">※ ノイズなし。レンダリングは静止（必要時のみ描画）。</div>
+    <div class="row">
+      <button id="btnPng">PNG(1920×1080) を保存</button>
+      <span class="badge" id="status">待機中</span>
+    </div>
+    <div class="hint">※ 有効なカラーコードなら配色も更新。空欄なら現在の配色のまま再生成。</div>
   </div>
 
   <!-- Three.js (ES Module版) -->
@@ -291,19 +337,228 @@
     function init() {
       const canvas = document.getElementById("c");
       const btnPng = document.getElementById("btnPng");
+      const btnRegenerate = document.getElementById("btnRegenerate");
+      const colorInput = document.getElementById("colorInput");
       const statusEl = document.getElementById("status");
+      const rootStyle = document.documentElement.style;
+      let statusTimer = 0;
 
-    // ---------- Utils ----------
-    function clamp(x, a, b){ return Math.max(a, Math.min(b, x)); }
-    function lerp(a, b, t){ return a + (b - a) * t; }
-    function smoothstep(edge0, edge1, x){
-      const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
-      return t * t * (3 - 2 * t);
-    }
+      // ---------- Utils ----------
+      function clamp(x, a, b){ return Math.max(a, Math.min(b, x)); }
+      function smoothstep(edge0, edge1, x){
+        const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+        return t * t * (3 - 2 * t);
+      }
+      function wrapHue(h){
+        let next = h % 1;
+        if (next < 0) next += 1;
+        return next;
+      }
+      function shortestHueDelta(from, to){
+        let delta = to - from;
+        if (delta > 0.5) delta -= 1;
+        if (delta < -0.5) delta += 1;
+        return delta;
+      }
+      function toHex(color){
+        return `#${color.getHexString()}`;
+      }
+      function hexToHsl(hex){
+        const hsl = { h: 0, s: 0, l: 0 };
+        new THREE.Color(hex).getHSL(hsl);
+        return hsl;
+      }
+      function hslToHex(h, s, l){
+        const color = new THREE.Color();
+        color.setHSL(wrapHue(h), clamp(s, 0, 1), clamp(l, 0, 1));
+        return toHex(color);
+      }
+      function mixHex(a, b, t){
+        const color = new THREE.Color(a);
+        color.lerp(new THREE.Color(b), clamp(t, 0, 1));
+        return toHex(color);
+      }
+      function hexToRgbString(hex){
+        const color = new THREE.Color(hex);
+        return `${Math.round(color.r * 255)} ${Math.round(color.g * 255)} ${Math.round(color.b * 255)}`;
+      }
+      function setRgbVar(name, hex){
+        rootStyle.setProperty(name, hexToRgbString(hex));
+      }
+      function normalizeHex(value){
+        let text = (value || "").trim();
+        if (!text) return "";
+        if (!text.startsWith("#")) text = `#${text}`;
+        if (/^#([0-9a-f]{3})$/i.test(text)) {
+          const short = text.slice(1);
+          return `#${short[0]}${short[0]}${short[1]}${short[1]}${short[2]}${short[2]}`.toLowerCase();
+        }
+        if (/^#([0-9a-f]{6})$/i.test(text)) {
+          return text.toLowerCase();
+        }
+        return null;
+      }
+      function clonePalette(palette){
+        return {
+          css: { ...palette.css },
+          shader: { ...palette.shader },
+          wireStops: palette.wireStops.map((stop) => ({ ...stop })),
+          wireHighlight: palette.wireHighlight,
+          fog: palette.fog,
+          star: palette.star
+        };
+      }
+      function setStatus(text, holdMs = 0){
+        if (statusTimer) {
+          clearTimeout(statusTimer);
+          statusTimer = 0;
+        }
+        statusEl.textContent = text;
+        if (holdMs > 0) {
+          statusTimer = window.setTimeout(() => {
+            statusEl.textContent = "待機中";
+            statusTimer = 0;
+          }, holdMs);
+        }
+      }
 
-    function setStatus(text){
-      statusEl.textContent = text;
-    }
+      // ---------- Palette ----------
+      const defaultPalette = {
+        css: {
+          iceBg: "#141b27",
+          iceDeep: "#0a1018",
+          iceMid: "#202c3f",
+          iceInk: "#d6e8f4",
+          iceSub: "#7f93aa",
+          iceBlue: "#5f8fbc",
+          iceCyan: "#83cbe7",
+          iceMint: "#d4f4ff",
+          uiBg: "#141b27",
+          uiBd: "#83cbe7",
+          uiTx: "#d6e8f4",
+          uiSub: "#7f93aa",
+          btnBg: "#202c3f",
+          btnBg2: "#283850",
+          btnBd: "#83cbe7",
+          flare1: "#d4f4ff",
+          flare2: "#83cbe7",
+          flare3: "#5f8fbc",
+          particle: "#83cbe7"
+        },
+        shader: {
+          cTop: "#233248",
+          cMid: "#141b27",
+          cBot: "#0d131d",
+          cDeep: "#070c12",
+          cAur1: "#5f8fbc",
+          cAur2: "#83cbe7",
+          cAur3: "#d4f4ff"
+        },
+        wireStops: [
+          { t: 0.00, color: "#edf9ff" },
+          { t: 0.14, color: "#d8f2ff" },
+          { t: 0.30, color: "#bce9ff" },
+          { t: 0.46, color: "#98ddfb" },
+          { t: 0.62, color: "#74c9ec" },
+          { t: 0.80, color: "#4f9fce" },
+          { t: 1.00, color: "#315e97" }
+        ],
+        wireHighlight: "#f7fdff",
+        fog: "#0a1018",
+        star: "#dbeefa"
+      };
+      const referenceBaseHsl = hexToHsl(defaultPalette.css.iceCyan);
+      let currentPalette = clonePalette(defaultPalette);
+      let activeWireStops = currentPalette.wireStops.map((stop) => ({ t: stop.t, color: new THREE.Color(stop.color) }));
+      const activeWireHighlight = new THREE.Color(currentPalette.wireHighlight);
+
+      function buildPaletteFromBaseColor(baseHex){
+        const baseHsl = hexToHsl(baseHex);
+        const paletteJitter = {
+          h: (Math.random() - 0.5) * 0.024,
+          s: (Math.random() - 0.5) * 0.08,
+          l: (Math.random() - 0.5) * 0.07
+        };
+
+        function retarget(referenceHex, options = {}){
+          const referenceHsl = hexToHsl(referenceHex);
+          const hue = wrapHue(
+            baseHsl.h +
+            shortestHueDelta(referenceBaseHsl.h, referenceHsl.h) +
+            paletteJitter.h +
+            (Math.random() - 0.5) * (options.hJitter ?? 0.012)
+          );
+          const saturation = clamp(
+            baseHsl.s +
+            (referenceHsl.s - referenceBaseHsl.s) +
+            paletteJitter.s * (options.jitterScaleS ?? 0.55) +
+            (Math.random() - 0.5) * (options.sJitter ?? 0.03),
+            options.minS ?? 0.04,
+            options.maxS ?? 0.96
+          );
+          const lightness = clamp(
+            baseHsl.l +
+            (referenceHsl.l - referenceBaseHsl.l) +
+            paletteJitter.l * (options.jitterScaleL ?? 0.7) +
+            (Math.random() - 0.5) * (options.lJitter ?? 0.028),
+            options.minL ?? 0.04,
+            options.maxL ?? 0.97
+          );
+          return hslToHex(hue, saturation, lightness);
+        }
+
+        const core = {
+          iceBg: retarget(defaultPalette.css.iceBg, { minL: 0.07, maxL: 0.26, maxS: 0.60, hJitter: 0.008, sJitter: 0.018, lJitter: 0.018 }),
+          iceDeep: retarget(defaultPalette.css.iceDeep, { minL: 0.03, maxL: 0.16, maxS: 0.48, hJitter: 0.006, sJitter: 0.016, lJitter: 0.014 }),
+          iceMid: retarget(defaultPalette.css.iceMid, { minL: 0.12, maxL: 0.38, maxS: 0.72, hJitter: 0.010, sJitter: 0.024, lJitter: 0.022 }),
+          iceInk: retarget(defaultPalette.css.iceInk, { minL: 0.86, maxL: 0.98, maxS: 0.46, hJitter: 0.010, sJitter: 0.018, lJitter: 0.018 }),
+          iceSub: retarget(defaultPalette.css.iceSub, { minL: 0.48, maxL: 0.78, maxS: 0.42, hJitter: 0.010, sJitter: 0.020, lJitter: 0.020 }),
+          iceBlue: retarget(defaultPalette.css.iceBlue, { minL: 0.38, maxL: 0.68, minS: 0.20, maxS: 0.88, hJitter: 0.012, sJitter: 0.022, lJitter: 0.022 }),
+          iceCyan: retarget(defaultPalette.css.iceCyan, { minL: 0.58, maxL: 0.84, minS: 0.22, maxS: 0.92, hJitter: 0.012, sJitter: 0.024, lJitter: 0.024 }),
+          iceMint: retarget(defaultPalette.css.iceMint, { minL: 0.84, maxL: 0.97, maxS: 0.56, hJitter: 0.010, sJitter: 0.016, lJitter: 0.016 })
+        };
+
+        return {
+          css: {
+            ...core,
+            uiBg: mixHex(core.iceBg, core.iceDeep, 0.18),
+            uiBd: mixHex(core.iceCyan, core.iceMint, 0.18),
+            uiTx: core.iceInk,
+            uiSub: mixHex(core.iceSub, core.iceInk, 0.08),
+            btnBg: core.iceMid,
+            btnBg2: mixHex(core.iceMid, core.iceBlue, 0.22),
+            btnBd: mixHex(core.iceCyan, core.iceMint, 0.12),
+            flare1: core.iceMint,
+            flare2: core.iceCyan,
+            flare3: core.iceBlue,
+            particle: core.iceCyan
+          },
+          shader: {
+            cTop: retarget(defaultPalette.shader.cTop, { minL: 0.18, maxL: 0.40, maxS: 0.58, hJitter: 0.010, sJitter: 0.020, lJitter: 0.020 }),
+            cMid: core.iceBg,
+            cBot: retarget(defaultPalette.shader.cBot, { minL: 0.05, maxL: 0.22, maxS: 0.48, hJitter: 0.008, sJitter: 0.016, lJitter: 0.016 }),
+            cDeep: retarget(defaultPalette.shader.cDeep, { minL: 0.02, maxL: 0.14, maxS: 0.42, hJitter: 0.006, sJitter: 0.014, lJitter: 0.014 }),
+            cAur1: core.iceBlue,
+            cAur2: core.iceCyan,
+            cAur3: core.iceMint
+          },
+          wireStops: defaultPalette.wireStops.map((stop, index) => {
+            const stopOptions = [
+              { minL: 0.88, maxL: 0.98, maxS: 0.34, hJitter: 0.010, sJitter: 0.016, lJitter: 0.016 },
+              { minL: 0.84, maxL: 0.96, maxS: 0.40, hJitter: 0.010, sJitter: 0.018, lJitter: 0.018 },
+              { minL: 0.76, maxL: 0.92, maxS: 0.54, hJitter: 0.012, sJitter: 0.020, lJitter: 0.020 },
+              { minL: 0.68, maxL: 0.88, maxS: 0.66, hJitter: 0.012, sJitter: 0.022, lJitter: 0.022 },
+              { minL: 0.56, maxL: 0.80, maxS: 0.78, hJitter: 0.012, sJitter: 0.024, lJitter: 0.024 },
+              { minL: 0.42, maxL: 0.70, maxS: 0.86, hJitter: 0.012, sJitter: 0.024, lJitter: 0.024 },
+              { minL: 0.24, maxL: 0.52, maxS: 0.78, hJitter: 0.010, sJitter: 0.022, lJitter: 0.022 }
+            ];
+            return { t: stop.t, color: retarget(stop.color, stopOptions[index]) };
+          }),
+          wireHighlight: retarget(defaultPalette.wireHighlight, { minL: 0.92, maxL: 0.99, maxS: 0.34, hJitter: 0.008, sJitter: 0.012, lJitter: 0.012 }),
+          fog: mixHex(core.iceDeep, core.iceBg, 0.34),
+          star: mixHex(core.iceInk, core.iceMint, 0.35)
+        };
+      }
 
     // ---------- Background Shader (Frozen aurora + subtle vignette) ----------
     const bgScene = new THREE.Scene();
@@ -311,13 +566,13 @@
 
     const bgMat = new THREE.ShaderMaterial({
       uniforms: {
-        cTop:    { value: new THREE.Color("#233248") }, // upper sky
-        cMid:    { value: new THREE.Color("#141b27") }, // glacier night
-        cBot:    { value: new THREE.Color("#0d131d") }, // lower sky
-        cDeep:   { value: new THREE.Color("#070c12") }, // deeper
-        cAur1:   { value: new THREE.Color("#5f8fbc") }, // glacier blue
-        cAur2:   { value: new THREE.Color("#83cbe7") }, // bright cyan
-        cAur3:   { value: new THREE.Color("#d4f4ff") }  // ice highlight
+        cTop:    { value: new THREE.Color(defaultPalette.shader.cTop) },
+        cMid:    { value: new THREE.Color(defaultPalette.shader.cMid) },
+        cBot:    { value: new THREE.Color(defaultPalette.shader.cBot) },
+        cDeep:   { value: new THREE.Color(defaultPalette.shader.cDeep) },
+        cAur1:   { value: new THREE.Color(defaultPalette.shader.cAur1) },
+        cAur2:   { value: new THREE.Color(defaultPalette.shader.cAur2) },
+        cAur3:   { value: new THREE.Color(defaultPalette.shader.cAur3) }
       },
       vertexShader: `
         varying vec2 vUv;
@@ -399,11 +654,11 @@
       starSizes[i] = Math.random() * 1.5 + 0.5;
     }
     
-    starGeom.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    starGeom.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
+    starGeom.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+    starGeom.setAttribute("size", new THREE.BufferAttribute(starSizes, 1));
     
     const starMat = new THREE.PointsMaterial({
-      color: 0xdbeefa,
+      color: defaultPalette.star,
       size: 0.008,
       transparent: true,
       opacity: 0.30,
@@ -418,7 +673,7 @@
     const scene = new THREE.Scene();
 
     // Fog for depth
-    scene.fog = new THREE.Fog(new THREE.Color("#0a1018"), 140, 720);
+    scene.fog = new THREE.Fog(new THREE.Color(defaultPalette.fog), 140, 720);
 
     const camera = new THREE.PerspectiveCamera(86, 16/9, 0.1, 1400);
     camera.position.set(0, 58, 90);
@@ -434,20 +689,23 @@
     geom.rotateX(-Math.PI / 2);
     geom.translate(0, 0, -DEPTH * 0.45); // push to far horizon
 
-    // Random parameters for terrain generation
-    let randomParams = {
-      phase1: Math.random() * Math.PI * 2,
-      phase2: Math.random() * Math.PI * 2,
-      phase3: Math.random() * Math.PI * 2,
-      phase4: Math.random() * Math.PI * 2,
-      phase5: Math.random() * Math.PI * 2,
-      amp1: 18.0 + Math.random() * 8.0,
-      amp2: 10.0 + Math.random() * 6.0,
-      amp3: 7.0 + Math.random() * 5.0,
-      amp4: 14.0 + Math.random() * 6.0,
-      amp5: 9.0 + Math.random() * 4.0,
-      valleyAmp: 6.0 + Math.random() * 3.0
-    };
+    function createRandomTerrainParams(){
+      return {
+        phase1: Math.random() * Math.PI * 2,
+        phase2: Math.random() * Math.PI * 2,
+        phase3: Math.random() * Math.PI * 2,
+        phase4: Math.random() * Math.PI * 2,
+        phase5: Math.random() * Math.PI * 2,
+        amp1: 18.0 + Math.random() * 8.0,
+        amp2: 10.0 + Math.random() * 6.0,
+        amp3: 7.0 + Math.random() * 5.0,
+        amp4: 14.0 + Math.random() * 6.0,
+        amp5: 9.0 + Math.random() * 4.0,
+        valleyAmp: 6.0 + Math.random() * 3.0
+      };
+    }
+
+    let randomParams = createRandomTerrainParams();
 
     // Function to generate terrain with current random parameters
     function generateTerrain() {
@@ -490,28 +748,17 @@
     generateTerrain();
 
     // Wireframe lines (main)
-    const glacierStops = [
-      { t: 0.00, color: new THREE.Color("#edf9ff") },
-      { t: 0.14, color: new THREE.Color("#d8f2ff") },
-      { t: 0.30, color: new THREE.Color("#bce9ff") },
-      { t: 0.46, color: new THREE.Color("#98ddfb") },
-      { t: 0.62, color: new THREE.Color("#74c9ec") },
-      { t: 0.80, color: new THREE.Color("#4f9fce") },
-      { t: 1.00, color: new THREE.Color("#315e97") }
-    ];
-    const wireHighlight = new THREE.Color("#f7fdff");
-
-    function sampleGlacier(t, target) {
+    function sampleWireColor(t, target) {
       const clamped = clamp(t, 0, 1);
-      for (let i = 1; i < glacierStops.length; i++) {
-        const prev = glacierStops[i - 1];
-        const next = glacierStops[i];
+      for (let i = 1; i < activeWireStops.length; i++) {
+        const prev = activeWireStops[i - 1];
+        const next = activeWireStops[i];
         if (clamped <= next.t) {
           const localT = (clamped - prev.t) / (next.t - prev.t);
           return target.copy(prev.color).lerp(next.color, localT);
         }
       }
-      return target.copy(glacierStops[glacierStops.length - 1].color);
+      return target.copy(activeWireStops[activeWireStops.length - 1].color);
     }
 
     function applyWireGradient(lineGeometry) {
@@ -526,8 +773,8 @@
         const heightT = clamp((y + 30.0) / 58.0, 0, 1);
         const shimmer = Math.sin(z * 0.010 + y * 0.12) * 0.025;
         const mixT = clamp(depthT * 0.76 + heightT * 0.16 + shimmer, 0, 1);
-        sampleGlacier(mixT, c);
-        c.lerp(wireHighlight, 0.08);
+        sampleWireColor(mixT, c);
+        c.lerp(activeWireHighlight, 0.08);
 
         colors[i * 3] = c.r;
         colors[i * 3 + 1] = c.g;
@@ -537,8 +784,6 @@
       lineGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
       return lineGeometry;
     }
-
-    const wireGeom = applyWireGradient(new THREE.WireframeGeometry(geom));
 
     const matMain = new THREE.LineBasicMaterial({
       vertexColors: true,
@@ -554,12 +799,55 @@
       blending: THREE.AdditiveBlending
     });
 
+    const wireGeom = applyWireGradient(new THREE.WireframeGeometry(geom));
     const linesMain = new THREE.LineSegments(wireGeom, matMain);
-    const linesGlow = new THREE.LineSegments(wireGeom, matGlow);
+    const linesGlow = new THREE.LineSegments(wireGeom.clone(), matGlow);
     linesGlow.scale.set(1.0006, 1.0006, 1.0006);
 
     scene.add(linesGlow);
     scene.add(linesMain);
+
+    function applyPalette(palette){
+      currentPalette = clonePalette(palette);
+
+      setRgbVar("--ice-bg-rgb", currentPalette.css.iceBg);
+      setRgbVar("--ice-deep-rgb", currentPalette.css.iceDeep);
+      setRgbVar("--ice-mid-rgb", currentPalette.css.iceMid);
+      setRgbVar("--ice-ink-rgb", currentPalette.css.iceInk);
+      setRgbVar("--ice-sub-rgb", currentPalette.css.iceSub);
+      setRgbVar("--ice-blue-rgb", currentPalette.css.iceBlue);
+      setRgbVar("--ice-cyan-rgb", currentPalette.css.iceCyan);
+      setRgbVar("--ice-mint-rgb", currentPalette.css.iceMint);
+      setRgbVar("--ui-bg-rgb", currentPalette.css.uiBg);
+      setRgbVar("--ui-bd-rgb", currentPalette.css.uiBd);
+      setRgbVar("--ui-tx-rgb", currentPalette.css.uiTx);
+      setRgbVar("--ui-sub-rgb", currentPalette.css.uiSub);
+      setRgbVar("--btn-bg-rgb", currentPalette.css.btnBg);
+      setRgbVar("--btn-bg2-rgb", currentPalette.css.btnBg2);
+      setRgbVar("--btn-bd-rgb", currentPalette.css.btnBd);
+      setRgbVar("--shadow-rgb", currentPalette.css.iceDeep);
+      setRgbVar("--flare-1-rgb", currentPalette.css.flare1);
+      setRgbVar("--flare-2-rgb", currentPalette.css.flare2);
+      setRgbVar("--flare-3-rgb", currentPalette.css.flare3);
+      setRgbVar("--particle-rgb", currentPalette.css.particle);
+
+      bgMat.uniforms.cTop.value.set(currentPalette.shader.cTop);
+      bgMat.uniforms.cMid.value.set(currentPalette.shader.cMid);
+      bgMat.uniforms.cBot.value.set(currentPalette.shader.cBot);
+      bgMat.uniforms.cDeep.value.set(currentPalette.shader.cDeep);
+      bgMat.uniforms.cAur1.value.set(currentPalette.shader.cAur1);
+      bgMat.uniforms.cAur2.value.set(currentPalette.shader.cAur2);
+      bgMat.uniforms.cAur3.value.set(currentPalette.shader.cAur3);
+
+      scene.fog.color.set(currentPalette.fog);
+      starMat.color.set(currentPalette.star);
+
+      activeWireStops = currentPalette.wireStops.map((stop) => ({
+        t: stop.t,
+        color: new THREE.Color(stop.color)
+      }));
+      activeWireHighlight.set(currentPalette.wireHighlight);
+    }
 
     // ---------- Renderer ----------
     const renderer = new THREE.WebGLRenderer({
@@ -577,6 +865,17 @@
       target.render(scene, camera);
     }
 
+    function rebuildWireframe(){
+      const newWireGeom = applyWireGradient(new THREE.WireframeGeometry(geom));
+      const glowGeom = newWireGeom.clone();
+
+      linesMain.geometry.dispose();
+      linesGlow.geometry.dispose();
+
+      linesMain.geometry = newWireGeom;
+      linesGlow.geometry = glowGeom;
+    }
+
     function resizeAndRender(){
       const w = Math.max(1, window.innerWidth);
       const h = Math.max(1, window.innerHeight);
@@ -590,47 +889,47 @@
       renderOnce(renderer);
     }
 
-    window.addEventListener("resize", () => resizeAndRender(), { passive: true });
+    function regenerateScene(){
+      const rawInput = colorInput.value.trim();
+      const normalized = rawInput ? normalizeHex(rawInput) : "";
+      let resultMessage = "再生成完了";
 
-    // Manual re-render with terrain regeneration
+      setStatus("再生成中…");
+
+      if (rawInput) {
+        if (normalized) {
+          applyPalette(buildPaletteFromBaseColor(normalized));
+          colorInput.value = "";
+          resultMessage = `配色更新 ${normalized}`;
+        } else {
+          resultMessage = "色コード不正。現行配色で再生成";
+        }
+      }
+
+      randomParams = createRandomTerrainParams();
+      generateTerrain();
+      rebuildWireframe();
+      renderOnce(renderer);
+      setStatus(resultMessage, 1100);
+    }
+
+    window.addEventListener("resize", () => resizeAndRender(), { passive: true });
     window.addEventListener("keydown", (e) => {
       if ((e.key || "").toLowerCase() === "r"){
-        setStatus("Regenerating…");
-        
-        // Generate new random parameters
-        randomParams = {
-          phase1: Math.random() * Math.PI * 2,
-          phase2: Math.random() * Math.PI * 2,
-          phase3: Math.random() * Math.PI * 2,
-          phase4: Math.random() * Math.PI * 2,
-          phase5: Math.random() * Math.PI * 2,
-          amp1: 18.0 + Math.random() * 8.0,
-          amp2: 10.0 + Math.random() * 6.0,
-          amp3: 7.0 + Math.random() * 5.0,
-          amp4: 14.0 + Math.random() * 6.0,
-          amp5: 9.0 + Math.random() * 4.0,
-          valleyAmp: 6.0 + Math.random() * 3.0
-        };
-        
-        // Regenerate terrain
-        generateTerrain();
-        
-        // Recreate wireframe geometry
-        const newWireGeom = applyWireGradient(new THREE.WireframeGeometry(geom));
-        linesMain.geometry.dispose();
-        linesGlow.geometry.dispose();
-        linesMain.geometry = newWireGeom;
-        linesGlow.geometry = newWireGeom.clone();
-        
-        // Re-render
-        renderOnce(renderer);
-        setTimeout(() => setStatus("Ready"), 700);
+        if (document.activeElement === colorInput) return;
+        regenerateScene();
+      }
+    });
+    colorInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        regenerateScene();
       }
     });
 
     // ---------- Export PNG 1920×1080 ----------
     function exportPng1920(){
-      setStatus("Exporting…");
+      setStatus("PNG出力中…");
 
       const W = 1920, H = 1080;
 
@@ -678,13 +977,13 @@
 
       r.dispose();
 
-      setStatus("Saved");
-      setTimeout(() => setStatus("Ready"), 900);
+      setStatus("PNG保存完了", 1100);
     }
 
     btnPng.addEventListener("click", exportPng1920);
+    btnRegenerate.addEventListener("click", regenerateScene);
 
-    // First render
+    applyPalette(currentPalette);
     resizeAndRender();
     }
 
