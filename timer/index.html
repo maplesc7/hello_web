@@ -7,32 +7,45 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #090909;
-      --bg-2: #121212;
-      --panel: rgba(22, 22, 22, 0.72);
-      --line: rgba(255, 255, 255, 0.09);
-      --line-strong: rgba(255, 255, 255, 0.18);
-      --text: #d6d6d6;
-      --muted: #8c8c8c;
-      --accent: #b8b8b8;
-      --accent-soft: rgba(214, 214, 214, 0.14);
-      --ink: #0a0c10;
-      --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+      --bg: #11151c;
+      --bg-2: #1a212c;
+      --panel: rgba(34, 42, 55, 0.82);
+      --line: rgba(255, 255, 255, 0.13);
+      --line-strong: rgba(255, 255, 255, 0.24);
+      --text: #e1e8f4;
+      --muted: #98a4b8;
+      --accent: #d8e3f4;
+      --accent-soft: rgba(216, 227, 244, 0.18);
+      --ink: #0d1219;
+      --shadow: 0 24px 72px rgba(0, 0, 0, 0.42);
+      --scene-progress: 0;
+      --scene-dim: 0;
+      --scene-power: 1;
+      --scene-angle: 0deg;
+      --ring-power: 1;
+      --sweep-shade: 4 7 12;
+      --body-glow-rgb: 214 225 246;
+      --panel-glow-rgb: 233 240 255;
+      --ray-rgb: 223 233 255;
     }
 
     [data-theme="light"] {
       color-scheme: light;
-      --bg: #efefef;
-      --bg-2: #fafafa;
-      --panel: rgba(255, 255, 255, 0.78);
-      --line: rgba(20, 20, 20, 0.1);
-      --line-strong: rgba(20, 20, 20, 0.2);
-      --text: #1f1f1f;
-      --muted: #626262;
-      --accent: #3a3a3a;
-      --accent-soft: rgba(44, 44, 44, 0.12);
-      --ink: #f7faff;
-      --shadow: 0 24px 58px rgba(0, 0, 0, 0.14);
+      --bg: #f4f7fb;
+      --bg-2: #ffffff;
+      --panel: rgba(255, 255, 255, 0.88);
+      --line: rgba(29, 39, 52, 0.12);
+      --line-strong: rgba(29, 39, 52, 0.22);
+      --text: #1f2733;
+      --muted: #667385;
+      --accent: #384659;
+      --accent-soft: rgba(56, 70, 89, 0.12);
+      --ink: #ffffff;
+      --shadow: 0 24px 58px rgba(24, 38, 56, 0.14);
+      --sweep-shade: 190 200 215;
+      --body-glow-rgb: 130 160 208;
+      --panel-glow-rgb: 103 125 156;
+      --ray-rgb: 106 131 165;
     }
 
     * { box-sizing: border-box; }
@@ -43,10 +56,20 @@
       font-family: "Bahnschrift", "Segoe UI", "Noto Sans JP", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(120vw 90vh at 50% -10%, rgba(255, 255, 255, 0.08), transparent 58%),
-        radial-gradient(90vw 70vh at 100% 0%, rgba(255, 255, 255, 0.04), transparent 62%),
+        conic-gradient(from 0deg at 50% 46%,
+          rgb(var(--sweep-shade) / calc(0.02 + var(--scene-dim) * 0.34)) 0deg,
+          rgb(var(--sweep-shade) / calc(0.02 + var(--scene-dim) * 0.34)) var(--scene-angle),
+          transparent calc(var(--scene-angle) + 18deg),
+          transparent 360deg),
+        radial-gradient(120vw 90vh at 50% -10%,
+          rgb(var(--body-glow-rgb) / calc(0.11 + var(--scene-power) * 0.18)),
+          transparent 58%),
+        radial-gradient(90vw 70vh at 100% 0%,
+          rgb(var(--body-glow-rgb) / calc(0.04 + var(--scene-power) * 0.12)),
+          transparent 62%),
         linear-gradient(180deg, var(--bg), var(--bg-2));
       overflow-x: hidden;
+      transition: background 180ms linear;
     }
 
     body {
@@ -62,16 +85,27 @@
       border: 1px solid var(--line);
       border-radius: 22px;
       background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 38%, rgba(255, 255, 255, 0.08)),
+        conic-gradient(from 0deg at 50% 50%,
+          rgb(var(--sweep-shade) / calc(0.03 + var(--scene-dim) * 0.4)) 0deg,
+          rgb(var(--sweep-shade) / calc(0.03 + var(--scene-dim) * 0.4)) var(--scene-angle),
+          transparent calc(var(--scene-angle) + 18deg),
+          transparent 360deg),
+        linear-gradient(160deg,
+          rgb(var(--panel-glow-rgb) / calc(0.12 + var(--scene-power) * 0.16)),
+          rgb(var(--panel-glow-rgb) / calc(0.04 + var(--scene-power) * 0.05)) 38%,
+          rgb(var(--panel-glow-rgb) / calc(0.06 + var(--scene-power) * 0.1))),
         var(--panel);
       backdrop-filter: blur(16px) saturate(115%);
       -webkit-backdrop-filter: blur(16px) saturate(115%);
-      box-shadow: var(--shadow);
+      box-shadow:
+        0 24px 72px rgb(0 0 0 / calc(0.18 + var(--scene-power) * 0.24)),
+        0 0 calc(10px + var(--scene-power) * 28px) rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.05));
       padding: clamp(12px, 2.5vw, 22px);
       display: grid;
       gap: 12px;
       overflow: auto;
       position: relative;
+      transition: background 180ms linear, box-shadow 180ms linear, border-color 180ms linear;
     }
 
     .app::before,
@@ -82,12 +116,13 @@
       border: 1px solid var(--line);
       border-radius: 20px;
       inset: 6px;
-      opacity: 0.7;
+      opacity: calc(0.18 + var(--scene-power) * 0.52);
     }
 
     .app::after {
       inset: 12px;
       border-color: rgba(255, 255, 255, 0.03);
+      opacity: calc(0.2 + var(--scene-power) * 0.42);
     }
 
     .stage {
@@ -98,10 +133,21 @@
       gap: 10px;
       position: relative;
       background:
-        radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 48%, transparent 100%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        conic-gradient(from 0deg at 50% 44%,
+          rgb(var(--sweep-shade) / calc(0.02 + var(--scene-dim) * 0.32)) 0deg,
+          rgb(var(--sweep-shade) / calc(0.02 + var(--scene-dim) * 0.32)) var(--scene-angle),
+          transparent calc(var(--scene-angle) + 16deg),
+          transparent 360deg),
+        radial-gradient(120% 82% at 50% 0%,
+          rgb(var(--panel-glow-rgb) / calc(0.06 + var(--scene-power) * 0.16)),
+          rgb(var(--panel-glow-rgb) / calc(0.02 + var(--scene-power) * 0.05)) 48%,
+          transparent 100%),
+        linear-gradient(180deg,
+          rgb(var(--panel-glow-rgb) / calc(0.03 + var(--scene-power) * 0.08)),
+          rgb(var(--panel-glow-rgb) / 0));
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / calc(0.03 + var(--scene-power) * 0.1));
       overflow: hidden;
+      transition: background 180ms linear, box-shadow 180ms linear, border-color 180ms linear;
     }
 
     .wire-grid {
@@ -114,7 +160,8 @@
         linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
       background-size: 22px 22px;
       mask-image: radial-gradient(circle at 50% 35%, black 45%, transparent 85%);
-      opacity: 0.5;
+      opacity: calc(0.12 + var(--scene-power) * 0.5);
+      transition: opacity 180ms linear;
     }
 
     .aurora-flare {
@@ -126,14 +173,15 @@
       transform: translate(-50%, -50%);
       border-radius: 50%;
       background: radial-gradient(circle,
-        rgba(255, 255, 255, 0.14) 0%,
-        rgba(255, 255, 255, 0.08) 28%,
-        rgba(255, 255, 255, 0.03) 45%,
+        rgb(var(--ray-rgb) / calc(0.06 + var(--scene-power) * 0.18)) 0%,
+        rgb(var(--ray-rgb) / calc(0.03 + var(--scene-power) * 0.1)) 28%,
+        rgb(var(--ray-rgb) / calc(0.01 + var(--scene-power) * 0.04)) 45%,
         transparent 70%);
       filter: blur(38px);
-      opacity: 0.56;
+      opacity: calc(0.08 + var(--scene-power) * 0.66);
       pointer-events: none;
       z-index: 0;
+      transition: opacity 180ms linear, background 180ms linear;
     }
 
     .aurora-rays {
@@ -145,20 +193,21 @@
       transform: translateX(-50%);
       background: conic-gradient(from 0deg at 50% 100%,
         transparent 0deg,
-        rgba(255, 255, 255, 0.035) 35deg,
+        rgb(var(--ray-rgb) / calc(0.01 + var(--scene-power) * 0.06)) 35deg,
         transparent 48deg,
-        rgba(255, 255, 255, 0.02) 85deg,
+        rgb(var(--ray-rgb) / calc(0.01 + var(--scene-power) * 0.038)) 85deg,
         transparent 104deg,
-        rgba(255, 255, 255, 0.024) 125deg,
+        rgb(var(--ray-rgb) / calc(0.01 + var(--scene-power) * 0.046)) 125deg,
         transparent 148deg,
-        rgba(255, 255, 255, 0.026) 215deg,
+        rgb(var(--ray-rgb) / calc(0.01 + var(--scene-power) * 0.052)) 215deg,
         transparent 226deg,
-        rgba(255, 255, 255, 0.02) 265deg,
+        rgb(var(--ray-rgb) / calc(0.01 + var(--scene-power) * 0.038)) 265deg,
         transparent 278deg);
       mix-blend-mode: screen;
-      opacity: 0.34;
+      opacity: calc(0.05 + var(--scene-power) * 0.42);
       pointer-events: none;
       z-index: 0;
+      transition: opacity 180ms linear, background 180ms linear;
     }
 
     .particles {
@@ -173,9 +222,10 @@
       width: 2px;
       height: 2px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
-      opacity: 0.38;
+      background: rgb(var(--panel-glow-rgb) / calc(0.12 + var(--scene-power) * 0.7));
+      box-shadow: 0 0 10px rgb(var(--panel-glow-rgb) / calc(0.04 + var(--scene-power) * 0.3));
+      opacity: calc(0.08 + var(--scene-power) * 0.42);
+      transition: opacity 180ms linear, background 180ms linear, box-shadow 180ms linear;
     }
 
     .particle:nth-child(1) { left: 20%; top: 28%; }
@@ -205,9 +255,14 @@
       place-items: center;
       border: 1px solid var(--line-strong);
       background:
-        radial-gradient(circle at center, rgba(255, 255, 255, 0.02), transparent 62%);
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 0 24px rgba(255, 255, 255, 0.08);
+        radial-gradient(circle at center,
+          rgb(var(--panel-glow-rgb) / calc(0.02 + var(--scene-power) * 0.06)),
+          transparent 62%);
+      box-shadow:
+        0 0 0 1px rgb(255 255 255 / calc(0.04 + var(--scene-power) * 0.16)),
+        0 0 calc(10px + var(--scene-power) * 22px) rgb(var(--panel-glow-rgb) / calc(0.02 + var(--scene-power) * 0.08));
       overflow: hidden;
+      transition: background 180ms linear, box-shadow 180ms linear, border-color 180ms linear;
     }
 
     .seg-ring {
@@ -233,12 +288,13 @@
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.12);
       opacity: 0.3;
+      transition: background 160ms linear, opacity 160ms linear, box-shadow 160ms linear;
     }
 
     .seg.on::before {
       background: var(--accent);
-      opacity: 0.95;
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.24);
+      opacity: calc(0.44 + var(--ring-power) * 0.56);
+      box-shadow: 0 0 calc(2px + var(--ring-power) * 8px) rgb(var(--panel-glow-rgb) / calc(0.08 + var(--ring-power) * 0.28));
     }
 
     .dial::before,
@@ -321,14 +377,14 @@
       height: 42px;
       border-radius: 50%;
       border: 1px solid var(--line-strong);
-      background: rgba(255, 255, 255, 0.04);
+      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.05));
       color: var(--text);
       font-size: 1.04rem;
       cursor: pointer;
       display: grid;
       place-items: center;
       transition: border-color 120ms ease, transform 120ms ease;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / calc(0.02 + var(--scene-power) * 0.08));
     }
 
     .icon-btn:hover { border-color: var(--accent); }
@@ -358,7 +414,7 @@
       width: 100%;
       border: 1px solid var(--line-strong);
       border-radius: 11px;
-      background: rgba(255, 255, 255, 0.03);
+      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.04));
       color: var(--text);
       padding: 10px;
       text-align: center;
@@ -389,7 +445,7 @@
       min-height: 54px;
       border-radius: 12px;
       border: 1px solid var(--line-strong);
-      background: rgba(255, 255, 255, 0.03);
+      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.04));
       color: var(--text);
       font-size: 1.18rem;
       font-weight: 900;
@@ -401,13 +457,15 @@
 
     .control:hover {
       border-color: var(--accent);
-      background: rgba(255, 255, 255, 0.02);
+      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.03));
     }
 
     .control:active { transform: translateY(1px); }
 
     .control.primary {
-      background: linear-gradient(180deg, rgba(210, 210, 210, 0.28), rgba(148, 148, 148, 0.2));
+      background: linear-gradient(180deg,
+        rgb(var(--panel-glow-rgb) / calc(0.12 + var(--scene-power) * 0.16)),
+        rgb(var(--panel-glow-rgb) / calc(0.08 + var(--scene-power) * 0.1)));
       border-color: rgba(255, 255, 255, 0.26);
       color: #e2e2e2;
     }
@@ -417,15 +475,15 @@
       padding: 3px;
       border-radius: 999px;
       border: 1px solid var(--line-strong);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.02);
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / calc(0.02 + var(--scene-power) * 0.05));
+      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.03));
     }
 
     .theme {
       appearance: none;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.04);
+      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.05));
       color: var(--text);
       min-width: 140px;
       padding: 9px 12px;
@@ -479,8 +537,6 @@
       .theme-dock { justify-self: stretch; }
       .theme { width: 100%; }
       .app { max-height: calc(100svh - 16px); }
-      .aurora-rays { opacity: 0.28; }
-      .aurora-flare { opacity: 0.5; }
     }
   </style>
 </head>
@@ -569,6 +625,28 @@
       const SEG_COUNT = 60;
       let segNodes = [];
 
+      function getProgressRatio() {
+        if (state.status === STATUS.FINISHED) return 1;
+        if ((state.status === STATUS.RUNNING || state.status === STATUS.PAUSED) && state.durationSec > 0) {
+          return clamp((state.durationSec - state.remainingSec) / state.durationSec, 0, 1);
+        }
+        return 0;
+      }
+
+      function applySceneProgress() {
+        const progress = getProgressRatio();
+        const remaining = 1 - progress;
+        const power = Math.max(0.16, 1 - progress * 0.84);
+
+        document.documentElement.style.setProperty("--scene-progress", progress.toFixed(4));
+        document.documentElement.style.setProperty("--scene-dim", progress.toFixed(4));
+        document.documentElement.style.setProperty("--scene-power", power.toFixed(4));
+        document.documentElement.style.setProperty("--scene-angle", `${(progress * 360).toFixed(2)}deg`);
+        document.documentElement.style.setProperty("--ring-power", Math.max(0.2, remaining).toFixed(4));
+
+        return { progress, remaining };
+      }
+
       function setupSegments() {
         const frag = document.createDocumentFragment();
         for (let i = 0; i < SEG_COUNT; i++) {
@@ -597,18 +675,11 @@
       }
 
       function setProgress() {
-        let p = 0;
-        if (state.status === STATUS.FINISHED) {
-          p = 100;
-        } else if ((state.status === STATUS.RUNNING || state.status === STATUS.PAUSED) && state.durationSec > 0) {
-          p = ((state.durationSec - state.remainingSec) / state.durationSec) * 100;
-        } else {
-          p = 0;
-        }
-        const ratio = clamp(p, 0, 100) / 100;
-        const onCount = Math.round(ratio * SEG_COUNT);
+        const { remaining } = applySceneProgress();
+        const onCount = Math.round(clamp(remaining, 0, 1) * SEG_COUNT);
+        const offCount = SEG_COUNT - onCount;
         for (let i = 0; i < SEG_COUNT; i++) {
-          segNodes[i].classList.toggle("on", i < onCount);
+          segNodes[i].classList.toggle("on", i >= offCount);
         }
       }
 
