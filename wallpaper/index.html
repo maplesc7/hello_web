@@ -561,7 +561,7 @@
         };
       }
 
-    // ---------- Background Shader (Frozen aurora + subtle vignette) ----------
+    // ---------- Background Shader (gradient glow + subtle vignette) ----------
     const bgScene = new THREE.Scene();
     const bgCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
@@ -621,11 +621,11 @@
           float b2 = band(y, 0.60, 0.18);
           float waves = sin(vUv.x * 8.0 + y * 6.5) * 0.5 + 0.5;
           float ripple = sin(vUv.x * 18.0 - y * 12.0) * 0.5 + 0.5;
-          float aurora = (b1 * 0.8 + b2 * 0.6) * (0.55 + 0.45 * waves) * (0.65 + 0.35 * ripple);
+          float glowBlend = (b1 * 0.8 + b2 * 0.6) * (0.55 + 0.45 * waves) * (0.65 + 0.35 * ripple);
 
           vec3 aurCol = mix(cAur1, cAur2, waves);
           aurCol = mix(aurCol, cAur3, ripple * 0.6);
-          col = mix(col, aurCol, aurora * 0.35);
+          col = mix(col, aurCol, glowBlend * 0.35);
 
           // Subtle vignette
           vec2 p = vUv * 2.0 - 1.0;
@@ -970,7 +970,7 @@
         String(now.getHours()).padStart(2, '0') + 
         String(now.getMinutes()).padStart(2, '0') + 
         String(now.getSeconds()).padStart(2, '0');
-      a.download = `frozen_aurora_wireframe_1920x1080_${timestamp}.png`;
+      a.download = `wireframe_wallpaper_1920x1080_${timestamp}.png`;
       
       document.body.appendChild(a);
       a.click();
