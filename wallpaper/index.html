@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Frozen Aurora Wireframe Wallpaper</title>
+  <title>Wireframe Wallpaper</title>
   <style>
     :root{
-      --ice-bg-rgb: 20 27 39;
-      --ice-deep-rgb: 10 16 24;
-      --ice-mid-rgb: 32 44 63;
-      --ice-ink-rgb: 214 232 244;
-      --ice-sub-rgb: 127 147 170;
-      --ice-blue-rgb: 95 143 188;
-      --ice-cyan-rgb: 131 203 231;
-      --ice-mint-rgb: 212 244 255;
+      --base-bg-rgb: 20 27 39;
+      --base-deep-rgb: 10 16 24;
+      --base-mid-rgb: 32 44 63;
+      --text-main-rgb: 214 232 244;
+      --text-sub-rgb: 127 147 170;
+      --accent-base-rgb: 95 143 188;
+      --accent-strong-rgb: 131 203 231;
+      --accent-soft-rgb: 212 244 255;
 
       --ui-bg-rgb: 20 27 39;
       --ui-bd-rgb: 131 203 231;
@@ -33,7 +33,7 @@
       margin: 0;
       height: 100%;
       overflow: hidden;
-      background: rgb(var(--ice-bg-rgb));
+      background: rgb(var(--base-bg-rgb));
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
     }
     #wrap{
@@ -95,7 +95,7 @@
       width: 100%;
       box-sizing: border-box;
       border: 1px solid rgb(var(--btn-bd-rgb) / 0.36);
-      background: rgb(var(--ice-deep-rgb) / 0.52);
+      background: rgb(var(--base-deep-rgb) / 0.52);
       color: rgb(var(--ui-tx-rgb) / 0.96);
       padding: 10px 12px;
       border-radius: 12px;
@@ -107,9 +107,9 @@
       color: rgb(var(--ui-sub-rgb) / 0.72);
     }
     .field input:focus{
-      border-color: rgb(var(--ice-mint-rgb) / 0.52);
-      box-shadow: 0 0 0 4px rgb(var(--ice-cyan-rgb) / 0.12);
-      background: rgb(var(--ice-deep-rgb) / 0.64);
+      border-color: rgb(var(--accent-soft-rgb) / 0.52);
+      box-shadow: 0 0 0 4px rgb(var(--accent-strong-rgb) / 0.12);
+      background: rgb(var(--base-deep-rgb) / 0.64);
     }
     button{
       appearance: none;
@@ -300,13 +300,13 @@
   </div>
 
   <div class="topbar">
-    Static render · Frozen Aurora
+    Static render
     <kbd>R</kbd> で再描画
   </div>
 
   <div class="ui">
-    <div class="title">Frozen Aurora × Wireframe Grid</div>
-    <div class="subtitle">Glacier blue spectrum / 7-tone depth</div>
+    <div class="title">Wireframe Grid Wallpaper</div>
+    <div class="subtitle">Base color spectrum / 7-tone depth</div>
     <div class="row">
       <label class="field">
         <span>基準カラーコード</span>
@@ -425,14 +425,14 @@
       // ---------- Palette ----------
       const defaultPalette = {
         css: {
-          iceBg: "#141b27",
-          iceDeep: "#0a1018",
-          iceMid: "#202c3f",
-          iceInk: "#d6e8f4",
-          iceSub: "#7f93aa",
-          iceBlue: "#5f8fbc",
-          iceCyan: "#83cbe7",
-          iceMint: "#d4f4ff",
+          baseBg: "#141b27",
+          baseDeep: "#0a1018",
+          baseMid: "#202c3f",
+          textMain: "#d6e8f4",
+          textSub: "#7f93aa",
+          accentBase: "#5f8fbc",
+          accentStrong: "#83cbe7",
+          accentSoft: "#d4f4ff",
           uiBg: "#141b27",
           uiBd: "#83cbe7",
           uiTx: "#d6e8f4",
@@ -467,7 +467,7 @@
         fog: "#0a1018",
         star: "#dbeefa"
       };
-      const referenceBaseHsl = hexToHsl(defaultPalette.css.iceCyan);
+      const referenceBaseHsl = hexToHsl(defaultPalette.css.accentStrong);
       let currentPalette = clonePalette(defaultPalette);
       let activeWireStops = currentPalette.wireStops.map((stop) => ({ t: stop.t, color: new THREE.Color(stop.color) }));
       const activeWireHighlight = new THREE.Color(currentPalette.wireHighlight);
@@ -475,18 +475,19 @@
       function buildPaletteFromBaseColor(baseHex){
         const baseHsl = hexToHsl(baseHex);
         const paletteJitter = {
-          h: (Math.random() - 0.5) * 0.024,
           s: (Math.random() - 0.5) * 0.08,
           l: (Math.random() - 0.5) * 0.07
         };
 
         function retarget(referenceHex, options = {}){
           const referenceHsl = hexToHsl(referenceHex);
+          const baseHueOffset = options.hueOffset ?? 0;
+          const referenceHueWeight = options.referenceHueWeight ?? 0;
           const hue = wrapHue(
             baseHsl.h +
-            shortestHueDelta(referenceBaseHsl.h, referenceHsl.h) +
-            paletteJitter.h +
-            (Math.random() - 0.5) * (options.hJitter ?? 0.012)
+            baseHueOffset +
+            shortestHueDelta(referenceBaseHsl.h, referenceHsl.h) * referenceHueWeight +
+            (Math.random() - 0.5) * (options.hJitter ?? 0.004)
           );
           const saturation = clamp(
             baseHsl.s +
@@ -508,55 +509,55 @@
         }
 
         const core = {
-          iceBg: retarget(defaultPalette.css.iceBg, { minL: 0.07, maxL: 0.26, maxS: 0.60, hJitter: 0.008, sJitter: 0.018, lJitter: 0.018 }),
-          iceDeep: retarget(defaultPalette.css.iceDeep, { minL: 0.03, maxL: 0.16, maxS: 0.48, hJitter: 0.006, sJitter: 0.016, lJitter: 0.014 }),
-          iceMid: retarget(defaultPalette.css.iceMid, { minL: 0.12, maxL: 0.38, maxS: 0.72, hJitter: 0.010, sJitter: 0.024, lJitter: 0.022 }),
-          iceInk: retarget(defaultPalette.css.iceInk, { minL: 0.86, maxL: 0.98, maxS: 0.46, hJitter: 0.010, sJitter: 0.018, lJitter: 0.018 }),
-          iceSub: retarget(defaultPalette.css.iceSub, { minL: 0.48, maxL: 0.78, maxS: 0.42, hJitter: 0.010, sJitter: 0.020, lJitter: 0.020 }),
-          iceBlue: retarget(defaultPalette.css.iceBlue, { minL: 0.38, maxL: 0.68, minS: 0.20, maxS: 0.88, hJitter: 0.012, sJitter: 0.022, lJitter: 0.022 }),
-          iceCyan: retarget(defaultPalette.css.iceCyan, { minL: 0.58, maxL: 0.84, minS: 0.22, maxS: 0.92, hJitter: 0.012, sJitter: 0.024, lJitter: 0.024 }),
-          iceMint: retarget(defaultPalette.css.iceMint, { minL: 0.84, maxL: 0.97, maxS: 0.56, hJitter: 0.010, sJitter: 0.016, lJitter: 0.016 })
+          baseBg: retarget(defaultPalette.css.baseBg, { minL: 0.07, maxL: 0.26, maxS: 0.60, hJitter: 0.002, sJitter: 0.018, lJitter: 0.018 }),
+          baseDeep: retarget(defaultPalette.css.baseDeep, { minL: 0.03, maxL: 0.16, maxS: 0.48, hJitter: 0.002, sJitter: 0.016, lJitter: 0.014 }),
+          baseMid: retarget(defaultPalette.css.baseMid, { minL: 0.12, maxL: 0.38, maxS: 0.72, hJitter: 0.003, sJitter: 0.024, lJitter: 0.022 }),
+          textMain: retarget(defaultPalette.css.textMain, { minL: 0.86, maxL: 0.98, maxS: 0.46, hJitter: 0.002, sJitter: 0.018, lJitter: 0.018 }),
+          textSub: retarget(defaultPalette.css.textSub, { minL: 0.48, maxL: 0.78, maxS: 0.42, hJitter: 0.002, sJitter: 0.020, lJitter: 0.020 }),
+          accentBase: retarget(defaultPalette.css.accentBase, { minL: 0.38, maxL: 0.68, minS: 0.20, maxS: 0.88, hJitter: 0.003, sJitter: 0.022, lJitter: 0.022 }),
+          accentStrong: retarget(defaultPalette.css.accentStrong, { minL: 0.58, maxL: 0.84, minS: 0.22, maxS: 0.92, hJitter: 0.002, sJitter: 0.018, lJitter: 0.020 }),
+          accentSoft: retarget(defaultPalette.css.accentSoft, { minL: 0.84, maxL: 0.97, maxS: 0.56, hJitter: 0.002, sJitter: 0.016, lJitter: 0.016 })
         };
 
         return {
           css: {
             ...core,
-            uiBg: mixHex(core.iceBg, core.iceDeep, 0.18),
-            uiBd: mixHex(core.iceCyan, core.iceMint, 0.18),
-            uiTx: core.iceInk,
-            uiSub: mixHex(core.iceSub, core.iceInk, 0.08),
-            btnBg: core.iceMid,
-            btnBg2: mixHex(core.iceMid, core.iceBlue, 0.22),
-            btnBd: mixHex(core.iceCyan, core.iceMint, 0.12),
-            flare1: core.iceMint,
-            flare2: core.iceCyan,
-            flare3: core.iceBlue,
-            particle: core.iceCyan
+            uiBg: mixHex(core.baseBg, core.baseDeep, 0.18),
+            uiBd: mixHex(core.accentStrong, core.accentSoft, 0.18),
+            uiTx: core.textMain,
+            uiSub: mixHex(core.textSub, core.textMain, 0.08),
+            btnBg: core.baseMid,
+            btnBg2: mixHex(core.baseMid, core.accentBase, 0.22),
+            btnBd: mixHex(core.accentStrong, core.accentSoft, 0.12),
+            flare1: core.accentSoft,
+            flare2: core.accentStrong,
+            flare3: core.accentBase,
+            particle: core.accentStrong
           },
           shader: {
-            cTop: retarget(defaultPalette.shader.cTop, { minL: 0.18, maxL: 0.40, maxS: 0.58, hJitter: 0.010, sJitter: 0.020, lJitter: 0.020 }),
-            cMid: core.iceBg,
-            cBot: retarget(defaultPalette.shader.cBot, { minL: 0.05, maxL: 0.22, maxS: 0.48, hJitter: 0.008, sJitter: 0.016, lJitter: 0.016 }),
-            cDeep: retarget(defaultPalette.shader.cDeep, { minL: 0.02, maxL: 0.14, maxS: 0.42, hJitter: 0.006, sJitter: 0.014, lJitter: 0.014 }),
-            cAur1: core.iceBlue,
-            cAur2: core.iceCyan,
-            cAur3: core.iceMint
+            cTop: retarget(defaultPalette.shader.cTop, { minL: 0.18, maxL: 0.40, maxS: 0.58, hJitter: 0.002, sJitter: 0.020, lJitter: 0.020 }),
+            cMid: core.baseBg,
+            cBot: retarget(defaultPalette.shader.cBot, { minL: 0.05, maxL: 0.22, maxS: 0.48, hJitter: 0.002, sJitter: 0.016, lJitter: 0.016 }),
+            cDeep: retarget(defaultPalette.shader.cDeep, { minL: 0.02, maxL: 0.14, maxS: 0.42, hJitter: 0.002, sJitter: 0.014, lJitter: 0.014 }),
+            cAur1: core.accentBase,
+            cAur2: core.accentStrong,
+            cAur3: core.accentSoft
           },
           wireStops: defaultPalette.wireStops.map((stop, index) => {
             const stopOptions = [
-              { minL: 0.88, maxL: 0.98, maxS: 0.34, hJitter: 0.010, sJitter: 0.016, lJitter: 0.016 },
-              { minL: 0.84, maxL: 0.96, maxS: 0.40, hJitter: 0.010, sJitter: 0.018, lJitter: 0.018 },
-              { minL: 0.76, maxL: 0.92, maxS: 0.54, hJitter: 0.012, sJitter: 0.020, lJitter: 0.020 },
-              { minL: 0.68, maxL: 0.88, maxS: 0.66, hJitter: 0.012, sJitter: 0.022, lJitter: 0.022 },
-              { minL: 0.56, maxL: 0.80, maxS: 0.78, hJitter: 0.012, sJitter: 0.024, lJitter: 0.024 },
-              { minL: 0.42, maxL: 0.70, maxS: 0.86, hJitter: 0.012, sJitter: 0.024, lJitter: 0.024 },
-              { minL: 0.24, maxL: 0.52, maxS: 0.78, hJitter: 0.010, sJitter: 0.022, lJitter: 0.022 }
+              { minL: 0.88, maxL: 0.98, maxS: 0.34, hJitter: 0.001, sJitter: 0.016, lJitter: 0.016 },
+              { minL: 0.84, maxL: 0.96, maxS: 0.40, hJitter: 0.001, sJitter: 0.018, lJitter: 0.018 },
+              { minL: 0.76, maxL: 0.92, maxS: 0.54, hJitter: 0.001, sJitter: 0.020, lJitter: 0.020 },
+              { minL: 0.68, maxL: 0.88, maxS: 0.66, hJitter: 0.001, sJitter: 0.022, lJitter: 0.022 },
+              { minL: 0.56, maxL: 0.80, maxS: 0.78, hJitter: 0.001, sJitter: 0.024, lJitter: 0.024 },
+              { minL: 0.42, maxL: 0.70, maxS: 0.86, hJitter: 0.001, sJitter: 0.024, lJitter: 0.024 },
+              { minL: 0.24, maxL: 0.52, maxS: 0.78, hJitter: 0.001, sJitter: 0.022, lJitter: 0.022 }
             ];
             return { t: stop.t, color: retarget(stop.color, stopOptions[index]) };
           }),
-          wireHighlight: retarget(defaultPalette.wireHighlight, { minL: 0.92, maxL: 0.99, maxS: 0.34, hJitter: 0.008, sJitter: 0.012, lJitter: 0.012 }),
-          fog: mixHex(core.iceDeep, core.iceBg, 0.34),
-          star: mixHex(core.iceInk, core.iceMint, 0.35)
+          wireHighlight: retarget(defaultPalette.wireHighlight, { minL: 0.92, maxL: 0.99, maxS: 0.34, hJitter: 0.001, sJitter: 0.012, lJitter: 0.012 }),
+          fog: mixHex(core.baseDeep, core.baseBg, 0.34),
+          star: mixHex(core.textMain, core.accentSoft, 0.35)
         };
       }
 
@@ -810,14 +811,14 @@
     function applyPalette(palette){
       currentPalette = clonePalette(palette);
 
-      setRgbVar("--ice-bg-rgb", currentPalette.css.iceBg);
-      setRgbVar("--ice-deep-rgb", currentPalette.css.iceDeep);
-      setRgbVar("--ice-mid-rgb", currentPalette.css.iceMid);
-      setRgbVar("--ice-ink-rgb", currentPalette.css.iceInk);
-      setRgbVar("--ice-sub-rgb", currentPalette.css.iceSub);
-      setRgbVar("--ice-blue-rgb", currentPalette.css.iceBlue);
-      setRgbVar("--ice-cyan-rgb", currentPalette.css.iceCyan);
-      setRgbVar("--ice-mint-rgb", currentPalette.css.iceMint);
+      setRgbVar("--base-bg-rgb", currentPalette.css.baseBg);
+      setRgbVar("--base-deep-rgb", currentPalette.css.baseDeep);
+      setRgbVar("--base-mid-rgb", currentPalette.css.baseMid);
+      setRgbVar("--text-main-rgb", currentPalette.css.textMain);
+      setRgbVar("--text-sub-rgb", currentPalette.css.textSub);
+      setRgbVar("--accent-base-rgb", currentPalette.css.accentBase);
+      setRgbVar("--accent-strong-rgb", currentPalette.css.accentStrong);
+      setRgbVar("--accent-soft-rgb", currentPalette.css.accentSoft);
       setRgbVar("--ui-bg-rgb", currentPalette.css.uiBg);
       setRgbVar("--ui-bd-rgb", currentPalette.css.uiBd);
       setRgbVar("--ui-tx-rgb", currentPalette.css.uiTx);
@@ -825,7 +826,7 @@
       setRgbVar("--btn-bg-rgb", currentPalette.css.btnBg);
       setRgbVar("--btn-bg2-rgb", currentPalette.css.btnBg2);
       setRgbVar("--btn-bd-rgb", currentPalette.css.btnBd);
-      setRgbVar("--shadow-rgb", currentPalette.css.iceDeep);
+      setRgbVar("--shadow-rgb", currentPalette.css.baseDeep);
       setRgbVar("--flare-1-rgb", currentPalette.css.flare1);
       setRgbVar("--flare-2-rgb", currentPalette.css.flare2);
       setRgbVar("--flare-3-rgb", currentPalette.css.flare3);
