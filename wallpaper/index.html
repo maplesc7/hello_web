@@ -39,6 +39,15 @@
     #wrap{
       position: fixed;
       inset: 0;
+      background: rgb(var(--base-deep-rgb));
+    }
+    #stage{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      overflow: hidden;
+      background: rgb(var(--base-deep-rgb));
     }
     canvas{
       position: absolute;
@@ -90,7 +99,8 @@
       letter-spacing: .03em;
       color: rgb(var(--ui-sub-rgb) / 0.90);
     }
-    .field input{
+    .field input,
+    .field select{
       appearance: none;
       width: 100%;
       box-sizing: border-box;
@@ -103,10 +113,14 @@
       outline: none;
       transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
     }
+    .field select{
+      cursor: pointer;
+    }
     .field input::placeholder{
       color: rgb(var(--ui-sub-rgb) / 0.72);
     }
-    .field input:focus{
+    .field input:focus,
+    .field select:focus{
       border-color: rgb(var(--accent-soft-rgb) / 0.52);
       box-shadow: 0 0 0 4px rgb(var(--accent-strong-rgb) / 0.12);
       background: rgb(var(--base-deep-rgb) / 0.64);
@@ -190,6 +204,12 @@
       animation: pulse-flare 6s ease-in-out infinite;
     }
 
+    #stage[data-mode="iphone17pro"] .light-flare {
+      top: 22%;
+      width: 320px;
+      height: 320px;
+    }
+
     @keyframes pulse-flare {
       0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
       50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.1); }
@@ -223,6 +243,12 @@
       mix-blend-mode: screen;
       pointer-events: none;
       opacity: 0.45;
+    }
+
+    #stage[data-mode="iphone17pro"] .light-rays {
+      bottom: 36%;
+      height: 90%;
+      opacity: 0.38;
     }
 
     /* Film Grain - フィルムグレイン */
@@ -283,20 +309,22 @@
 </head>
 <body>
   <div id="wrap">
-    <canvas id="c"></canvas>
-    
-    <!-- Visual Effects -->
-    <div class="light-flare"></div>
-    <div class="light-rays"></div>
-    <div class="grain-overlay"></div>
-    
-    <!-- Floating Particles -->
-    <div class="glow-particle"></div>
-    <div class="glow-particle"></div>
-    <div class="glow-particle"></div>
-    <div class="glow-particle"></div>
-    <div class="glow-particle"></div>
-    <div class="glow-particle"></div>
+    <div id="stage" data-mode="fullhd">
+      <canvas id="c"></canvas>
+
+      <!-- Visual Effects -->
+      <div class="light-flare"></div>
+      <div class="light-rays"></div>
+      <div class="grain-overlay"></div>
+
+      <!-- Floating Particles -->
+      <div class="glow-particle"></div>
+      <div class="glow-particle"></div>
+      <div class="glow-particle"></div>
+      <div class="glow-particle"></div>
+      <div class="glow-particle"></div>
+      <div class="glow-particle"></div>
+    </div>
   </div>
 
   <div class="topbar">
@@ -315,7 +343,14 @@
       <button id="btnRegenerate">再生成</button>
     </div>
     <div class="row">
-      <button id="btnPng">PNG(1920×1080) を保存</button>
+      <label class="field">
+        <span>表示モード</span>
+        <select id="modeSelect" aria-label="表示モード">
+          <option value="fullhd">フルHD (1920×1080)</option>
+          <option value="iphone17pro">iPhone 17 Pro (1206×2622)</option>
+        </select>
+      </label>
+      <button id="btnPng">PNGを保存</button>
       <span class="badge" id="status">待機中</span>
     </div>
     <div class="hint">※ 有効なカラーコードなら配色も更新。空欄なら現在の配色のまま再生成。</div>
@@ -336,9 +371,11 @@
     // メインの初期化処理
     function init() {
       const canvas = document.getElementById("c");
+      const stage = document.getElementById("stage");
       const btnPng = document.getElementById("btnPng");
       const btnRegenerate = document.getElementById("btnRegenerate");
       const colorInput = document.getElementById("colorInput");
+      const modeSelect = document.getElementById("modeSelect");
       const statusEl = document.getElementById("status");
       const rootStyle = document.documentElement.style;
       let statusTimer = 0;
@@ -420,6 +457,45 @@
             statusTimer = 0;
           }, holdMs);
         }
+      }
+      function buildTimestamp(){
+        const now = new Date();
+        return now.getFullYear() +
+          String(now.getMonth() + 1).padStart(2, '0') +
+          String(now.getDate()).padStart(2, '0') +
+          String(now.getHours()).padStart(2, '0') +
+          String(now.getMinutes()).padStart(2, '0') +
+          String(now.getSeconds()).padStart(2, '0');
+      }
+
+      const MODES = {
+        fullhd: {
+          label: "フルHD",
+          width: 1920,
+          height: 1080,
+          filenameSize: "1920x1080",
+          camera: {
+            fov: 86,
+            position: [0, 58, 90],
+            target: [0, 0, -220]
+          }
+        },
+        iphone17pro: {
+          label: "iPhone 17 Pro",
+          width: 1206,
+          height: 2622,
+          filenameSize: "1206x2622",
+          camera: {
+            fov: 62,
+            position: [0, 108, 152],
+            target: [0, 18, -255]
+          }
+        }
+      };
+      let currentModeKey = "fullhd";
+
+      function getCurrentMode(){
+        return MODES[currentModeKey];
       }
 
       // ---------- Palette ----------
@@ -676,9 +752,9 @@
     // Fog for depth
     scene.fog = new THREE.Fog(new THREE.Color(defaultPalette.fog), 140, 720);
 
-    const camera = new THREE.PerspectiveCamera(86, 16/9, 0.1, 1400);
-    camera.position.set(0, 58, 90);
-    camera.lookAt(0, 0, -220);
+    const initialMode = getCurrentMode();
+    const camera = new THREE.PerspectiveCamera(initialMode.camera.fov, initialMode.width / initialMode.height, 0.1, 1400);
+    const cameraTarget = new THREE.Vector3();
 
     // Terrain size and resolution (wider for horizontal spread)
     const WIDTH = 1300;          // X (wider) - かなり広め
@@ -860,6 +936,44 @@
     });
     renderer.autoClear = false;
 
+    function applyModeCamera(modeKey = currentModeKey){
+      const mode = MODES[modeKey];
+      camera.fov = mode.camera.fov;
+      camera.aspect = mode.width / mode.height;
+      camera.position.set(...mode.camera.position);
+      cameraTarget.set(...mode.camera.target);
+      camera.lookAt(cameraTarget);
+      camera.updateProjectionMatrix();
+    }
+
+    function updateStageLayout(){
+      const mode = getCurrentMode();
+      const viewportW = Math.max(1, window.innerWidth);
+      const viewportH = Math.max(1, window.innerHeight);
+      const modeAspect = mode.width / mode.height;
+      const viewportAspect = viewportW / viewportH;
+
+      let stageW = viewportW;
+      let stageH = stageW / modeAspect;
+
+      if (stageH > viewportH) {
+        stageH = viewportH;
+        stageW = stageH * modeAspect;
+      }
+
+      stage.style.width = `${Math.round(stageW)}px`;
+      stage.style.height = `${Math.round(stageH)}px`;
+      stage.dataset.mode = currentModeKey;
+    }
+
+    function syncRendererToMode(){
+      const mode = getCurrentMode();
+      renderer.setPixelRatio(1);
+      renderer.setSize(mode.width, mode.height, false);
+      updateStageLayout();
+      applyModeCamera();
+    }
+
     function renderOnce(target){
       target.clear(true, true, true);
       target.render(bgScene, bgCam);
@@ -877,17 +991,15 @@
       linesGlow.geometry = glowGeom;
     }
 
-    function resizeAndRender(){
-      const w = Math.max(1, window.innerWidth);
-      const h = Math.max(1, window.innerHeight);
-
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.setSize(w, h, false);
-
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-
+    function renderCurrentMode(){
+      syncRendererToMode();
       renderOnce(renderer);
+    }
+
+    function rebuildScene(){
+      randomParams = createRandomTerrainParams();
+      generateTerrain();
+      rebuildWireframe();
     }
 
     function regenerateScene(){
@@ -907,14 +1019,22 @@
         }
       }
 
-      randomParams = createRandomTerrainParams();
-      generateTerrain();
-      rebuildWireframe();
-      renderOnce(renderer);
+      rebuildScene();
+      renderCurrentMode();
       setStatus(resultMessage, 1100);
     }
 
-    window.addEventListener("resize", () => resizeAndRender(), { passive: true });
+    function changeMode(nextModeKey){
+      if (!MODES[nextModeKey] || nextModeKey === currentModeKey) return;
+
+      currentModeKey = nextModeKey;
+      setStatus(`${getCurrentMode().label}へ切替中…`);
+      rebuildScene();
+      renderCurrentMode();
+      setStatus(`${getCurrentMode().label}へ切替`, 1100);
+    }
+
+    window.addEventListener("resize", () => renderCurrentMode(), { passive: true });
     window.addEventListener("keydown", (e) => {
       if ((e.key || "").toLowerCase() === "r"){
         if (document.activeElement === colorInput) return;
@@ -928,11 +1048,12 @@
       }
     });
 
-    // ---------- Export PNG 1920×1080 ----------
-    function exportPng1920(){
+    function exportPng(){
       setStatus("PNG出力中…");
 
-      const W = 1920, H = 1080;
+      const mode = getCurrentMode();
+      const W = mode.width;
+      const H = mode.height;
 
       const off = document.createElement("canvas");
       off.width = W; off.height = H;
@@ -948,29 +1069,30 @@
       r.setSize(W, H, false);
       r.setPixelRatio(1);
 
-      const prevAspect = camera.aspect;
-      camera.aspect = W / H;
-      camera.updateProjectionMatrix();
+      const prevState = {
+        fov: camera.fov,
+        aspect: camera.aspect,
+        position: camera.position.clone(),
+        target: cameraTarget.clone()
+      };
+
+      applyModeCamera(currentModeKey);
 
       r.clear(true, true, true);
       r.render(bgScene, bgCam);
       r.render(scene, camera);
 
-      camera.aspect = prevAspect;
+      camera.fov = prevState.fov;
+      camera.aspect = prevState.aspect;
+      camera.position.copy(prevState.position);
+      cameraTarget.copy(prevState.target);
+      camera.lookAt(cameraTarget);
       camera.updateProjectionMatrix();
 
       const url = off.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = url;
-      
-      const now = new Date();
-      const timestamp = now.getFullYear() + 
-        String(now.getMonth() + 1).padStart(2, '0') + 
-        String(now.getDate()).padStart(2, '0') + 
-        String(now.getHours()).padStart(2, '0') + 
-        String(now.getMinutes()).padStart(2, '0') + 
-        String(now.getSeconds()).padStart(2, '0');
-      a.download = `wireframe_wallpaper_1920x1080_${timestamp}.png`;
+      a.download = `wireframe_wallpaper_${mode.filenameSize}_${buildTimestamp()}.png`;
       
       document.body.appendChild(a);
       a.click();
@@ -981,11 +1103,14 @@
       setStatus("PNG保存完了", 1100);
     }
 
-    btnPng.addEventListener("click", exportPng1920);
+    btnPng.addEventListener("click", exportPng);
     btnRegenerate.addEventListener("click", regenerateScene);
+    modeSelect.addEventListener("change", (e) => changeMode(e.target.value));
 
     applyPalette(currentPalette);
-    resizeAndRender();
+    modeSelect.value = currentModeKey;
+    applyModeCamera();
+    renderCurrentMode();
     }
 
     // DOM読み込み完了後に初期化
