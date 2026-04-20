@@ -9,7 +9,7 @@
       color-scheme: dark;
       --bg: #11151c;
       --bg-2: #1a212c;
-      --panel: rgba(34, 42, 55, 0.82);
+      --panel: rgba(34, 42, 55, 0.62);
       --line: rgba(255, 255, 255, 0.13);
       --line-strong: rgba(255, 255, 255, 0.24);
       --text: #e1e8f4;
@@ -22,18 +22,29 @@
       --scene-dim: 0;
       --scene-power: 1;
       --scene-angle: 0deg;
+      --scene-sweep-opacity: 0;
+      --scene-sweep-blur: 4px;
+      --sweep-origin-x: 50%;
+      --sweep-origin-y: 34%;
       --ring-power: 1;
       --sweep-shade: 4 7 12;
       --body-glow-rgb: 214 225 246;
       --panel-glow-rgb: 233 240 255;
       --ray-rgb: 223 233 255;
+      --chrome-alpha: 0.75;
+      --control-width: min(440px, 100%);
+      --photo-image: none;
+      --photo-opacity: 0;
+      --photo-brightness: 0.76;
+      --photo-saturate: 1.08;
+      --photo-contrast: 1.08;
     }
 
     [data-theme="light"] {
       color-scheme: light;
       --bg: #f4f7fb;
       --bg-2: #ffffff;
-      --panel: rgba(255, 255, 255, 0.88);
+      --panel: rgba(255, 255, 255, 0.67);
       --line: rgba(29, 39, 52, 0.12);
       --line-strong: rgba(29, 39, 52, 0.22);
       --text: #1f2733;
@@ -48,19 +59,69 @@
       --ray-rgb: 106 131 165;
     }
 
+    [data-theme="darkcity"] {
+      color-scheme: dark;
+      --bg: #081018;
+      --bg-2: #121b25;
+      --panel: rgba(11, 16, 24, 0.58);
+      --line: rgba(255, 255, 255, 0.12);
+      --line-strong: rgba(255, 255, 255, 0.24);
+      --text: #e5edf8;
+      --muted: #9ba7b9;
+      --accent: #d9e4f7;
+      --accent-soft: rgba(217, 228, 247, 0.15);
+      --ink: #060b10;
+      --shadow: 0 24px 76px rgba(0, 0, 0, 0.52);
+      --sweep-shade: 2 5 9;
+      --body-glow-rgb: 122 146 184;
+      --panel-glow-rgb: 200 217 240;
+      --ray-rgb: 170 196 231;
+      --photo-image: url("https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1600&q=80");
+      --photo-opacity: 0.6;
+      --photo-brightness: 0.52;
+      --photo-saturate: 1.04;
+      --photo-contrast: 1.12;
+    }
+
+    [data-theme="lightcity"] {
+      color-scheme: light;
+      --bg: #dfe7f1;
+      --bg-2: #f9fcff;
+      --panel: rgba(248, 251, 255, 0.54);
+      --line: rgba(29, 39, 52, 0.14);
+      --line-strong: rgba(29, 39, 52, 0.24);
+      --text: #172332;
+      --muted: #5f6f83;
+      --accent: #253548;
+      --accent-soft: rgba(37, 53, 72, 0.14);
+      --ink: #ffffff;
+      --shadow: 0 24px 58px rgba(24, 38, 56, 0.16);
+      --sweep-shade: 104 120 143;
+      --body-glow-rgb: 144 166 194;
+      --panel-glow-rgb: 120 142 168;
+      --ray-rgb: 119 144 174;
+      --photo-image: url("https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1600&q=80");
+      --photo-opacity: 0.72;
+      --photo-brightness: 0.86;
+      --photo-saturate: 0.98;
+      --photo-contrast: 0.92;
+    }
+
     * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
-      min-height: 100%;
+      width: 100%;
+      height: 100%;
       font-family: "Bahnschrift", "Segoe UI", "Noto Sans JP", sans-serif;
       color: var(--text);
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    html {
       background:
-        conic-gradient(from 0deg at 50% 46%,
-          rgb(var(--sweep-shade) / calc(0.02 + var(--scene-dim) * 0.34)) 0deg,
-          rgb(var(--sweep-shade) / calc(0.02 + var(--scene-dim) * 0.34)) var(--scene-angle),
-          transparent calc(var(--scene-angle) + 18deg),
-          transparent 360deg),
         radial-gradient(120vw 90vh at 50% -10%,
           rgb(var(--body-glow-rgb) / calc(0.11 + var(--scene-power) * 0.18)),
           transparent 58%),
@@ -68,32 +129,49 @@
           rgb(var(--body-glow-rgb) / calc(0.04 + var(--scene-power) * 0.12)),
           transparent 62%),
         linear-gradient(180deg, var(--bg), var(--bg-2));
-      overflow-x: hidden;
       transition: background 180ms linear;
     }
 
     body {
       display: grid;
       place-items: start center;
-      min-height: 100dvh;
-      padding: clamp(12px, 2.2vw, 24px);
+      min-height: 100svh;
+      height: auto;
+      padding:
+        calc(env(safe-area-inset-top) + 10px)
+        clamp(12px, 2.2vw, 24px)
+        calc(env(safe-area-inset-bottom) + 10px);
+      position: relative;
+      isolation: isolate;
+      background: transparent;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: var(--photo-image);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: var(--photo-opacity);
+      filter: saturate(var(--photo-saturate)) brightness(var(--photo-brightness)) contrast(var(--photo-contrast));
+      transform: scale(1.04);
+      pointer-events: none;
+      z-index: -1;
+      transition: opacity 180ms linear, filter 180ms linear;
     }
 
     .app {
       width: min(920px, 100%);
-      max-height: calc(100svh - 24px);
+      height: auto;
       border: 1px solid var(--line);
       border-radius: 22px;
       background:
-        conic-gradient(from 0deg at 50% 50%,
-          rgb(var(--sweep-shade) / calc(0.03 + var(--scene-dim) * 0.4)) 0deg,
-          rgb(var(--sweep-shade) / calc(0.03 + var(--scene-dim) * 0.4)) var(--scene-angle),
-          transparent calc(var(--scene-angle) + 18deg),
-          transparent 360deg),
         linear-gradient(160deg,
-          rgb(var(--panel-glow-rgb) / calc(0.12 + var(--scene-power) * 0.16)),
-          rgb(var(--panel-glow-rgb) / calc(0.04 + var(--scene-power) * 0.05)) 38%,
-          rgb(var(--panel-glow-rgb) / calc(0.06 + var(--scene-power) * 0.1))),
+          rgb(var(--panel-glow-rgb) / calc((0.12 + var(--scene-power) * 0.16) * var(--chrome-alpha))),
+          rgb(var(--panel-glow-rgb) / calc((0.04 + var(--scene-power) * 0.05) * var(--chrome-alpha))) 38%,
+          rgb(var(--panel-glow-rgb) / calc((0.06 + var(--scene-power) * 0.1) * var(--chrome-alpha)))),
         var(--panel);
       backdrop-filter: blur(16px) saturate(115%);
       -webkit-backdrop-filter: blur(16px) saturate(115%);
@@ -103,7 +181,7 @@
       padding: clamp(12px, 2.5vw, 22px);
       display: grid;
       gap: 12px;
-      overflow: auto;
+      overflow: hidden;
       position: relative;
       transition: background 180ms linear, box-shadow 180ms linear, border-color 180ms linear;
     }
@@ -116,13 +194,13 @@
       border: 1px solid var(--line);
       border-radius: 20px;
       inset: 6px;
-      opacity: calc(0.18 + var(--scene-power) * 0.52);
+      opacity: calc((0.18 + var(--scene-power) * 0.52) * var(--chrome-alpha));
     }
 
     .app::after {
       inset: 12px;
       border-color: rgba(255, 255, 255, 0.03);
-      opacity: calc(0.2 + var(--scene-power) * 0.42);
+      opacity: calc((0.2 + var(--scene-power) * 0.42) * var(--chrome-alpha));
     }
 
     .stage {
@@ -131,23 +209,38 @@
       padding: clamp(12px, 2.4vw, 18px);
       display: grid;
       gap: 10px;
+      align-content: start;
       position: relative;
       background:
-        conic-gradient(from 0deg at 50% 44%,
-          rgb(var(--sweep-shade) / calc(0.02 + var(--scene-dim) * 0.32)) 0deg,
-          rgb(var(--sweep-shade) / calc(0.02 + var(--scene-dim) * 0.32)) var(--scene-angle),
-          transparent calc(var(--scene-angle) + 16deg),
-          transparent 360deg),
         radial-gradient(120% 82% at 50% 0%,
-          rgb(var(--panel-glow-rgb) / calc(0.06 + var(--scene-power) * 0.16)),
-          rgb(var(--panel-glow-rgb) / calc(0.02 + var(--scene-power) * 0.05)) 48%,
+          rgb(var(--panel-glow-rgb) / calc((0.06 + var(--scene-power) * 0.16) * var(--chrome-alpha))),
+          rgb(var(--panel-glow-rgb) / calc((0.02 + var(--scene-power) * 0.05) * var(--chrome-alpha))) 48%,
           transparent 100%),
         linear-gradient(180deg,
-          rgb(var(--panel-glow-rgb) / calc(0.03 + var(--scene-power) * 0.08)),
+          rgb(var(--panel-glow-rgb) / calc((0.03 + var(--scene-power) * 0.08) * var(--chrome-alpha))),
           rgb(var(--panel-glow-rgb) / 0));
-      box-shadow: inset 0 1px 0 rgb(255 255 255 / calc(0.03 + var(--scene-power) * 0.1));
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / calc((0.03 + var(--scene-power) * 0.1) * var(--chrome-alpha)));
       overflow: hidden;
       transition: background 180ms linear, box-shadow 180ms linear, border-color 180ms linear;
+    }
+
+    .scene-sweep {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        conic-gradient(from 0deg at var(--sweep-origin-x) var(--sweep-origin-y),
+          rgb(var(--sweep-shade) / var(--scene-sweep-opacity)) 0deg,
+          rgb(var(--sweep-shade) / calc(var(--scene-sweep-opacity) * 0.88)) calc(var(--scene-angle) * 0.9),
+          rgb(var(--sweep-shade) / calc(var(--scene-sweep-opacity) * 0.34)) calc(var(--scene-angle) + 3deg),
+          transparent calc(var(--scene-angle) + 8deg),
+          transparent 360deg);
+      mix-blend-mode: multiply;
+      filter: blur(var(--scene-sweep-blur));
+      transform: scale(1.015);
+      opacity: min(1, calc(var(--scene-progress) * 12));
+      transition: background 220ms ease, opacity 220ms ease, filter 220ms ease;
     }
 
     .wire-grid {
@@ -342,10 +435,12 @@
       position: relative;
       z-index: 1;
       display: flex;
+      width: var(--control-width);
+      margin: 0 auto;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
 
     .state {
@@ -372,35 +467,22 @@
     .state[data-status="paused"]::before { background: #939dab; }
     .state[data-status="finished"]::before { background: #d3d9e2; }
 
-    .icon-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 1px solid var(--line-strong);
-      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.05));
-      color: var(--text);
-      font-size: 1.04rem;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      transition: border-color 120ms ease, transform 120ms ease;
-      box-shadow: inset 0 1px 0 rgb(255 255 255 / calc(0.02 + var(--scene-power) * 0.08));
-    }
-
-    .icon-btn:hover { border-color: var(--accent); }
-    .icon-btn:active { transform: translateY(1px); }
-
     .inputs {
       position: relative;
       z-index: 1;
-      width: min(440px, 100%);
+      width: var(--control-width);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(2, minmax(120px, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+      align-items: start;
     }
 
-    .input-wrap { display: grid; gap: 6px; }
+    .input-wrap {
+      display: grid;
+      grid-template-rows: auto minmax(54px, auto);
+      gap: 6px;
+    }
 
     .input-wrap label {
       color: var(--muted);
@@ -408,36 +490,39 @@
       letter-spacing: 0.14em;
       text-transform: uppercase;
       font-weight: 800;
+      text-align: center;
     }
 
     .input-wrap input {
+      appearance: textfield;
       width: 100%;
+      min-height: 54px;
       border: 1px solid var(--line-strong);
       border-radius: 11px;
-      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.04));
+      background: rgb(var(--panel-glow-rgb) / calc((0.01 + var(--scene-power) * 0.04) * var(--chrome-alpha)));
       color: var(--text);
-      padding: 10px;
+      padding: 0 10px;
       text-align: center;
-      font-size: clamp(1.05rem, 3.8vw, 1.5rem);
+      font-size: clamp(1.18rem, 3.8vw, 1.5rem);
       font-weight: 900;
       font-variant-numeric: tabular-nums;
+      line-height: 1;
+      font-family: "Bahnschrift", "Segoe UI", "Noto Sans JP", sans-serif;
     }
 
     .action-row {
       position: relative;
       z-index: 1;
-      width: min(620px, 100%);
+      width: var(--control-width);
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: end;
-      gap: 10px;
+      display: block;
     }
 
     .controls {
-      width: 100%;
+      width: var(--control-width);
+      margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(2, minmax(110px, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
@@ -445,60 +530,55 @@
       min-height: 54px;
       border-radius: 12px;
       border: 1px solid var(--line-strong);
-      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.04));
+      background: rgb(var(--panel-glow-rgb) / calc((0.01 + var(--scene-power) * 0.04) * var(--chrome-alpha)));
       color: var(--text);
-      font-size: 1.18rem;
+      font-size: 1.5rem;
       font-weight: 900;
       cursor: pointer;
-      display: grid;
-      place-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      font-family: "Segoe UI Symbol", "Bahnschrift", "Segoe UI", sans-serif;
       transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
     }
 
     .control:hover {
       border-color: var(--accent);
-      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.03));
+      background: rgb(var(--panel-glow-rgb) / calc((0.01 + var(--scene-power) * 0.03) * var(--chrome-alpha)));
     }
 
     .control:active { transform: translateY(1px); }
 
     .control.primary {
       background: linear-gradient(180deg,
-        rgb(var(--panel-glow-rgb) / calc(0.12 + var(--scene-power) * 0.16)),
-        rgb(var(--panel-glow-rgb) / calc(0.08 + var(--scene-power) * 0.1)));
+        rgb(var(--panel-glow-rgb) / calc((0.12 + var(--scene-power) * 0.16) * var(--chrome-alpha))),
+        rgb(var(--panel-glow-rgb) / calc((0.08 + var(--scene-power) * 0.1) * var(--chrome-alpha))));
       border-color: rgba(255, 255, 255, 0.26);
-      color: #e2e2e2;
+      color: var(--text);
     }
 
     .theme-dock {
       width: fit-content;
+      flex: 0 0 auto;
       padding: 3px;
       border-radius: 999px;
       border: 1px solid var(--line-strong);
-      box-shadow: inset 0 0 0 1px rgb(255 255 255 / calc(0.02 + var(--scene-power) * 0.05));
-      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.03));
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / calc((0.02 + var(--scene-power) * 0.05) * var(--chrome-alpha)));
+      background: rgb(var(--panel-glow-rgb) / calc((0.01 + var(--scene-power) * 0.03) * var(--chrome-alpha)));
     }
 
     .theme {
       appearance: none;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgb(var(--panel-glow-rgb) / calc(0.01 + var(--scene-power) * 0.05));
+      background: rgb(var(--panel-glow-rgb) / calc((0.01 + var(--scene-power) * 0.05) * var(--chrome-alpha)));
       color: var(--text);
-      min-width: 140px;
+      min-width: 172px;
       padding: 9px 12px;
       font-size: 0.86rem;
       font-weight: 700;
-    }
-
-    .hint {
-      position: relative;
-      z-index: 1;
-      margin: 2px 0 0;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.82rem;
-      letter-spacing: 0.03em;
     }
 
     .toast {
@@ -523,7 +603,6 @@
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     .theme:focus-visible,
-    .icon-btn:focus-visible,
     .input-wrap input:focus-visible,
     .control:focus-visible {
       outline: 2px solid rgba(157, 167, 182, 0.7);
@@ -531,12 +610,34 @@
     }
 
     @media (max-width: 520px) {
-      .dial { width: min(74vw, 336px); }
-      .action-row { grid-template-columns: 1fr; }
-      .controls { grid-template-columns: 1fr; }
-      .theme-dock { justify-self: stretch; }
-      .theme { width: 100%; }
-      .app { max-height: calc(100svh - 16px); }
+      body {
+        padding:
+          calc(env(safe-area-inset-top) + 8px)
+          8px
+          calc(env(safe-area-inset-bottom) + 8px);
+      }
+      .dial { width: min(72vw, 320px); }
+      .meta {
+        width: 100%;
+        gap: 8px;
+      }
+      .inputs,
+      .action-row,
+      .controls {
+        width: 100%;
+      }
+      .theme { min-width: 0; width: 100%; }
+      .app { padding: 10px; }
+      .stage { padding: 10px; gap: 8px; }
+      .control { min-height: 50px; }
+    }
+
+    @media (max-height: 820px) {
+      .stage { gap: 8px; }
+      .dial { width: min(58vw, 300px); }
+      .time { font-size: clamp(2.15rem, 10vw, 4.7rem); }
+      .control { min-height: 48px; }
+      .input-wrap input { padding: 8px; }
     }
   </style>
 </head>
@@ -551,6 +652,7 @@
         <span class="particle"></span>
       </div>
       <div class="wire-grid" aria-hidden="true"></div>
+      <div class="scene-sweep" aria-hidden="true"></div>
 
       <div class="dial-shell">
         <div id="dial" class="dial" style="--p: 0;">
@@ -562,7 +664,14 @@
 
       <div class="meta">
         <span id="statusText" class="state" data-status="stopped">stopped</span>
-        <button id="notifyBtn" class="icon-btn" type="button" title="Enable notifications" aria-label="Enable notifications">🔔</button>
+        <div class="theme-dock">
+          <select id="themeSelect" class="theme" aria-label="Theme">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+            <option value="darkcity">Dark - City</option>
+            <option value="lightcity">Light - City</option>
+          </select>
+        </div>
       </div>
 
       <div class="inputs">
@@ -578,16 +687,7 @@
 
       <div class="action-row">
         <div id="controls" class="controls"></div>
-        <div class="theme-dock">
-          <select id="themeSelect" class="theme" aria-label="Theme">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="device">Device</option>
-          </select>
-        </div>
       </div>
-
-      <p id="hint" class="hint">▶ start / ⏸ pause / ■ end / ▶ resume</p>
     </section>
   </main>
 
@@ -599,9 +699,10 @@
       const ICON = { START: "▶", PAUSE: "⏸", END: "■", RESUME: "▶", RESTART: "▶" };
 
       const el = {
+        stage: document.querySelector(".stage"),
+        dial: document.getElementById("dial"),
         themeSelect: document.getElementById("themeSelect"),
         statusText: document.getElementById("statusText"),
-        notifyBtn: document.getElementById("notifyBtn"),
         minutesInput: document.getElementById("minutesInput"),
         secondsInput: document.getElementById("secondsInput"),
         timeText: document.getElementById("timeText"),
@@ -614,6 +715,7 @@
         status: STATUS.STOPPED,
         durationSec: 1800,
         remainingSec: 1800,
+        remainingMs: 1800 * 1000,
         intervalId: null,
         endAtMs: 0,
         toastTimer: null
@@ -628,6 +730,15 @@
       function getProgressRatio() {
         if (state.status === STATUS.FINISHED) return 1;
         if ((state.status === STATUS.RUNNING || state.status === STATUS.PAUSED) && state.durationSec > 0) {
+          const totalMs = state.durationSec * 1000;
+          return clamp(1 - (state.remainingMs / totalMs), 0, 1);
+        }
+        return 0;
+      }
+
+      function getDisplayProgressRatio() {
+        if (state.status === STATUS.FINISHED) return 1;
+        if ((state.status === STATUS.RUNNING || state.status === STATUS.PAUSED) && state.durationSec > 0) {
           return clamp((state.durationSec - state.remainingSec) / state.durationSec, 0, 1);
         }
         return 0;
@@ -635,16 +746,30 @@
 
       function applySceneProgress() {
         const progress = getProgressRatio();
+        const displayProgress = getDisplayProgressRatio();
         const remaining = 1 - progress;
-        const power = Math.max(0.16, 1 - progress * 0.84);
+        const dimProgress = displayProgress <= 0 ? 0 : Math.pow(displayProgress, 0.94);
+        const power = Math.max(0.16, 1 - dimProgress * 0.84);
+        const sweepOpacity = displayProgress <= 0 ? 0 : Math.min(0.52, 0.14 + dimProgress * 0.24);
 
         document.documentElement.style.setProperty("--scene-progress", progress.toFixed(4));
-        document.documentElement.style.setProperty("--scene-dim", progress.toFixed(4));
+        document.documentElement.style.setProperty("--scene-dim", dimProgress.toFixed(4));
         document.documentElement.style.setProperty("--scene-power", power.toFixed(4));
-        document.documentElement.style.setProperty("--scene-angle", `${(progress * 360).toFixed(2)}deg`);
+        document.documentElement.style.setProperty("--scene-angle", `${(displayProgress * 360).toFixed(2)}deg`);
+        document.documentElement.style.setProperty("--scene-sweep-opacity", sweepOpacity.toFixed(4));
         document.documentElement.style.setProperty("--ring-power", Math.max(0.2, remaining).toFixed(4));
 
         return { progress, remaining };
+      }
+
+      function updateSweepOrigin() {
+        const stageRect = el.stage.getBoundingClientRect();
+        const dialRect = el.dial.getBoundingClientRect();
+        const centerX = ((dialRect.left + (dialRect.width / 2)) - stageRect.left) / stageRect.width;
+        const centerY = ((dialRect.top + (dialRect.height / 2)) - stageRect.top) / stageRect.height;
+
+        el.stage.style.setProperty("--sweep-origin-x", `${(centerX * 100).toFixed(2)}%`);
+        el.stage.style.setProperty("--sweep-origin-y", `${(centerY * 100).toFixed(2)}%`);
       }
 
       function setupSegments() {
@@ -675,9 +800,8 @@
       }
 
       function setProgress() {
-        const { remaining } = applySceneProgress();
-        const onCount = Math.round(clamp(remaining, 0, 1) * SEG_COUNT);
-        const offCount = SEG_COUNT - onCount;
+        const { progress } = applySceneProgress();
+        const offCount = Math.min(SEG_COUNT, Math.floor(progress * SEG_COUNT + 0.0001));
         for (let i = 0; i < SEG_COUNT; i++) {
           segNodes[i].classList.toggle("on", i >= offCount);
         }
@@ -713,7 +837,8 @@
       }
 
       function tick() {
-        const left = Math.ceil((state.endAtMs - Date.now()) / 1000);
+        state.remainingMs = Math.max(0, state.endAtMs - Date.now());
+        const left = Math.ceil(state.remainingMs / 1000);
         state.remainingSec = Math.max(0, left);
         renderTime();
         if (state.remainingSec <= 0) handleFinish();
@@ -724,7 +849,8 @@
         stopTicker();
         state.durationSec = safe;
         state.remainingSec = safe;
-        state.endAtMs = Date.now() + safe * 1000;
+        state.remainingMs = safe * 1000;
+        state.endAtMs = Date.now() + state.remainingMs;
         renderTime();
         setStatus(STATUS.RUNNING);
         state.intervalId = setInterval(tick, 200);
@@ -733,6 +859,7 @@
       function handleFinish() {
         stopTicker();
         state.remainingSec = 0;
+        state.remainingMs = 0;
         renderTime();
         setStatus(STATUS.FINISHED);
         notifyDone();
@@ -756,7 +883,7 @@
 
       function resumeTimer() {
         if (state.status !== STATUS.PAUSED) return;
-        state.endAtMs = Date.now() + state.remainingSec * 1000;
+        state.endAtMs = Date.now() + state.remainingMs;
         setStatus(STATUS.RUNNING);
         state.intervalId = setInterval(tick, 200);
       }
@@ -764,6 +891,7 @@
       function endToStopped() {
         stopTicker();
         state.remainingSec = state.durationSec;
+        state.remainingMs = state.durationSec * 1000;
         syncInputs(state.durationSec);
         renderTime();
         setStatus(STATUS.STOPPED);
@@ -773,63 +901,7 @@
         startFromInputs();
       }
 
-      function canUseSystemNotification() {
-        if (!window.isSecureContext) return { ok: false, reason: "Notifications need HTTPS or localhost" };
-        if (!("Notification" in window)) return { ok: false, reason: "Notification API not supported" };
-        return { ok: true, reason: "" };
-      }
-
-      function updateNotifyButtonState() {
-        const support = canUseSystemNotification();
-        if (!support.ok) {
-          el.notifyBtn.title = support.reason;
-          return;
-        }
-        if (Notification.permission === "granted") el.notifyBtn.title = "Notifications: On";
-        else if (Notification.permission === "denied") el.notifyBtn.title = "Notifications: Blocked";
-        else el.notifyBtn.title = "Allow notifications";
-      }
-
-      function requestNotifyPermission() {
-        const support = canUseSystemNotification();
-        if (!support.ok) {
-          showToast(`${support.reason} (fallback toast)`);
-          updateNotifyButtonState();
-          return;
-        }
-
-        if (Notification.permission === "granted") {
-          showToast("notifications already enabled");
-          updateNotifyButtonState();
-          return;
-        }
-
-        Notification.requestPermission().then((p) => {
-          if (p === "granted") {
-            showToast("notifications enabled");
-            try {
-              const preview = new Notification("Monolith Timer", { body: "test notification" });
-              setTimeout(() => preview.close(), 1800);
-            } catch (_) {}
-          } else if (p === "denied") {
-            showToast("notifications blocked (toast fallback)");
-          } else {
-            showToast("notifications not granted (toast fallback)");
-          }
-          updateNotifyButtonState();
-        }).catch(() => {
-          showToast("notification request failed");
-          updateNotifyButtonState();
-        });
-      }
-
       function notifyDone() {
-        const support = canUseSystemNotification();
-        if (support.ok && Notification.permission === "granted") {
-          try {
-            new Notification("Monolith Timer", { body: "timer finished" });
-          } catch (_) {}
-        }
         showToast("timer finished");
       }
 
@@ -848,6 +920,7 @@
         el.controls.innerHTML = "";
         if (state.status === STATUS.STOPPED) {
           el.controls.append(mkControl(ICON.START, "start", startFromInputs, true));
+          el.controls.append(mkControl(ICON.END, "end", endToStopped));
         } else if (state.status === STATUS.RUNNING) {
           el.controls.append(mkControl(ICON.PAUSE, "pause", pauseTimer));
           el.controls.append(mkControl(ICON.END, "end", endToStopped));
@@ -856,28 +929,27 @@
           el.controls.append(mkControl(ICON.END, "end", endToStopped));
         } else if (state.status === STATUS.FINISHED) {
           el.controls.append(mkControl(ICON.RESTART, "resume", restartFromInputs, true));
+          el.controls.append(mkControl(ICON.END, "end", endToStopped));
         }
       }
 
       function applyTheme(mode) {
-        if (mode === "device") {
-          const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-          document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-        } else {
-          document.documentElement.setAttribute("data-theme", mode);
-        }
+        document.documentElement.setAttribute("data-theme", mode);
       }
 
       function initTheme() {
         const saved = localStorage.getItem("monolith_theme") || "dark";
-        el.themeSelect.value = saved;
-        applyTheme(saved);
+        const allowedThemes = ["dark", "light", "darkcity", "lightcity"];
+        const normalized = allowedThemes.includes(saved) ? saved : "dark";
+        el.themeSelect.value = normalized;
+        applyTheme(normalized);
       }
 
       function onInputChange() {
         const sec = parseInputs();
         state.durationSec = sec;
         state.remainingSec = sec;
+        state.remainingMs = sec * 1000;
         renderTime();
       }
 
@@ -887,7 +959,7 @@
         renderTime();
         setStatus(STATUS.STOPPED);
         initTheme();
-        updateNotifyButtonState();
+        updateSweepOrigin();
 
         el.themeSelect.addEventListener("change", (e) => {
           const mode = e.target.value;
@@ -895,13 +967,9 @@
           applyTheme(mode);
         });
 
-        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-          if (el.themeSelect.value === "device") applyTheme("device");
-        });
-
         el.minutesInput.addEventListener("change", onInputChange);
         el.secondsInput.addEventListener("change", onInputChange);
-        el.notifyBtn.addEventListener("click", requestNotifyPermission);
+        window.addEventListener("resize", updateSweepOrigin);
       }
 
       init();
