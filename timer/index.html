@@ -33,6 +33,7 @@
       --ray-rgb: 223 233 255;
       --chrome-alpha: 0.75;
       --control-width: min(440px, 100%);
+      --dial-max-width: 420px;
       --photo-image: none;
       --photo-opacity: 0;
       --photo-brightness: 0.76;
@@ -76,7 +77,6 @@
       --body-glow-rgb: 122 146 184;
       --panel-glow-rgb: 200 217 240;
       --ray-rgb: 170 196 231;
-      --photo-image: url("https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1600&q=80");
       --photo-opacity: 0.6;
       --photo-brightness: 0.52;
       --photo-saturate: 1.04;
@@ -100,7 +100,6 @@
       --body-glow-rgb: 144 166 194;
       --panel-glow-rgb: 120 142 168;
       --ray-rgb: 119 144 174;
-      --photo-image: url("https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1600&q=80");
       --photo-opacity: 0.72;
       --photo-brightness: 0.86;
       --photo-saturate: 0.98;
@@ -334,13 +333,16 @@
     .dial-shell {
       display: grid;
       place-items: center;
+      width: min(100%, var(--dial-max-width));
+      margin-inline: auto;
       margin-top: 2px;
       position: relative;
       z-index: 1;
     }
 
     .dial {
-      width: min(64vw, 360px);
+      container-type: inline-size;
+      width: 100%;
       aspect-ratio: 1 / 1;
       border-radius: 50%;
       position: relative;
@@ -409,10 +411,13 @@
 
     .dial-brand {
       position: absolute;
-      top: 30%;
+      top: 25%;
+      width: 68%;
       margin: 0;
-      font-size: clamp(0.52rem, 1.4vw, 0.74rem);
-      letter-spacing: 0.24em;
+      font-size: clamp(0.98rem, 5.4cqi, 1.58rem);
+      letter-spacing: 0.12em;
+      line-height: 1.05;
+      text-align: center;
       text-transform: uppercase;
       color: var(--muted);
       font-weight: 800;
@@ -421,12 +426,14 @@
 
     .time {
       margin: 0;
-      transform: translateY(8px);
+      width: 74%;
+      transform: translateY(14px);
       z-index: 1;
-      font-size: clamp(2.45rem, 11vw, 5.4rem);
+      font-size: clamp(3.65rem, 26.5cqi, 6.95rem);
       font-weight: 900;
-      letter-spacing: 0.08em;
-      line-height: 1;
+      letter-spacing: 0.03em;
+      line-height: 0.92;
+      text-align: center;
       font-variant-numeric: tabular-nums;
       color: var(--text);
     }
@@ -616,7 +623,7 @@
           8px
           calc(env(safe-area-inset-bottom) + 8px);
       }
-      .dial { width: min(72vw, 320px); }
+      .dial-shell { width: 100%; }
       .meta {
         width: 100%;
         gap: 8px;
@@ -634,8 +641,13 @@
 
     @media (max-height: 820px) {
       .stage { gap: 8px; }
-      .dial { width: min(58vw, 300px); }
-      .time { font-size: clamp(2.15rem, 10vw, 4.7rem); }
+      .dial-shell { width: min(100%, 360px); }
+      .dial-brand {
+        top: 25%;
+      }
+      .time {
+        transform: translateY(12px);
+      }
       .control { min-height: 48px; }
       .input-wrap input { padding: 8px; }
     }
@@ -697,6 +709,13 @@
     (() => {
       const STATUS = { STOPPED: "stopped", RUNNING: "running", PAUSED: "paused", FINISHED: "finished" };
       const ICON = { START: "▶", PAUSE: "⏸", END: "■", RESUME: "▶", RESTART: "▶" };
+      const CITY_IMAGE_URLS = [
+        "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1479839672679-a46483c0e7c8?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1465447142348-e9952c393450?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?auto=format&fit=crop&w=1600&q=80"
+      ];
 
       const el = {
         stage: document.querySelector(".stage"),
@@ -716,6 +735,7 @@
         durationSec: 1800,
         remainingSec: 1800,
         remainingMs: 1800 * 1000,
+        cityPhotoIndex: -1,
         intervalId: null,
         endAtMs: 0,
         toastTimer: null
@@ -726,6 +746,26 @@
       const fmt = (sec) => `${two(Math.floor(sec / 60))}:${two(sec % 60)}`;
       const SEG_COUNT = 60;
       let segNodes = [];
+
+      function isCityTheme(mode) {
+        return mode === "darkcity" || mode === "lightcity";
+      }
+
+      function applyCityPhoto(index) {
+        state.cityPhotoIndex = index;
+        document.documentElement.style.setProperty("--photo-image", `url("${CITY_IMAGE_URLS[index]}")`);
+      }
+
+      function pickRandomCityPhoto(forceChange = false) {
+        if (CITY_IMAGE_URLS.length === 0) return;
+        let nextIndex = Math.floor(Math.random() * CITY_IMAGE_URLS.length);
+        if (forceChange && CITY_IMAGE_URLS.length > 1) {
+          while (nextIndex === state.cityPhotoIndex) {
+            nextIndex = Math.floor(Math.random() * CITY_IMAGE_URLS.length);
+          }
+        }
+        applyCityPhoto(nextIndex);
+      }
 
       function getProgressRatio() {
         if (state.status === STATUS.FINISHED) return 1;
@@ -933,7 +973,13 @@
         }
       }
 
-      function applyTheme(mode) {
+      function applyTheme(mode, previousMode = "") {
+        if (isCityTheme(mode)) {
+          const enteringCity = !isCityTheme(previousMode);
+          if (enteringCity || state.cityPhotoIndex < 0) {
+            pickRandomCityPhoto(enteringCity);
+          }
+        }
         document.documentElement.setAttribute("data-theme", mode);
       }
 
@@ -962,9 +1008,10 @@
         updateSweepOrigin();
 
         el.themeSelect.addEventListener("change", (e) => {
+          const previousMode = document.documentElement.getAttribute("data-theme") || "dark";
           const mode = e.target.value;
           localStorage.setItem("monolith_theme", mode);
-          applyTheme(mode);
+          applyTheme(mode, previousMode);
         });
 
         el.minutesInput.addEventListener("change", onInputChange);
