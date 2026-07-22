@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="THIRTY">
+  <title>THIRTY — 30分タイマー</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --progress: 0;
+      --ink: #f7f8fb;
+      --muted: rgba(247, 248, 251, 0.58);
+      --faint: rgba(247, 248, 251, 0.10);
+      --panel: rgba(255, 255, 255, 0.07);
+      --panel-border: rgba(255, 255, 255, 0.11);
+      --accent: #8ea8ff;
+      --accent-2: #b69cff;
+      --danger: #ffb78f;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #0b1020;
+      overflow: hidden;
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--ink);
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    button { font: inherit; }
+
+    .app {
+      position: relative;
+      isolation: isolate;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding:
+        max(20px, env(safe-area-inset-top))
+        max(22px, env(safe-area-inset-right))
+        max(22px, env(safe-area-inset-bottom))
+        max(22px, env(safe-area-inset-left));
+      background:
+        radial-gradient(circle at 18% 10%, rgba(105, 128, 255, calc(.18 + var(--progress) * .05)), transparent 38%),
+        radial-gradient(circle at 88% 86%, rgba(168, 111, 255, calc(.12 + var(--progress) * .08)), transparent 42%),
+        linear-gradient(160deg, #111832 0%, #090d19 56%, #0b1020 100%);
+    }
+
+    .app::before {
+      content: "";
+      position: absolute;
+      z-index: -2;
+      inset: -20%;
+      background:
+        conic-gradient(from 210deg at 50% 50%,
+          rgba(142, 168, 255, .12),
+          transparent 22%,
+          rgba(182, 156, 255, .10) 44%,
+          transparent 68%,
+          rgba(255, 183, 143, calc(var(--progress) * .09)) 85%,
+          rgba(142, 168, 255, .12));
+      filter: blur(54px);
+      transform: rotate(calc(var(--progress) * 22deg));
+      transition: transform 1s linear;
+      pointer-events: none;
+    }
+
+    .app::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      opacity: .22;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.7), transparent 72%);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.7), transparent 72%);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 34px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: .24em;
+      font-size: 12px;
+      font-weight: 760;
+      color: rgba(255,255,255,.82);
+    }
+
+    .brand-mark {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 18px rgba(142, 168, 255, .65);
+    }
+
+    .top-status {
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: .02em;
+      color: var(--muted);
+    }
+
+    .stage {
+      display: grid;
+      place-items: center;
+      min-height: 0;
+      padding: 18px 0 14px;
+    }
+
+    .timer-card {
+      width: min(88vw, 430px);
+      display: grid;
+      justify-items: center;
+      gap: 24px;
+    }
+
+    .dial {
+      position: relative;
+      width: min(82vw, 390px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      filter: drop-shadow(0 26px 54px rgba(0,0,0,.26));
+    }
+
+    .dial::before {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      border-radius: inherit;
+      background:
+        radial-gradient(circle at 35% 25%, rgba(255,255,255,.10), transparent 34%),
+        linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.022));
+      border: 1px solid rgba(255,255,255,.09);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.07),
+        0 20px 60px rgba(0,0,0,.20);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .ring {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+      overflow: visible;
+    }
+
+    .ring-track,
+    .ring-progress {
+      fill: none;
+      stroke-width: 7;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .ring-track {
+      stroke: rgba(255,255,255,.075);
+    }
+
+    .ring-progress {
+      stroke: url(#ringGradient);
+      stroke-linecap: round;
+      transition: stroke-dashoffset .18s linear, filter .35s var(--ease);
+      filter: drop-shadow(0 0 8px rgba(142,168,255,.36));
+    }
+
+    .tick-ring {
+      position: absolute;
+      inset: 5.6%;
+      border-radius: 50%;
+      opacity: .32;
+      background: repeating-conic-gradient(
+        from -90deg,
+        rgba(255,255,255,.44) 0deg .65deg,
+        transparent .65deg 6deg
+      );
+      mask: radial-gradient(circle, transparent 0 93%, #000 93.2% 100%);
+      -webkit-mask: radial-gradient(circle, transparent 0 93%, #000 93.2% 100%);
+    }
+
+    .dial-content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      transform: translateY(2px);
+    }
+
+    .time {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      font-size: clamp(68px, 20vw, 112px);
+      line-height: .9;
+      font-weight: 710;
+      letter-spacing: -.065em;
+      text-indent: -.065em;
+      text-shadow: 0 6px 26px rgba(0,0,0,.20);
+    }
+
+    .phase {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      color: var(--muted);
+    }
+
+    .progress-row {
+      width: min(72vw, 320px);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .progress-bar {
+      height: 3px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: rgba(255,255,255,.09);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 14px rgba(142,168,255,.45);
+      transition: width .18s linear;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+      width: min(100%, 430px);
+      margin-inline: auto;
+    }
+
+    .primary,
+    .secondary {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 0;
+      border-radius: 18px;
+      min-height: 58px;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform .16s var(--ease), opacity .2s var(--ease), background .25s var(--ease);
+    }
+
+    .primary {
+      color: #0a0f1f;
+      background: linear-gradient(135deg, #f6f7ff 0%, #dfe5ff 52%, #ddd3ff 100%);
+      font-size: 17px;
+      font-weight: 780;
+      letter-spacing: .01em;
+      box-shadow:
+        0 14px 32px rgba(86, 102, 190, .24),
+        inset 0 1px 0 rgba(255,255,255,.9);
+    }
+
+    .secondary {
+      min-height: 46px;
+      color: rgba(255,255,255,.70);
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.075);
+      font-size: 14px;
+      font-weight: 680;
+    }
+
+    .secondary[hidden] { display: none; }
+
+    .primary:active,
+    .secondary:active {
+      transform: scale(.985);
+    }
+
+    .hint {
+      min-height: 18px;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.5;
+      color: rgba(255,255,255,.38);
+    }
+
+    .app[data-mode="running"] .brand-mark {
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    .app[data-mode="paused"] .ring-progress {
+      filter: drop-shadow(0 0 5px rgba(255,255,255,.18));
+    }
+
+    .app[data-mode="finished"] {
+      --accent: #ffd0b8;
+      --accent-2: #f7a7c8;
+      background:
+        radial-gradient(circle at 50% 34%, rgba(255, 199, 165, .24), transparent 36%),
+        linear-gradient(160deg, #2a1721 0%, #130f18 56%, #0b1020 100%);
+    }
+
+    .app[data-mode="finished"] .dial {
+      animation: finishGlow 1.8s ease-out both;
+    }
+
+    .app[data-mode="finished"] .ring-progress {
+      filter: drop-shadow(0 0 13px rgba(255,190,165,.52));
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: .72; }
+      50% { transform: scale(1.28); opacity: 1; }
+    }
+
+    @keyframes finishGlow {
+      0% { transform: scale(.985); filter: drop-shadow(0 10px 20px rgba(0,0,0,.15)); }
+      45% { transform: scale(1.012); filter: drop-shadow(0 26px 70px rgba(255,170,160,.20)); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-height: 720px) {
+      .app { padding-top: max(14px, env(safe-area-inset-top)); }
+      .stage { padding: 4px 0 8px; }
+      .timer-card { gap: 12px; }
+      .dial { width: min(66vh, 80vw, 340px); }
+      .controls { gap: 8px; }
+      .primary { min-height: 52px; }
+      .secondary { min-height: 42px; }
+      .hint { display: none; }
+    }
+
+    @media (orientation: landscape) and (max-height: 520px) {
+      .app {
+        grid-template-columns: 1fr minmax(240px, 38vw);
+        grid-template-rows: auto 1fr;
+        column-gap: 24px;
+      }
+      .topbar { grid-column: 1 / -1; }
+      .stage { grid-column: 1; grid-row: 2; }
+      .controls { grid-column: 2; grid-row: 2; align-self: center; }
+      .dial { width: min(74vh, 360px); }
+      .progress-row { width: min(58vw, 300px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app" data-mode="idle">
+    <header class="topbar" aria-label="アプリ情報">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>THIRTY</div>
+      <div class="top-status" id="topStatus">30 MINUTES</div>
+    </header>
+
+    <section class="stage" aria-live="polite">
+      <div class="timer-card">
+        <div class="dial" aria-label="残り時間">
+          <svg class="ring" viewBox="0 0 240 240" aria-hidden="true">
+            <defs>
+              <linearGradient id="ringGradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#8ea8ff" />
+                <stop offset="52%" stop-color="#a69cff" />
+                <stop offset="100%" stop-color="#d6a7ff" />
+              </linearGradient>
+            </defs>
+            <circle class="ring-track" cx="120" cy="120" r="108" />
+            <circle class="ring-progress" id="ringProgress" cx="120" cy="120" r="108" />
+          </svg>
+          <div class="tick-ring" aria-hidden="true"></div>
+          <div class="dial-content">
+            <div class="time" id="timeDisplay">30:00</div>
+            <div class="phase" id="phaseLabel">READY</div>
+          </div>
+        </div>
+
+        <div class="progress-row" aria-hidden="true">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div id="progressText">0%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="タイマー操作">
+      <button class="primary" id="primaryButton" type="button">30分を開始</button>
+      <button class="secondary" id="resetButton" type="button" hidden>リセット</button>
+      <div class="hint" id="hint">終了まで、画面上の円が静かに満ちていきます</div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const DURATION_MS = 30 * 60 * 1000;
+      const STORAGE_KEY = 'thirty-timer-state-v1';
+      const RADIUS = 108;
+      const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+      const app = document.getElementById('app');
+      const timeDisplay = document.getElementById('timeDisplay');
+      const phaseLabel = document.getElementById('phaseLabel');
+      const topStatus = document.getElementById('topStatus');
+      const progressText = document.getElementById('progressText');
+      const progressFill = document.getElementById('progressFill');
+      const ringProgress = document.getElementById('ringProgress');
+      const primaryButton = document.getElementById('primaryButton');
+      const resetButton = document.getElementById('resetButton');
+      const hint = document.getElementById('hint');
+
+      ringProgress.style.strokeDasharray = String(CIRCUMFERENCE);
+      ringProgress.style.strokeDashoffset = String(CIRCUMFERENCE);
+
+      let state = {
+        mode: 'idle',
+        endAt: null,
+        remainingMs: DURATION_MS
+      };
+      let frameId = null;
+      let wakeLock = null;
+      let lastRenderedSecond = null;
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function loadState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          if (!saved || !['idle', 'running', 'paused', 'finished'].includes(saved.mode)) return;
+
+          state.mode = saved.mode;
+          state.endAt = Number.isFinite(saved.endAt) ? saved.endAt : null;
+          state.remainingMs = Number.isFinite(saved.remainingMs)
+            ? clamp(saved.remainingMs, 0, DURATION_MS)
+            : DURATION_MS;
+
+          if (state.mode === 'running') {
+            const remaining = state.endAt - Date.now();
+            if (remaining <= 0) {
+              state.mode = 'finished';
+              state.endAt = null;
+              state.remainingMs = 0;
+            } else {
+              state.remainingMs = remaining;
+            }
+          }
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch {
+          // Private browsing or storage restrictions: timer itself still works.
+        }
+      }
+
+      function getRemainingMs() {
+        if (state.mode === 'running' && state.endAt) {
+          return clamp(state.endAt - Date.now(), 0, DURATION_MS);
+        }
+        return clamp(state.remainingMs, 0, DURATION_MS);
+      }
+
+      function formatTime(ms) {
+        const totalSeconds = Math.ceil(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+
+      function render(force = false) {
+        const remaining = getRemainingMs();
+        const currentSecond = Math.ceil(remaining / 1000);
+        const elapsedRatio = clamp(1 - remaining / DURATION_MS, 0, 1);
+        const percent = Math.round(elapsedRatio * 100);
+
+        if (force || currentSecond !== lastRenderedSecond) {
+          const formatted = formatTime(remaining);
+          timeDisplay.textContent = formatted;
+          document.title = state.mode === 'idle'
+            ? 'THIRTY — 30分タイマー'
+            : `${formatted} — THIRTY`;
+          progressText.textContent = `${percent}%`;
+          lastRenderedSecond = currentSecond;
+        }
+
+        progressFill.style.width = `${elapsedRatio * 100}%`;
+        ringProgress.style.strokeDashoffset = String(CIRCUMFERENCE * (1 - elapsedRatio));
+        app.style.setProperty('--progress', elapsedRatio.toFixed(4));
+        app.dataset.mode = state.mode;
+
+        switch (state.mode) {
+          case 'running':
+            phaseLabel.textContent = 'FOCUS';
+            topStatus.textContent = 'IN PROGRESS';
+            primaryButton.textContent = '一時停止';
+            resetButton.hidden = false;
+            hint.textContent = '画面を閉じても、戻った時点の残り時間に補正されます';
+            break;
+          case 'paused':
+            phaseLabel.textContent = 'PAUSED';
+            topStatus.textContent = 'PAUSED';
+            primaryButton.textContent = '再開';
+            resetButton.hidden = false;
+            hint.textContent = '残り時間は保存されています';
+            break;
+          case 'finished':
+            phaseLabel.textContent = 'COMPLETE';
+            topStatus.textContent = '30 MINUTES';
+            primaryButton.textContent = 'もう一度';
+            resetButton.hidden = true;
+            hint.textContent = '30分が経過しました';
+            break;
+          default:
+            phaseLabel.textContent = 'READY';
+            topStatus.textContent = '30 MINUTES';
+            primaryButton.textContent = '30分を開始';
+            resetButton.hidden = true;
+            hint.textContent = '終了まで、画面上の円が静かに満ちていきます';
+        }
+      }
+
+      function tick() {
+        if (state.mode !== 'running') return;
+
+        const remaining = getRemainingMs();
+        state.remainingMs = remaining;
+
+        if (remaining <= 0) {
+          finishTimer();
+          return;
+        }
+
+        render();
+        frameId = requestAnimationFrame(tick);
+      }
+
+      function startLoop() {
+        cancelAnimationFrame(frameId);
+        frameId = requestAnimationFrame(tick);
+      }
+
+      async function requestWakeLock() {
+        if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release', () => { wakeLock = null; });
+        } catch {
+          wakeLock = null;
+        }
+      }
+
+      async function releaseWakeLock() {
+        if (!wakeLock) return;
+        try { await wakeLock.release(); } catch {}
+        wakeLock = null;
+      }
+
+      function startTimer() {
+        state.mode = 'running';
+        state.remainingMs = DURATION_MS;
+        state.endAt = Date.now() + DURATION_MS;
+        saveState();
+        render(true);
+        startLoop();
+        requestWakeLock();
+      }
+
+      function pauseTimer() {
+        state.remainingMs = getRemainingMs();
+        state.endAt = null;
+        state.mode = 'paused';
+        cancelAnimationFrame(frameId);
+        saveState();
+        render(true);
+        releaseWakeLock();
+      }
+
+      function resumeTimer() {
+        state.endAt = Date.now() + state.remainingMs;
+        state.mode = 'running';
+        saveState();
+        render(true);
+        startLoop();
+        requestWakeLock();
+      }
+
+      function finishTimer() {
+        state.mode = 'finished';
+        state.endAt = null;
+        state.remainingMs = 0;
+        cancelAnimationFrame(frameId);
+        saveState();
+        render(true);
+        releaseWakeLock();
+      }
+
+      function resetTimer() {
+        state.mode = 'idle';
+        state.endAt = null;
+        state.remainingMs = DURATION_MS;
+        lastRenderedSecond = null;
+        cancelAnimationFrame(frameId);
+        saveState();
+        render(true);
+        releaseWakeLock();
+      }
+
+      primaryButton.addEventListener('click', () => {
+        if (state.mode === 'running') pauseTimer();
+        else if (state.mode === 'paused') resumeTimer();
+        else startTimer();
+      });
+
+      resetButton.addEventListener('click', resetTimer);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && state.mode === 'running') {
+          if (getRemainingMs() <= 0) finishTimer();
+          else {
+            render(true);
+            startLoop();
+            requestWakeLock();
+          }
+        } else {
+          cancelAnimationFrame(frameId);
+        }
+      });
+
+      window.addEventListener('pageshow', () => {
+        if (state.mode === 'running') {
+          if (getRemainingMs() <= 0) finishTimer();
+          else startLoop();
+        }
+        render(true);
+      });
+
+      window.addEventListener('pagehide', () => {
+        if (state.mode === 'running') state.remainingMs = getRemainingMs();
+        saveState();
+      });
+
+      loadState();
+      render(true);
+      if (state.mode === 'running') {
+        startLoop();
+        requestWakeLock();
+      }
+    })();
+  </script>
+</body>
+</html>
